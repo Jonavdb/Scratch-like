@@ -1,6 +1,7 @@
 package scratch.view;
 
 import javafx.geometry.Insets;
+import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
@@ -15,22 +16,22 @@ import scratch.viewmodel.MainViewModel;
 public class MainView extends VBox {
   private final MainViewModel vm;
 
-  // Hbox container
+  // Conteneur Principal
   private final HBox appContainer = new HBox();
 
   // MenuBar
   private final MenuBar menuBar = new MenuBar();
-  private final Menu file = new Menu("File");
-  private final MenuItem save = new MenuItem("Save");
-  private final MenuItem load = new MenuItem("Load");
+  private final Menu fileMenu = new Menu("File");
+  private final MenuItem saveItem = new MenuItem("Save");
+  private final MenuItem loadItem = new MenuItem("Load");
 
-  // Palette d'actions
+  // Palette d'actions (gauche)
   private final VBox paletteBox = new VBox();
   private final Text paletteTitle = new Text("Palette d'actions");
   private final ListView<Actions> availableActions = new ListView<>();
   private final Button btnAdd = new Button("Ajouter au programme");
 
-  // Programme
+  // Programme (centre)
   private final VBox programBox = new VBox();
   private final Text programTitle = new Text("Programme");
   private final ListView<ChosenActions> chosenActions = new ListView<>();
@@ -41,77 +42,116 @@ public class MainView extends VBox {
   private final Button btnDelete = new Button("Supprimer");
   private final Button btnEmptyAll = new Button("Vider tout");
 
-  // Action details
-  VBox actionDetails = new VBox();
-  TitledPane detailPane = new TitledPane("Détail de l'action", actionDetails);
+  // Action détails (sous le programme)
+  private final TextField actionParamField = new TextField();
+  private final TitledPane detailPane = new TitledPane("Détail de l'action", new VBox(actionParamField));
 
-  // Scene
+  // Scene (droite)
   private final VBox sceneBox = new VBox();
   private final Text sceneTitle = new Text("Scene");
   private final HBox btnContainerScene = new HBox();
   private final Button btnLoad = new Button("Charger");
   private final Button btnExecute = new Button("Exécuter");
 
-
   public MainView(MainViewModel vm) {
     this.vm = vm;
 
-    // MenuBar
-    menuBar.getMenus().addAll(file);
-    file.getItems().addAll(save, load);
-
-    // Palette Box
-    paletteBox.setSpacing(10);
-    paletteBox.getChildren().addAll(paletteTitle, availableActions, btnAdd);
-
-    // Program Box
-    programBox.setSpacing(10);
-    btnContainerProgram.getChildren().addAll(btnUp, btnDown, btnDuplicate, btnDelete, btnEmptyAll);
-    programBox.getChildren().addAll(programTitle, chosenActions, btnContainerProgram, detailPane);
-
-    // Action details
-    actionDetails.getChildren().add(new TextField());
-
-    // Scene
-    btnContainerScene.getChildren().addAll(btnLoad, btnExecute);
-
-    // Grid
-    GridPane gridPane = new GridPane();
-    gridPane.setMinSize(500, 500);
-    gridPane.setAlignment(Pos.CENTER);
-      BorderStroke gridBorder = new BorderStroke(
-              Color.BLACK,
-              BorderStrokeStyle.SOLID,
-              CornerRadii.EMPTY,
-              new BorderWidths(0.6)
-      );
-    gridPane.setBorder(new Border(gridBorder));
-    var nbHNodes = 10;
-    var nbVNodes = 10;
-    for(int i = 0; i < nbHNodes; ++i) {
-        for(int j = 0; j < nbVNodes; ++j) {
-            StackPane cell = new StackPane();
-            cell.setMinWidth(50);
-            cell.setMinHeight(50);
-            BorderStroke stroke = new BorderStroke(
-                    Color.LIGHTBLUE,
-                    BorderStrokeStyle.SOLID,
-                    CornerRadii.EMPTY,
-                    new BorderWidths(0.3)
-            );
-            cell.setBorder(new Border(stroke));
-            gridPane.add(cell, i, j);
-        }
-    }
-    sceneBox.getChildren().addAll(sceneTitle, gridPane, btnContainerScene);
-
-    // App
-    appContainer.getChildren().addAll(paletteBox, programBox, sceneBox);
-    VBox.setVgrow(appContainer, Priority.ALWAYS);
-    HBox.setHgrow(paletteBox, Priority.ALWAYS);
-    HBox.setHgrow(programBox, Priority.ALWAYS);
-    this.setSpacing(20);
+    configureMenu();
+    configurePalette();
+    configureProgram();
+    configureScene();
+    configureLayoutGlobal();
 
     this.getChildren().addAll(menuBar, appContainer);
+
+//     TODO
+//    createBindings();
+  }
+
+  private void configureMenu() {
+    fileMenu.getItems().addAll(saveItem, loadItem);
+    menuBar.getMenus().add(fileMenu);
+  }
+
+  private void configurePalette() {
+    Text paletteTitle = new Text("Palette d'actions");
+
+    paletteBox.setSpacing(10);
+    paletteBox.setPadding(new Insets(0, 10, 0, 0));
+    paletteBox.getChildren().addAll(paletteTitle, availableActions, btnAdd);
+
+    HBox.setHgrow(paletteBox, Priority.ALWAYS);
+  }
+
+  private void configureProgram() {
+    Text programTitle = new Text("Programme");
+
+    HBox btnContainerProgram = new HBox(10);
+    btnContainerProgram.setPadding(new Insets(10, 0, 10, 0));
+    btnContainerProgram.getChildren().addAll(btnUp, btnDown, btnDuplicate, btnDelete, btnEmptyAll);
+
+    // Configuration du TitledPane
+    programBox.setSpacing(10);
+    programBox.setPadding(new Insets(0, 0, 0, 10));
+    programBox.getChildren().addAll(programTitle, chosenActions, btnContainerProgram, detailPane);
+
+    HBox.setHgrow(programBox, Priority.ALWAYS);
+  }
+
+  private void configureScene() {
+    Text sceneTitle = new Text("Scene");
+    GridPane gridPane = createGrid(10, 10); // Grille (générée par une méthode dédiée)
+
+    HBox btnContainerScene = new HBox(10); // Boutons
+    btnContainerScene.getChildren().addAll(btnLoad, btnExecute);
+    btnContainerScene.setAlignment(Pos.CENTER);
+
+    sceneBox.setSpacing(10);
+    sceneBox.setPadding(new Insets(0, 0, 0, 20));
+    sceneBox.getChildren().addAll(sceneTitle, gridPane, btnContainerScene);
+  }
+
+  /* Méthode utilitaire pour générer la grille */
+  private GridPane createGrid(int rows, int cols) {
+    GridPane grid = new GridPane();
+    grid.setMinSize(500, 500);
+    grid.setAlignment(Pos.CENTER);
+
+    // Bordure de chaque cellule
+    Border cellBorder = new Border(new BorderStroke(
+            Color.LIGHTBLUE,
+            BorderStrokeStyle.SOLID,
+            CornerRadii.EMPTY,
+            new BorderWidths(0.3)
+    ));
+
+    // Bordure noire autour de la grille entière
+    grid.setBorder(new Border(new BorderStroke(
+            Color.BLACK,
+            BorderStrokeStyle.SOLID,
+            CornerRadii.EMPTY,
+            new BorderWidths(1.0)
+    )));
+
+    // Génération des cases
+    for (int x = 0; x < cols; x++) {
+      for (int y = 0; y < rows; y++) {
+        StackPane cell = new StackPane();
+        cell.setMinWidth(50);
+        cell.setMinHeight(50);
+        cell.setBorder(cellBorder);
+
+        grid.add(cell, x, y);
+      }
+    }
+    return grid;
+  }
+
+  private void configureLayoutGlobal() {
+    appContainer.setPadding(new Insets(5, 20, 10, 20));
+    appContainer.getChildren().addAll(paletteBox, programBox, sceneBox);
+
+    this.setSpacing(20);
+    VBox.setVgrow(appContainer, Priority.ALWAYS);
   }
 }
