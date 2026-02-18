@@ -1,9 +1,12 @@
 package scratch.view;
 
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.scene.canvas.Canvas;
+import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.*;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Priority;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.*;
+import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
 import scratch.model.Actions;
 import scratch.model.ChosenActions;
@@ -71,7 +74,36 @@ public class MainView extends VBox {
 
     // Scene
     btnContainerScene.getChildren().addAll(btnLoad, btnExecute);
-    sceneBox.getChildren().addAll(sceneTitle, new Text("canva ici"), btnContainerScene);
+
+    // Grid
+    GridPane gridPane = new GridPane();
+    gridPane.setMinSize(500, 500);
+    gridPane.setAlignment(Pos.CENTER);
+      BorderStroke gridBorder = new BorderStroke(
+              Color.BLACK,
+              BorderStrokeStyle.SOLID,
+              CornerRadii.EMPTY,
+              new BorderWidths(0.6)
+      );
+    gridPane.setBorder(new Border(gridBorder));
+    var nbHNodes = 10;
+    var nbVNodes = 10;
+    for(int i = 0; i < nbHNodes; ++i) {
+        for(int j = 0; j < nbVNodes; ++j) {
+            StackPane cell = new StackPane();
+            cell.setMinWidth(50);
+            cell.setMinHeight(50);
+            BorderStroke stroke = new BorderStroke(
+                    Color.LIGHTBLUE,
+                    BorderStrokeStyle.SOLID,
+                    CornerRadii.EMPTY,
+                    new BorderWidths(0.3)
+            );
+            cell.setBorder(new Border(stroke));
+            gridPane.add(cell, i, j);
+        }
+    }
+    sceneBox.getChildren().addAll(sceneTitle, gridPane, btnContainerScene);
 
     // App
     appContainer.getChildren().addAll(paletteBox, programBox, sceneBox);
