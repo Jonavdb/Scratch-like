@@ -75,6 +75,7 @@ public class MainView extends VBox {
 
   private void configurePalette() {
     Text paletteTitle = new Text("Palette d'actions");
+
     paletteBox.setSpacing(10);
     paletteBox.setPadding(new Insets(0, 10, 0, 0));
     paletteBox.getChildren().addAll(paletteTitle, availableActions, btnAdd);
@@ -99,44 +100,51 @@ public class MainView extends VBox {
 
   private void configureScene() {
     Text sceneTitle = new Text("Scene");
-    Text canvasPlaceholder = new Text("canva ici"); // Placeholder
+    GridPane gridPane = createGrid(10, 10); // Grille (générée par une méthode dédiée)
 
-    HBox btnContainerScene = new HBox(10);
+    HBox btnContainerScene = new HBox(10); // Boutons
     btnContainerScene.getChildren().addAll(btnLoad, btnExecute);
-
-    // Grid
-    GridPane gridPane = new GridPane();
-    gridPane.setMinSize(500, 500);
-    gridPane.setAlignment(Pos.CENTER);
-      BorderStroke gridBorder = new BorderStroke(
-              Color.BLACK,
-              BorderStrokeStyle.SOLID,
-              CornerRadii.EMPTY,
-              new BorderWidths(0.6)
-      );
-    gridPane.setBorder(new Border(gridBorder));
-    var nbHNodes = 10;
-    var nbVNodes = 10;
-    for(int i = 0; i < nbHNodes; ++i) {
-        for(int j = 0; j < nbVNodes; ++j) {
-            StackPane cell = new StackPane();
-            cell.setMinWidth(50);
-            cell.setMinHeight(50);
-            BorderStroke stroke = new BorderStroke(
-                    Color.LIGHTBLUE,
-                    BorderStrokeStyle.SOLID,
-                    CornerRadii.EMPTY,
-                    new BorderWidths(0.3)
-            );
-            cell.setBorder(new Border(stroke));
-            gridPane.add(cell, i, j);
-        }
-    }
-    sceneBox.getChildren().addAll(sceneTitle, gridPane, btnContainerScene);
+    btnContainerScene.setAlignment(Pos.CENTER);
 
     sceneBox.setSpacing(10);
     sceneBox.setPadding(new Insets(0, 0, 0, 20));
-    sceneBox.getChildren().addAll(sceneTitle, canvasPlaceholder, btnContainerScene);
+    sceneBox.getChildren().addAll(sceneTitle, gridPane, btnContainerScene);
+  }
+
+  /* Méthode utilitaire pour générer la grille */
+  private GridPane createGrid(int rows, int cols) {
+    GridPane grid = new GridPane();
+    grid.setMinSize(500, 500);
+    grid.setAlignment(Pos.CENTER);
+
+    // Bordure de chaque cellule
+    Border cellBorder = new Border(new BorderStroke(
+            Color.LIGHTBLUE,
+            BorderStrokeStyle.SOLID,
+            CornerRadii.EMPTY,
+            new BorderWidths(0.3)
+    ));
+
+    // Bordure noire autour de la grille entière
+    grid.setBorder(new Border(new BorderStroke(
+            Color.BLACK,
+            BorderStrokeStyle.SOLID,
+            CornerRadii.EMPTY,
+            new BorderWidths(1.0)
+    )));
+
+    // Génération des cases
+    for (int x = 0; x < cols; x++) {
+      for (int y = 0; y < rows; y++) {
+        StackPane cell = new StackPane();
+        cell.setMinWidth(50);
+        cell.setMinHeight(50);
+        cell.setBorder(cellBorder); // Réutilisation de l'objet border
+
+        grid.add(cell, x, y);
+      }
+    }
+    return grid;
   }
 
   private void configureLayoutGlobal() {
