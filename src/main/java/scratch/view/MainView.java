@@ -3,15 +3,21 @@ package scratch.view;
 import javafx.geometry.Insets;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.Group;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
+import javafx.scene.paint.Paint;
+import javafx.scene.shape.Polygon;
 import javafx.scene.text.Text;
 import scratch.model.Actions;
 import scratch.model.ChosenActions;
 import scratch.viewmodel.MainViewModel;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class MainView extends VBox {
   private final MainViewModel vm;
@@ -102,20 +108,40 @@ public class MainView extends VBox {
     Text sceneTitle = new Text("Scene");
     GridPane gridPane = createGrid(10, 10); // Grille (générée par une méthode dédiée)
 
+    Pane spritePane = new Pane();
+    spritePane.setMinSize(500, 500);
+    Polygon triangle = new Polygon();
+    List<Double> points = new ArrayList<>();
+    points.add(0, 0.0);
+    points.add(1, -8.0);
+    points.add(2, -8.0);
+    points.add(3, 8.0);
+    points.add(4, 8.0);
+    points.add(5, 8.0); // pivot is at the belly of the triangle
+    triangle.getPoints().setAll(points);
+    triangle.setFill(Color.rgb(0, 182, 249));
+    triangle.setStroke(Color.BLACK);
+    triangle.setStrokeWidth(1);
+    triangle.setLayoutX(252.5); // TODO -> SHOULD BE 250 (exact horizontal center of the grid) => find out why i need offset x of 2.5
+    triangle.setLayoutY(245); // TODO -> SHOULD BE 242 (250 - half height of triangle which is 8) => ind out why extra 3 pixels
+    spritePane.getChildren().add(triangle);
+    Group board = new Group();
+    board.getChildren().addAll(gridPane, spritePane);
+
     HBox btnContainerScene = new HBox(10); // Boutons
     btnContainerScene.getChildren().addAll(btnLoad, btnExecute);
     btnContainerScene.setAlignment(Pos.CENTER);
 
     sceneBox.setSpacing(10);
     sceneBox.setPadding(new Insets(0, 0, 0, 20));
-    sceneBox.getChildren().addAll(sceneTitle, gridPane, btnContainerScene);
+    sceneBox.getChildren().addAll(sceneTitle, board, btnContainerScene);
   }
 
   /* Méthode utilitaire pour générer la grille */
   private GridPane createGrid(int rows, int cols) {
     GridPane grid = new GridPane();
     grid.setMinSize(500, 500);
-    grid.setAlignment(Pos.CENTER);
+    //grid.setAlignment(Pos.CENTER);
 
     // Bordure de chaque cellule
     Border cellBorder = new Border(new BorderStroke(
