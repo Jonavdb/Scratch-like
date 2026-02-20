@@ -108,6 +108,7 @@ public class MainView extends VBox {
     Text sceneTitle = new Text("Scene");
     GridPane gridPane = createGrid(10, 10); // Grille (générée par une méthode dédiée)
 
+    // TODO -> Bloc de code à clean ! lignes 112 - 130 et ligne 138
     Pane spritePane = new Pane();
     spritePane.setMinSize(500, 500);
     Polygon triangle = new Polygon();
