@@ -117,13 +117,13 @@ public class MainView extends VBox {
     points.add(2, -8.0);
     points.add(3, 8.0);
     points.add(4, 8.0);
-    points.add(5, 8.0); // pivot is at the belly of the triangle
+    points.add(5, 8.0); // pivot is at the center of the triangle
     triangle.getPoints().setAll(points);
     triangle.setFill(Color.rgb(0, 182, 249));
     triangle.setStroke(Color.BLACK);
     triangle.setStrokeWidth(1);
     triangle.setLayoutX(252.5); // TODO -> SHOULD BE 250 (exact horizontal center of the grid) => find out why i need offset x of 2.5
-    triangle.setLayoutY(245); // TODO -> SHOULD BE 242 (250 - half height of triangle which is 8) => ind out why extra 3 pixels
+    triangle.setLayoutY(245); // TODO -> SHOULD BE 242 (250 - half height of triangle which is 8) => find out why extra 3 pixels
     spritePane.getChildren().add(triangle);
     Group board = new Group();
     board.getChildren().addAll(gridPane, spritePane);
