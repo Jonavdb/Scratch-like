@@ -104,38 +104,27 @@ public class MainView extends VBox {
     HBox.setHgrow(programBox, Priority.ALWAYS);
   }
 
-  private void configureScene() {
-    Text sceneTitle = new Text("Scene");
-    GridPane gridPane = createGrid(10, 10); // Grille (générée par une méthode dédiée)
-
-    // TODO -> Bloc de code à clean ! lignes 112 - 130 et ligne 138
+  /* Méthode utilitaire pour le triangle (le personnage) */
+  private Pane createSpritePane() {
     Pane spritePane = new Pane();
     spritePane.setMinSize(500, 500);
-    Polygon triangle = new Polygon();
-    List<Double> points = new ArrayList<>();
-    points.add(0, 0.0);
-    points.add(1, -8.0);
-    points.add(2, -8.0);
-    points.add(3, 8.0);
-    points.add(4, 8.0);
-    points.add(5, 8.0); // pivot is at the center of the triangle
-    triangle.getPoints().setAll(points);
+
+    Polygon triangle = new Polygon(
+            0.0, -8.0,  // Pointe du haut
+            -8.0,  8.0,  // Coin bas gauche
+            8.0,  8.0   // Coin bas droite
+    );
+
     triangle.setFill(Color.rgb(0, 182, 249));
     triangle.setStroke(Color.BLACK);
     triangle.setStrokeWidth(1);
-    triangle.setLayoutX(252.5); // TODO -> SHOULD BE 250 (exact horizontal center of the grid) => find out why i need offset x of 2.5
-    triangle.setLayoutY(245); // TODO -> SHOULD BE 242 (250 - half height of triangle which is 8) => find out why extra 3 pixels
+
+    // Position initiale au centre de la grille
+    triangle.setLayoutX(250);
+    triangle.setLayoutY(242);
+
     spritePane.getChildren().add(triangle);
-    Group board = new Group();
-    board.getChildren().addAll(gridPane, spritePane);
-
-    HBox btnContainerScene = new HBox(10); // Boutons
-    btnContainerScene.getChildren().addAll(btnLoad, btnExecute);
-    btnContainerScene.setAlignment(Pos.CENTER);
-
-    sceneBox.setSpacing(10);
-    sceneBox.setPadding(new Insets(0, 0, 0, 20));
-    sceneBox.getChildren().addAll(sceneTitle, board, btnContainerScene);
+    return spritePane;
   }
 
   /* Méthode utilitaire pour générer la grille */
@@ -172,6 +161,24 @@ public class MainView extends VBox {
       }
     }
     return grid;
+  }
+
+  private void configureScene() {
+    Text sceneTitle = new Text("Scene");
+
+    // Plateau de jeu (Grille en dessous et Sprite au-dessus)
+    GridPane gridPane = createGrid(10, 10);
+    Pane spritePane = createSpritePane();
+    Group board = new Group(gridPane, spritePane);
+
+    // Boutons
+    HBox btnContainerScene = new HBox(10, btnLoad, btnExecute);
+    btnContainerScene.setAlignment(Pos.CENTER);
+
+    // SceneBox
+    sceneBox.setSpacing(10);
+    sceneBox.setPadding(new Insets(0, 0, 0, 20));
+    sceneBox.getChildren().addAll(sceneTitle, board, btnContainerScene);
   }
 
   private void configureLayoutGlobal() {
