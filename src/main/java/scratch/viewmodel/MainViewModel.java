@@ -29,7 +29,9 @@ public class MainViewModel {
     }
 
     public void addAction() {
-        chosenActions.add(selectedAction.get());
+        Actionable toAdd = selectedAction.get();
+        Actionable addItem = toAdd.copy();
+        chosenActions.add(addItem);
     }
 
     public void removeAction() {

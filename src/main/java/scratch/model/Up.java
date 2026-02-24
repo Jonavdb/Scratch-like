@@ -1,5 +1,7 @@
 package scratch.model;
 
+import javafx.beans.property.IntegerProperty;
+
 public class Up implements Actionable{
 
     private final String name;
@@ -16,6 +18,11 @@ public class Up implements Actionable{
     @Override
     public Actionable copy() {
         return new Up(this.name);
+    }
+
+    @Override
+    public IntegerProperty getProperty() {
+        return null;
     }
 
     public String toString() {

@@ -1,5 +1,6 @@
 package scratch.view;
 
+import javafx.beans.property.IntegerProperty;
 import javafx.geometry.Insets;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -12,6 +13,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
 import javafx.scene.shape.Polygon;
 import javafx.scene.text.Text;
+import javafx.util.converter.NumberStringConverter;
 import scratch.model.Actionable;
 import scratch.model.Actions;
 import scratch.model.ChosenActions;
@@ -22,7 +24,7 @@ import java.util.List;
 
 public class MainView extends VBox {
   private final MainViewModel vm;
-
+  private IntegerProperty currentBoundProperty = null;
   // Conteneur Principal
   private final HBox appContainer = new HBox();
 
@@ -209,5 +211,20 @@ public class MainView extends VBox {
       btnEmptyAll.setOnAction(event -> vm.removeAll());
       btnDuplicate.setOnAction(event -> vm.copyAction());
       chosenActions.setItems(vm.getChosenAction());
+
+      chosenActions.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
+          if (currentBoundProperty != null) {
+              actionParamField.textProperty().unbindBidirectional(currentBoundProperty);
+              currentBoundProperty = null;
+          }
+          if (newValue != null && newValue.getProperty() != null){
+              actionParamField.setDisable(false);
+              currentBoundProperty = newValue.getProperty();
+              actionParamField.textProperty().bindBidirectional(currentBoundProperty, new NumberStringConverter());
+          } else {
+              actionParamField.clear();
+              actionParamField.setDisable(true);
+          }
+      });
   }
 }

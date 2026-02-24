@@ -1,12 +1,22 @@
 package scratch.model;
 
+import javafx.beans.Observable;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import org.controlsfx.control.action.Action;
 
 public class ChosenActions {
 
-    private ObservableList<Actionable> chosenActions = FXCollections.observableArrayList();
+    private ObservableList<Actionable> chosenActions = FXCollections.observableArrayList(
+            action -> {
+                if (action != null && action.getProperty() != null) {
+                    return new Observable[]{
+                            action.getProperty()
+                    };
+                }
+                return new Observable[0];
+            }
+    );
 
     public ObservableList<Actionable> getChosenActions() {
         return FXCollections.unmodifiableObservableList(chosenActions);
