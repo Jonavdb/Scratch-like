@@ -1,12 +1,22 @@
 package scratch.model;
 
+import javafx.beans.Observable;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import org.controlsfx.control.action.Action;
 
 public class ChosenActions {
 
-    private ObservableList<Actionable> chosenActions = FXCollections.observableArrayList();
+    private ObservableList<Actionable> chosenActions = FXCollections.observableArrayList(
+            action -> {
+                if (action != null && action.getProperty() != null) {
+                    return new Observable[]{
+                            action.getProperty()
+                    };
+                }
+                return new Observable[0];
+            }
+    );
 
     public ObservableList<Actionable> getChosenActions() {
         return FXCollections.unmodifiableObservableList(chosenActions);
@@ -21,6 +31,10 @@ public class ChosenActions {
             return chosenActions.remove(idx);
         }
         return null;
+    }
+
+    public void removeAll(){
+        chosenActions.clear();
     }
 
     public void up(int idx) {
@@ -39,5 +53,9 @@ public class ChosenActions {
 
     public int nbChosenAction(){
         return chosenActions.size();
+    }
+
+    public Actionable get(int index) {
+        return chosenActions.get(index);
     }
 }

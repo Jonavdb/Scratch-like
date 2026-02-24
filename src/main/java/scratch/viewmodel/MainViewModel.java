@@ -7,7 +7,6 @@ import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.ObservableList;
-import org.controlsfx.control.action.Action;
 import scratch.model.Actionable;
 import scratch.model.Actions;
 import scratch.model.ChosenActions;
@@ -30,7 +29,9 @@ public class MainViewModel {
     }
 
     public void addAction() {
-        chosenActions.add(selectedAction.get());
+        Actionable toAdd = selectedAction.get();
+        Actionable addItem = toAdd.copy();
+        chosenActions.add(addItem);
     }
 
     public void removeAction() {
@@ -39,6 +40,10 @@ public class MainViewModel {
             chosenActions.remove(index);
             setIdChosenAction(index < chosenActions.nbChosenAction() ? index : index - 1);
         }
+    }
+
+    public void removeAll(){
+        chosenActions.removeAll();
     }
 
     public void upAction() {
@@ -53,6 +58,13 @@ public class MainViewModel {
             chosenActions.down(getIdChosenAction());
             setIdChosenAction(getIdChosenAction() + 1);
         }
+    }
+
+    public void copyAction(){
+        int index = getIdChosenAction();
+        Actionable toCopy = chosenActions.get(index);
+        Actionable copyItem = toCopy.copy();
+        chosenActions.add(copyItem);
     }
 
     public BooleanBinding canUp() {
@@ -70,6 +82,8 @@ public class MainViewModel {
     public BooleanBinding canRemove() {
         return idChosenAction.greaterThanOrEqualTo(0);
     }
+
+    public BooleanBinding canRemoveAll() { return Bindings.isNotEmpty(chosenActions.getChosenActions()); }
 
     public Actionable getSelectedAction() {
         return selectedAction.get();

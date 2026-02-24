@@ -1,5 +1,6 @@
 package scratch.view;
 
+import javafx.beans.property.IntegerProperty;
 import javafx.geometry.Insets;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -12,6 +13,8 @@ import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
 import javafx.scene.shape.Polygon;
 import javafx.scene.text.Text;
+import javafx.util.converter.NumberStringConverter;
+import scratch.model.Actionable;
 import scratch.model.Actions;
 import scratch.model.ChosenActions;
 import scratch.viewmodel.MainViewModel;
@@ -21,7 +24,7 @@ import java.util.List;
 
 public class MainView extends VBox {
   private final MainViewModel vm;
-
+  private IntegerProperty currentBoundProperty = null;
   // Conteneur Principal
   private final HBox appContainer = new HBox();
 
@@ -34,13 +37,13 @@ public class MainView extends VBox {
   // Palette d'actions (gauche)
   private final VBox paletteBox = new VBox();
   private final Text paletteTitle = new Text("Palette d'actions");
-  private final ListView<Actions> availableActions = new ListView<>();
+  private final ListView<Actionable> availableActions = new ListView<>();
   private final Button btnAdd = new Button("Ajouter au programme");
 
   // Programme (centre)
   private final VBox programBox = new VBox();
   private final Text programTitle = new Text("Programme");
-  private final ListView<ChosenActions> chosenActions = new ListView<>();
+  private final ListView<Actionable> chosenActions = new ListView<>();
   private final HBox btnContainerProgram = new HBox();
   private final Button btnUp = new Button("Monter");
   private final Button btnDown = new Button("Descendre");
@@ -70,8 +73,7 @@ public class MainView extends VBox {
 
     this.getChildren().addAll(menuBar, appContainer);
 
-//     TODO
-//    createBindings();
+    createBindings();
   }
 
   private void configureMenu() {
@@ -187,5 +189,42 @@ public class MainView extends VBox {
 
     this.setSpacing(20);
     VBox.setVgrow(appContainer, Priority.ALWAYS);
+  }
+
+  private void createBindings(){
+      availableActions.setItems(vm.getAllAction());
+      vm.selectedActionProperty().bind(availableActions.getSelectionModel().selectedItemProperty());
+      chosenActions.getSelectionModel().selectedIndexProperty().addListener((observable, oldValue, newValue) -> {
+          if (newValue != null) {
+              vm.setIdChosenAction(newValue.intValue());
+          }
+      });
+      btnAdd.disableProperty().bind(vm.canAdd().not());
+      btnAdd.setOnAction( event -> vm.addAction());
+      btnDelete.disableProperty().bind(vm.canRemove().not());
+      btnDelete.setOnAction(event -> vm.removeAction());
+      btnDown.disableProperty().bind(vm.canDown().not());
+      btnDown.setOnAction(event -> vm.downAction());
+      btnUp.disableProperty().bind(vm.canUp().not());
+      btnUp.setOnAction(event -> vm.upAction());
+      btnEmptyAll.disableProperty().bind(vm.canRemoveAll().not());
+      btnEmptyAll.setOnAction(event -> vm.removeAll());
+      btnDuplicate.setOnAction(event -> vm.copyAction());
+      chosenActions.setItems(vm.getChosenAction());
+
+      chosenActions.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
+          if (currentBoundProperty != null) {
+              actionParamField.textProperty().unbindBidirectional(currentBoundProperty);
+              currentBoundProperty = null;
+          }
+          if (newValue != null && newValue.getProperty() != null){
+              actionParamField.setDisable(false);
+              currentBoundProperty = newValue.getProperty();
+              actionParamField.textProperty().bindBidirectional(currentBoundProperty, new NumberStringConverter());
+          } else {
+              actionParamField.clear();
+              actionParamField.setDisable(true);
+          }
+      });
   }
 }
