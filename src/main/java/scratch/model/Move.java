@@ -34,6 +34,11 @@ public class Move implements Actionable{
         return new Move(this.name, this.getDistance());
     }
 
+    @Override
+    public String ToSave() {
+        return "MOVE_FORWARD;" + getDistance();
+    }
+
     public String toString() {
         return name + " " + getDistance();
     }

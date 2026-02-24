@@ -6,5 +6,6 @@ public interface Actionable {
 
     void execute();
     Actionable copy();
+    String ToSave();
     IntegerProperty getProperty();
 }

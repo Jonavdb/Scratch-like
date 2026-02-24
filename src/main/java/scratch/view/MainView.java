@@ -13,12 +13,14 @@ import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
 import javafx.scene.shape.Polygon;
 import javafx.scene.text.Text;
+import javafx.stage.FileChooser;
 import javafx.util.converter.NumberStringConverter;
 import scratch.model.Actionable;
 import scratch.model.Actions;
 import scratch.model.ChosenActions;
 import scratch.viewmodel.MainViewModel;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -225,6 +227,12 @@ public class MainView extends VBox {
               actionParamField.clear();
               actionParamField.setDisable(true);
           }
+      });
+      saveItem.setOnAction(event -> {
+          FileChooser fileChooser = new FileChooser();
+          fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("fichier texte", "*.txt"));
+          File file = fileChooser.showSaveDialog(this.getScene().getWindow());
+          vm.saveInFile(file);
       });
   }
 }

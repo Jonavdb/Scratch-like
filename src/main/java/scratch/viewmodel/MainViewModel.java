@@ -11,6 +11,9 @@ import scratch.model.Actionable;
 import scratch.model.Actions;
 import scratch.model.ChosenActions;
 
+import javax.imageio.IIOException;
+import java.io.*;
+
 public class MainViewModel {
     private ChosenActions chosenActions;
     private ObjectProperty<Actionable> selectedAction = new SimpleObjectProperty<>();
@@ -65,6 +68,20 @@ public class MainViewModel {
         Actionable toCopy = chosenActions.get(index);
         Actionable copyItem = toCopy.copy();
         chosenActions.add(copyItem);
+    }
+
+    public void saveInFile(File file){
+        if (file == null)
+            return;
+        try (PrintWriter writer = new PrintWriter(file)){
+            for (Actionable action : chosenActions.getChosenActions()) {
+                writer.println(action.ToSave());
+            }
+
+            System.out.println("Sauvegarde réussie !");
+        } catch (FileNotFoundException e) {
+            System.err.println("Erreur lors de la sauvegarde" + e.getMessage());
+        }
     }
 
     public BooleanBinding canUp() {

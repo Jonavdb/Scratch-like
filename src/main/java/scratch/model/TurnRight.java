@@ -3,12 +3,12 @@ package scratch.model;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 
-public class Turn implements Actionable{
+public class TurnRight implements Actionable{
 
     private final String name;
     private IntegerProperty angle;
 
-    public Turn(String name, int angle) {
+    public TurnRight(String name, int angle) {
         this.name = name;
         this.angle = new SimpleIntegerProperty(angle);
     }
@@ -32,7 +32,12 @@ public class Turn implements Actionable{
 
     @Override
     public Actionable copy() {
-        return new Turn(this.name, this.getAngle());
+        return new TurnRight(this.name, this.getAngle());
+    }
+
+    @Override
+    public String ToSave() {
+        return "TURN_RIGHT;" + getAngle();
     }
 
     public String toString() {

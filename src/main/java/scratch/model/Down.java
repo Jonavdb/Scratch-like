@@ -20,6 +20,11 @@ public class Down implements Actionable {
     }
 
     @Override
+    public String ToSave() {
+        return "PEN_DOWN;0";
+    }
+
+    @Override
     public IntegerProperty getProperty() {
         return null;
     }
