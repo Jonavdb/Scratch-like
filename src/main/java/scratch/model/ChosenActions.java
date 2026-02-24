@@ -23,6 +23,10 @@ public class ChosenActions {
         return null;
     }
 
+    public void removeAll(){
+        chosenActions.clear();
+    }
+
     public void up(int idx) {
         if (idx > 0 && idx < chosenActions.size()){
             Actionable action = chosenActions.set(idx - 1, chosenActions.get(idx));
@@ -39,5 +43,9 @@ public class ChosenActions {
 
     public int nbChosenAction(){
         return chosenActions.size();
+    }
+
+    public Actionable get(int index) {
+        return chosenActions.get(index);
     }
 }

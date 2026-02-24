@@ -9,12 +9,11 @@ public class Actions {
     }
 
     private static ObservableList<Actionable> actions = FXCollections.observableArrayList(
-            new Move(),
-            new Turn(),
-            new Turn(),
-            new Up(),
-            new Down()
-
+            new Move("Avancer de"),
+            new Turn("Tourner à gauche"),
+            new Turn("Tourner à droite"),
+            new Up("Lever stylo"),
+            new Down("Abaisser stylo")
     );
 
     public static ObservableList<Actionable> getActions() {
