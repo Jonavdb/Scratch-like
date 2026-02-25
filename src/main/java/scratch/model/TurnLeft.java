@@ -1,0 +1,46 @@
+package scratch.model;
+
+import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.SimpleIntegerProperty;
+
+public class TurnLeft implements Actionable{
+
+    private final String name;
+    private IntegerProperty angle;
+
+    public TurnLeft(String name, int angle) {
+        this.name = name;
+        this.angle = new SimpleIntegerProperty(angle);
+    }
+
+    @Override
+    public void execute() {
+
+    }
+
+    public int getAngle(){
+        return angle.get();
+    }
+
+    public void setAngle(int angle) {
+        this.angle.set(angle);
+    }
+
+    public IntegerProperty getProperty() {
+        return angle;
+    }
+
+    @Override
+    public Actionable copy() {
+        return new TurnLeft(this.name, this.getAngle());
+    }
+
+    @Override
+    public String ToSave() {
+        return "TURN_LEFT;" + getAngle();
+    }
+
+    public String toString() {
+        return name + " " + getAngle();
+    }
+}
