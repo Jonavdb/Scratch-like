@@ -11,6 +11,7 @@ import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
+import javafx.scene.shape.Circle;
 import javafx.scene.shape.Polygon;
 import javafx.scene.text.Text;
 import javafx.util.converter.NumberStringConverter;
@@ -111,21 +112,37 @@ public class MainView extends VBox {
     Pane spritePane = new Pane();
     spritePane.setMinSize(500, 500);
 
+    // Instantiation
+    double size = 15;
+    double startX = 0;
+    double startY = 0;
+    double startAngle = 0;
+    double xP1 = startX + size * Math.sin(Math.toRadians(60)) * Math.cos(Math.toRadians(startAngle + 90)),
+            yP1 = startY - size * Math.sin(Math.toRadians(60)) * Math.sin(Math.toRadians(startAngle + 90)),
+            xP2 = startX - size * Math.sin(Math.toRadians(30)) * Math.cos(Math.toRadians(startAngle)),
+            yP2 = startY + size * Math.sin(Math.toRadians(30)) * Math.sin(Math.toRadians(startAngle)),
+            xP3 = startX + size * Math.sin(Math.toRadians(30)) * Math.cos(Math.toRadians(startAngle)),
+            yP3 = startY - size * Math.sin(Math.toRadians(30)) * Math.sin(Math.toRadians(startAngle));
     Polygon triangle = new Polygon(
-            0.0, -8.0,  // Pointe du haut
-            -8.0,  8.0,  // Coin bas gauche
-            8.0,  8.0   // Coin bas droite
+            xP1, yP1,  // Pointe du haut
+            xP2,  yP2,  // Coin bas gauche
+            xP3,  yP3   // Coin bas droite
     );
-
-    triangle.setFill(Color.rgb(0, 182, 249));
+    triangle.setFill(Color.DEEPSKYBLUE);
     triangle.setStroke(Color.BLACK);
-    triangle.setStrokeWidth(1);
 
     // Position initiale au centre de la grille
     triangle.setLayoutX(250);
-    triangle.setLayoutY(242);
+    triangle.setLayoutY(250);
 
-    spritePane.getChildren().add(triangle);
+    // Repositionnement de la tête
+    Circle head = new Circle(2);
+    head.setFill(Color.BLACK);
+    head.setStroke(Color.BLACK);
+    head.setTranslateX(xP1 + triangle.getLayoutX());
+    head.setTranslateY(yP1 + triangle.getLayoutY());
+
+    spritePane.getChildren().addAll(triangle, head);
     return spritePane;
   }
 
