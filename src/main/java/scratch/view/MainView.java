@@ -234,5 +234,12 @@ public class MainView extends VBox {
           File file = fileChooser.showSaveDialog(this.getScene().getWindow());
           vm.saveInFile(file);
       });
+
+      loadItem.setOnAction(event -> {
+          FileChooser fileChooser = new FileChooser();
+          fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("fichier texte", "*.txt"));
+          File file = fileChooser.showOpenDialog(this.getScene().getWindow());
+          vm.loadFile(file);
+      });
   }
 }

@@ -7,12 +7,11 @@ import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.ObservableList;
-import scratch.model.Actionable;
-import scratch.model.Actions;
-import scratch.model.ChosenActions;
+import scratch.model.*;
 
 import javax.imageio.IIOException;
 import java.io.*;
+import java.util.Scanner;
 
 public class MainViewModel {
     private ChosenActions chosenActions;
@@ -81,6 +80,44 @@ public class MainViewModel {
             System.out.println("Sauvegarde réussie !");
         } catch (FileNotFoundException e) {
             System.err.println("Erreur lors de la sauvegarde" + e.getMessage());
+        }
+    }
+
+    public void loadFile(File file){
+        if (file == null)
+            return;
+        try (Scanner scan = new Scanner(file)) {
+            chosenActions.removeAll();
+            while (scan.hasNextLine()) {
+                String line = scan.nextLine();
+                String[] parts = line.split(";");
+                String action = parts[0];
+                int value = Integer.parseInt(parts[1]);
+                Actionable newAction = null;
+                switch (action) {
+                    case "MOVE_FORWARD":
+                        newAction = new Move("Avancer de ", value);
+                        break;
+                    case "PEN_UP":
+                        newAction = new Up("Lever stylo");
+                        break;
+                    case "PEN_DOWN":
+                        newAction = new Down("Abaisser stylo");
+                        break;
+                    case "TURN_RIGHT":
+                        newAction = new TurnRight("Tourner à droite de ", value);
+                        break;
+                    case "TURN_LEFT":
+                        newAction = new TurnLeft("Tourner à gauche de ", value);
+                        break;
+                }
+                if (newAction != null) {
+                    chosenActions.add(newAction);
+                }
+            }
+            System.out.println("Chargement réussi !");
+        } catch (FileNotFoundException e){
+            System.err.println("Fichier introuvable : " + e.getMessage());
         }
     }
 
