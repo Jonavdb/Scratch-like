@@ -11,6 +11,7 @@ import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
+import javafx.scene.shape.Circle;
 import javafx.scene.shape.Polygon;
 import javafx.scene.text.Text;
 import javafx.stage.FileChooser;
@@ -113,21 +114,59 @@ public class MainView extends VBox {
     Pane spritePane = new Pane();
     spritePane.setMinSize(500, 500);
 
-    Polygon triangle = new Polygon(
-            0.0, -8.0,  // Pointe du haut
-            -8.0,  8.0,  // Coin bas gauche
-            8.0,  8.0   // Coin bas droite
-    );
+    // Instantiation
+    double size = 15;
+    double originX = 0;
+    double originY = 0;
+    double startX = 250;
+    double startY = 250;
+    double maxDegreesDemiCircle = 180; // visualise l'angle max d'un demi cercle trigonometrique
+    double minDegreesDemiCircle = 1; // visualise l'angle minimal d'un demi cercle trigonometrique
+    double angleOffsetRecalibror = 90; // parce que de base le triangle point vers le haut (90 degrees), mais le cercle trigonometrique commence à droite (0 degree), donc on rajoute le offset de 90 degrees
+    double turningValue = -60; // valeur dans l'inspecteur
+    double xP1 = originX + size * Math.sin(Math.toRadians(60)) * Math.cos(Math.toRadians(turningValue + angleOffsetRecalibror)),
+            yP1 = originY - size * Math.sin(Math.toRadians(60)) * Math.sin(Math.toRadians(turningValue + angleOffsetRecalibror)),
+            xP2 = originX - size * Math.sin(Math.toRadians(30)) * Math.cos(Math.toRadians(turningValue)),
+            yP2 = originY + size * Math.sin(Math.toRadians(30)) * Math.sin(Math.toRadians(turningValue)),
+            xP3 = originX + size * Math.sin(Math.toRadians(30)) * Math.cos(Math.toRadians(turningValue)),
+            yP3 = originY - size * Math.sin(Math.toRadians(30)) * Math.sin(Math.toRadians(turningValue));
 
-    triangle.setFill(Color.rgb(0, 182, 249));
+    Polygon triangle = new Polygon(
+            xP1, yP1,  // Pointe du haut
+            xP2,  yP2,  // Coin bas gauche
+            xP3,  yP3   // Coin bas droite
+    );
+    triangle.setFill(Color.DEEPSKYBLUE);
     triangle.setStroke(Color.BLACK);
-    triangle.setStrokeWidth(1);
 
     // Position initiale au centre de la grille
-    triangle.setLayoutX(250);
-    triangle.setLayoutY(242);
+    triangle.setLayoutX(startX);
+    triangle.setLayoutY(startY);
 
-    spritePane.getChildren().add(triangle);
+    // Déplacement (rotations inclus)
+    double distance = 100;
+    double radians = Math.toRadians(turningValue) + Math.PI / 2;
+    double diffX = distance * Math.cos(radians);
+    double diffY = distance * Math.sin(radians);
+    double realAngle = angleOffsetRecalibror + turningValue;
+
+    // en gros on verifie si le personnage recule on avance
+    boolean facingUp = realAngle < maxDegreesDemiCircle && realAngle > minDegreesDemiCircle;
+
+    int directionY = facingUp ? -1 : 1;  // -1 parce que l'axe des Y est inversé donc pour monter, le Y est negatif
+    double nextXPosition = triangle.getLayoutX() + diffX;
+    double nextYPosition = triangle.getLayoutY() + (directionY * Math.abs(diffY));
+    triangle.setLayoutX(nextXPosition);
+    triangle.setLayoutY(nextYPosition);
+
+    // Nez du personage
+    Circle head = new Circle(2);
+    head.setFill(Color.BLACK);
+    head.setStroke(Color.BLACK);
+    head.setTranslateX(xP1 + triangle.getLayoutX());
+    head.setTranslateY(yP1 + triangle.getLayoutY()); // Repositionnement du nez en fonction de la position du personnage
+
+    spritePane.getChildren().addAll(triangle, head); // Ajout du nez dans la liste des objets dessinés
     return spritePane;
   }
 
