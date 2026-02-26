@@ -114,15 +114,21 @@ public class MainView extends VBox {
 
     // Instantiation
     double size = 15;
-    double startX = 0;
-    double startY = 0;
-    double startAngle = 0;
-    double xP1 = startX + size * Math.sin(Math.toRadians(60)) * Math.cos(Math.toRadians(startAngle + 90)),
-            yP1 = startY - size * Math.sin(Math.toRadians(60)) * Math.sin(Math.toRadians(startAngle + 90)),
-            xP2 = startX - size * Math.sin(Math.toRadians(30)) * Math.cos(Math.toRadians(startAngle)),
-            yP2 = startY + size * Math.sin(Math.toRadians(30)) * Math.sin(Math.toRadians(startAngle)),
-            xP3 = startX + size * Math.sin(Math.toRadians(30)) * Math.cos(Math.toRadians(startAngle)),
-            yP3 = startY - size * Math.sin(Math.toRadians(30)) * Math.sin(Math.toRadians(startAngle));
+    double originX = 0;
+    double originY = 0;
+    double startX = 250;
+    double startY = 250;
+    double maxDegreesDemiCircle = 180; // visualise l'angle max d'un demi cercle trigonometrique
+    double minDegreesDemiCircle = 1; // visualise l'angle minimal d'un demi cercle trigonometrique
+    double angleOffsetRecalibror = 90; // parce que de base le triangle point vers le haut (90 degrees), mais le cercle trigonometrique commence à droite (0 degree), donc on rajoute le offset de 90 degrees
+    double turningValue = -60; // valeur dans l'inspecteur
+    double xP1 = originX + size * Math.sin(Math.toRadians(60)) * Math.cos(Math.toRadians(turningValue + angleOffsetRecalibror)),
+            yP1 = originY - size * Math.sin(Math.toRadians(60)) * Math.sin(Math.toRadians(turningValue + angleOffsetRecalibror)),
+            xP2 = originX - size * Math.sin(Math.toRadians(30)) * Math.cos(Math.toRadians(turningValue)),
+            yP2 = originY + size * Math.sin(Math.toRadians(30)) * Math.sin(Math.toRadians(turningValue)),
+            xP3 = originX + size * Math.sin(Math.toRadians(30)) * Math.cos(Math.toRadians(turningValue)),
+            yP3 = originY - size * Math.sin(Math.toRadians(30)) * Math.sin(Math.toRadians(turningValue));
+
     Polygon triangle = new Polygon(
             xP1, yP1,  // Pointe du haut
             xP2,  yP2,  // Coin bas gauche
@@ -132,17 +138,33 @@ public class MainView extends VBox {
     triangle.setStroke(Color.BLACK);
 
     // Position initiale au centre de la grille
-    triangle.setLayoutX(250);
-    triangle.setLayoutY(250);
+    triangle.setLayoutX(startX);
+    triangle.setLayoutY(startY);
 
-    // Repositionnement de la tête
+    // Déplacement (rotations inclus)
+    double distance = 100;
+    double radians = Math.toRadians(turningValue) + Math.PI / 2;
+    double diffX = distance * Math.cos(radians);
+    double diffY = distance * Math.sin(radians);
+    double realAngle = angleOffsetRecalibror + turningValue;
+
+    // en gros on verifie si le personnage recule on avance
+    boolean facingUp = realAngle < maxDegreesDemiCircle && realAngle > minDegreesDemiCircle;
+
+    int directionY = facingUp ? -1 : 1;  // -1 parce que l'axe des Y est inversé donc pour monter, le Y est negatif
+    double nextXPosition = triangle.getLayoutX() + diffX;
+    double nextYPosition = triangle.getLayoutY() + (directionY * Math.abs(diffY));
+    triangle.setLayoutX(nextXPosition);
+    triangle.setLayoutY(nextYPosition);
+
+    // Nez du personage
     Circle head = new Circle(2);
     head.setFill(Color.BLACK);
     head.setStroke(Color.BLACK);
     head.setTranslateX(xP1 + triangle.getLayoutX());
-    head.setTranslateY(yP1 + triangle.getLayoutY());
+    head.setTranslateY(yP1 + triangle.getLayoutY()); // Repositionnement du nez en fonction de la position du personnage
 
-    spritePane.getChildren().addAll(triangle, head);
+    spritePane.getChildren().addAll(triangle, head); // Ajout du nez dans la liste des objets dessinés
     return spritePane;
   }
 
