@@ -133,8 +133,8 @@ public class MainView extends VBox {
 
     Polygon triangle = new Polygon(
             xP1, yP1,  // Pointe du haut
-            xP2,  yP2,  // Coin bas gauche
-            xP3,  yP3   // Coin bas droite
+            xP2, yP2,  // Coin bas gauche
+            xP3, yP3   // Coin bas droite
     );
     triangle.setFill(Color.DEEPSKYBLUE);
     triangle.setStroke(Color.BLACK);
@@ -193,8 +193,8 @@ public class MainView extends VBox {
     )));
 
     // Génération des cases
-    for (int x = 0; x < cols; x++) {
-      for (int y = 0; y < rows; y++) {
+    for(int x = 0; x < cols; x++) {
+      for(int y = 0; y < rows; y++) {
         StackPane cell = new StackPane();
         cell.setMinWidth(50);
         cell.setMinHeight(50);
@@ -232,53 +232,61 @@ public class MainView extends VBox {
     VBox.setVgrow(appContainer, Priority.ALWAYS);
   }
 
-  private void createBindings(){
-      availableActions.setItems(vm.getAllAction());
-      vm.selectedActionProperty().bind(availableActions.getSelectionModel().selectedItemProperty());
-      chosenActions.getSelectionModel().selectedIndexProperty().addListener((observable, oldValue, newValue) -> {
-          if (newValue != null) {
-              vm.setIdChosenAction(newValue.intValue());
-          }
-      });
-      btnAdd.disableProperty().bind(vm.canAdd().not());
-      btnAdd.setOnAction( event -> vm.addAction());
-      btnDelete.disableProperty().bind(vm.canRemove().not());
-      btnDelete.setOnAction(event -> vm.removeAction());
-      btnDown.disableProperty().bind(vm.canDown().not());
-      btnDown.setOnAction(event -> vm.downAction());
-      btnUp.disableProperty().bind(vm.canUp().not());
-      btnUp.setOnAction(event -> vm.upAction());
-      btnEmptyAll.disableProperty().bind(vm.canRemoveAll().not());
-      btnEmptyAll.setOnAction(event -> vm.removeAll());
-      btnDuplicate.setOnAction(event -> vm.copyAction());
-      chosenActions.setItems(vm.getChosenAction());
+  private void createBindings() {
+    availableActions.setItems(vm.getAllAction());
+    vm.selectedActionProperty().bind(availableActions.getSelectionModel().selectedItemProperty());
+    chosenActions.getSelectionModel().selectedIndexProperty().addListener((observable, oldValue, newValue) -> {
+      if(newValue != null) {
+        vm.setIdChosenAction(newValue.intValue());
+      }
+    });
 
-      chosenActions.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
-          if (currentBoundProperty != null) {
-              actionParamField.textProperty().unbindBidirectional(currentBoundProperty);
-              currentBoundProperty = null;
-          }
-          if (newValue != null && newValue.getProperty() != null){
-              actionParamField.setDisable(false);
-              currentBoundProperty = newValue.getProperty();
-              actionParamField.textProperty().bindBidirectional(currentBoundProperty, new NumberStringConverter());
-          } else {
-              actionParamField.clear();
-              actionParamField.setDisable(true);
-          }
-      });
-      saveItem.setOnAction(event -> {
-          FileChooser fileChooser = new FileChooser();
-          fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("fichier texte", "*.txt"));
-          File file = fileChooser.showSaveDialog(this.getScene().getWindow());
-          vm.saveInFile(file);
-      });
+    btnAdd.disableProperty().bind(vm.canAdd().not());
+    btnAdd.setOnAction(event -> vm.addAction());
+    btnDelete.disableProperty().bind(vm.canRemove().not());
+    btnDelete.setOnAction(event -> vm.removeAction());
+    btnDown.disableProperty().bind(vm.canDown().not());
+    btnDown.setOnAction(event -> vm.downAction());
+    btnUp.disableProperty().bind(vm.canUp().not());
+    btnUp.setOnAction(event -> vm.upAction());
+    btnEmptyAll.disableProperty().bind(vm.canRemoveAll().not());
+    btnEmptyAll.setOnAction(event -> vm.removeAll());
+    btnDuplicate.setOnAction(event -> vm.copyAction());
+    chosenActions.setItems(vm.getChosenAction());
 
-      loadItem.setOnAction(event -> {
-          FileChooser fileChooser = new FileChooser();
-          fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("fichier texte", "*.txt"));
-          File file = fileChooser.showOpenDialog(this.getScene().getWindow());
-          vm.loadFile(file);
-      });
+    availableActions.setOnMouseClicked(event -> {
+      if(event.getClickCount() == 2) {
+        vm.addAction();
+      }
+    });
+
+    chosenActions.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
+      if(currentBoundProperty != null) {
+        actionParamField.textProperty().unbindBidirectional(currentBoundProperty);
+        currentBoundProperty = null;
+      }
+      if(newValue != null && newValue.getProperty() != null) {
+        actionParamField.setDisable(false);
+        currentBoundProperty = newValue.getProperty();
+        actionParamField.textProperty().bindBidirectional(currentBoundProperty, new NumberStringConverter());
+      } else {
+        actionParamField.clear();
+        actionParamField.setDisable(true);
+      }
+    });
+
+    saveItem.setOnAction(event -> {
+      FileChooser fileChooser = new FileChooser();
+      fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("fichier texte", "*.txt"));
+      File file = fileChooser.showSaveDialog(this.getScene().getWindow());
+      vm.saveInFile(file);
+    });
+
+    loadItem.setOnAction(event -> {
+      FileChooser fileChooser = new FileChooser();
+      fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("fichier texte", "*.txt"));
+      File file = fileChooser.showOpenDialog(this.getScene().getWindow());
+      vm.loadFile(file);
+    });
   }
 }
