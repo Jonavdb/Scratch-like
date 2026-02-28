@@ -6,6 +6,8 @@ public interface Actionable {
 
     void execute();
     Actionable copy();
-    String ToSave();
+    String toSave();
     IntegerProperty getProperty();
+    String getPrefix();
+    String getSuffix();
 }

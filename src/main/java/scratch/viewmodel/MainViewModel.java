@@ -74,7 +74,7 @@ public class MainViewModel {
             return;
         try (PrintWriter writer = new PrintWriter(file)){
             for (Actionable action : chosenActions.getChosenActions()) {
-                writer.println(action.ToSave());
+                writer.println(action.toSave());
             }
 
             System.out.println("Sauvegarde réussie !");

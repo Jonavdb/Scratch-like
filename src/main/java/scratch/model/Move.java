@@ -4,7 +4,6 @@ import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 
 public class Move implements Actionable{
-
     private final String name;
     private IntegerProperty distance;
 
@@ -12,10 +11,9 @@ public class Move implements Actionable{
         this.name = name;
         this.distance = new SimpleIntegerProperty(distance);
     }
-    @Override
-    public void execute() {
 
-    }
+    @Override
+    public void execute() {}
 
     public int getDistance() {
         return distance.get();
@@ -23,6 +21,16 @@ public class Move implements Actionable{
 
     public IntegerProperty getProperty() {
         return distance;
+    }
+
+    @Override
+    public String getPrefix() {
+        return "Avancer de ";
+    }
+
+    @Override
+    public String getSuffix() {
+        return " pixels";
     }
 
     public void setDistance(int distance) {
@@ -35,7 +43,7 @@ public class Move implements Actionable{
     }
 
     @Override
-    public String ToSave() {
+    public String toSave() {
         return "MOVE_FORWARD;" + getDistance();
     }
 
