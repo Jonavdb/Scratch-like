@@ -189,16 +189,14 @@ public class MainView extends VBox {
   private void bindActionDetails() {
     /* Listener sur la liste */
     chosenActions.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
-      // Nettoyer l'ancien binding
-//      if (currentBoundProperty != null) {
-//        actionParamField.textProperty().unbindBidirectional(currentBoundProperty);
-//        currentBoundProperty = null;
-//      }
-
       // Appliquer le nouveau
       if (newVal != null) {
+        errorLabel.setVisible(false);
+        errorLabel.setManaged(false);
+
         labelPrefix.setText(newVal.getPrefix());
         labelSuffix.setText(newVal.getSuffix());
+        labelSuffix.setVisible(true);
 
         if(newVal.getProperty() != null) {
           actionParamField.setVisible(true);
