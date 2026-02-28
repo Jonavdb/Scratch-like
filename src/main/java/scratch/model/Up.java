@@ -3,7 +3,6 @@ package scratch.model;
 import javafx.beans.property.IntegerProperty;
 
 public class Up implements Actionable{
-
     private final String name;
 
     public Up(String name) {
@@ -12,7 +11,6 @@ public class Up implements Actionable{
 
     @Override
     public void execute() {
-
     }
 
     @Override
@@ -21,13 +19,23 @@ public class Up implements Actionable{
     }
 
     @Override
-    public String ToSave() {
+    public String toSave() {
         return "PEN_DOWN;0";
     }
 
     @Override
     public IntegerProperty getProperty() {
         return null;
+    }
+
+    @Override
+    public String getPrefix() {
+        return "Lever le stylo";
+    }
+
+    @Override
+    public String getSuffix() {
+        return "";
     }
 
     public String toString() {

@@ -4,7 +4,6 @@ import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 
 public class TurnLeft implements Actionable{
-
     private final String name;
     private IntegerProperty angle;
 
@@ -15,7 +14,6 @@ public class TurnLeft implements Actionable{
 
     @Override
     public void execute() {
-
     }
 
     public int getAngle(){
@@ -31,12 +29,22 @@ public class TurnLeft implements Actionable{
     }
 
     @Override
+    public String getPrefix() {
+        return "Angle vers la gauche ";
+    }
+
+    @Override
+    public String getSuffix() {
+        return " degrés";
+    }
+
+    @Override
     public Actionable copy() {
         return new TurnLeft(this.name, this.getAngle());
     }
 
     @Override
-    public String ToSave() {
+    public String toSave() {
         return "TURN_LEFT;" + getAngle();
     }
 

@@ -13,6 +13,9 @@ import javafx.scene.control.*;
 import javafx.stage.FileChooser;
 import javafx.util.converter.NumberStringConverter;
 import scratch.model.Actionable;
+import scratch.model.Move;
+import scratch.model.TurnLeft;
+import scratch.model.TurnRight;
 import scratch.viewmodel.MainViewModel;
 
 import java.io.File;
@@ -45,8 +48,15 @@ public class MainView extends VBox {
   private final Button btnEmptyAll = new Button("Vider tout");
 
   // Action détails (sous le programme)
+  private final Label labelPrefix = new Label("(aucune action selectionnée)");
   private final TextField actionParamField = new TextField();
-  private final TitledPane detailPane = new TitledPane("Détail de l'action", new VBox(actionParamField));
+  private final Label labelSuffix = new Label("");
+  private final Label errorLabel = new Label("Erreur valeur");
+
+  private final HBox detailContent = new HBox(5, labelPrefix, actionParamField, labelSuffix);
+  private final VBox detailContentContainer = new VBox(detailContent, errorLabel);
+
+  private final TitledPane detailPane = new TitledPane("Détail de l'action", detailContentContainer);
 
   // Scene (droite)
   private final VBox sceneBox = new VBox();
@@ -88,8 +98,20 @@ public class MainView extends VBox {
     HBox btnContainerProgram = new HBox(10, btnUp, btnDown, btnDuplicate, btnDelete, btnEmptyAll);
     btnContainerProgram.setPadding(new Insets(10, 0, 10, 0));
 
+    // Programme
     programBox.setSpacing(10);
     programBox.setPadding(new Insets(0, 0, 0, 10));
+
+    // Détail de l'action
+    actionParamField.setVisible(false);
+    actionParamField.setManaged(false);
+    actionParamField.setPrefWidth(40);
+    detailContent.setAlignment(Pos.CENTER_LEFT);
+
+    errorLabel.setVisible(false);
+    errorLabel.setManaged(false);
+    errorLabel.setTextFill(Color.RED);
+
     programBox.getChildren().addAll(new Text("Programme"), chosenActions, btnContainerProgram, detailPane);
     HBox.setHgrow(programBox, Priority.ALWAYS);
   }
@@ -165,21 +187,71 @@ public class MainView extends VBox {
   }
 
   private void bindActionDetails() {
+    /* Listener sur la liste */
     chosenActions.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
       // Nettoyer l'ancien binding
-      if (currentBoundProperty != null) {
-        actionParamField.textProperty().unbindBidirectional(currentBoundProperty);
-        currentBoundProperty = null;
-      }
+//      if (currentBoundProperty != null) {
+//        actionParamField.textProperty().unbindBidirectional(currentBoundProperty);
+//        currentBoundProperty = null;
+//      }
 
       // Appliquer le nouveau
-      if (newVal != null && newVal.getProperty() != null) {
-        actionParamField.setDisable(false);
-        currentBoundProperty = newVal.getProperty();
-        actionParamField.textProperty().bindBidirectional(currentBoundProperty, new NumberStringConverter());
+      if (newVal != null) {
+        labelPrefix.setText(newVal.getPrefix());
+        labelSuffix.setText(newVal.getSuffix());
+
+        if(newVal.getProperty() != null) {
+          actionParamField.setVisible(true);
+          actionParamField.setManaged(true);
+
+//          actionParamField.textProperty().bindBidirectional(currentBoundProperty, new NumberStringConverter());
+          actionParamField.setText(String.valueOf(newVal.getProperty().get()));
+        } else {
+          actionParamField.setVisible(false);
+          actionParamField.setManaged(false);
+          actionParamField.clear();
+        }
       } else {
-        actionParamField.clear();
-        actionParamField.setDisable(true);
+        // Quand RIEN n'est sélectionné
+        labelPrefix.setText("(aucune action sélectionnée)");
+        labelSuffix.setText("");
+        actionParamField.setVisible(false);
+        actionParamField.setManaged(false);
+        errorLabel.setVisible(false);
+        errorLabel.setManaged(false);
+      }
+    });
+
+    /* Listener sur le champ texte */
+    actionParamField.textProperty().addListener((obs, oldText, newText) -> {
+      Actionable selectedAction = chosenActions.getSelectionModel().getSelectedItem();
+
+      if(selectedAction == null || selectedAction.getProperty() == null) return;
+
+      try {
+        int value = Integer.parseInt(newText);
+        boolean isValid = false;
+
+        // Validation des bornes
+        if(selectedAction instanceof Move) {
+          isValid = value > 0 && value <= 100;
+        } else if (selectedAction instanceof TurnLeft || selectedAction instanceof TurnRight) {
+          isValid = value >= 1 && value <= 180;
+        }
+
+        // Application sur errorLabel
+        if(isValid) {
+          errorLabel.setVisible(false);
+          errorLabel.setManaged(false);
+          selectedAction.getProperty().set(value);  // on met à jour le modèle
+        } else {
+          errorLabel.setVisible(true);
+          errorLabel.setManaged(true);
+        }
+      } catch(NumberFormatException e) {
+        // Si l'utilisateur tape des lettres ou vide la case
+        errorLabel.setVisible(true);
+        errorLabel.setManaged(true);
       }
     });
   }
