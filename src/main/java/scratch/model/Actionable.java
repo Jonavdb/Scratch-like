@@ -10,4 +10,5 @@ public interface Actionable {
     IntegerProperty getProperty();
     String getPrefix();
     String getSuffix();
+    String getName();
 }

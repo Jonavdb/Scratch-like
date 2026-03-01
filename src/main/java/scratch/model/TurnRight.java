@@ -50,4 +50,9 @@ public class TurnRight implements Actionable{
     public String toString() {
         return name + " " + getAngle();
     }
+
+    @Override
+    public String getName() {
+        return name;
+    }
 }

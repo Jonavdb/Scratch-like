@@ -141,6 +141,10 @@ public class MainViewModel {
         return idChosenAction.greaterThanOrEqualTo(0);
     }
 
+    public BooleanBinding canLoadProgram(){
+        return Bindings.isNotEmpty(chosenActions.getChosenActions());
+    }
+
     public BooleanBinding canRemoveAll() { return Bindings.isNotEmpty(chosenActions.getChosenActions()); }
 
     public Actionable getSelectedAction() {

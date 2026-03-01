@@ -42,4 +42,9 @@ public class Down implements Actionable {
     public String toString() {
         return name;
     }
+
+    @Override
+    public String getName() {
+        return name;
+    }
 }

@@ -1,6 +1,8 @@
 package scratch.view;
 
 import javafx.beans.property.IntegerProperty;
+import javafx.collections.ListChangeListener;
+import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Group;
@@ -23,6 +25,9 @@ import java.io.File;
 public class MainView extends VBox {
   private final MainViewModel vm;
   private IntegerProperty currentBoundProperty = null;
+  private int currentActionIndex = 0;
+  private PlayerSprite playerSprite;
+  private Pane spritePane = new Pane();
 
   // Conteneur Principal
   private final HBox appContainer = new HBox();
@@ -62,6 +67,7 @@ public class MainView extends VBox {
   private final VBox sceneBox = new VBox();
   private final Button btnLoad = new Button("Charger");
   private final Button btnExecute = new Button("Exécuter");
+
 
   public MainView(MainViewModel vm) {
     this.vm = vm;
@@ -123,6 +129,7 @@ public class MainView extends VBox {
 
     HBox btnContainerScene = new HBox(10, btnLoad, btnExecute);
     btnContainerScene.setAlignment(Pos.CENTER);
+    btnExecute.setDisable(true);
 
     sceneBox.setSpacing(10);
     sceneBox.setPadding(new Insets(0, 0, 0, 20));
@@ -175,16 +182,62 @@ public class MainView extends VBox {
     btnDelete.setOnAction(event -> vm.removeAction());
 
     btnDown.disableProperty().bind(vm.canDown().not());
-    btnDown.setOnAction(event -> vm.downAction());
+    btnDown.setOnAction(event -> {
+        vm.downAction();
+        chosenActions.getSelectionModel().select(vm.getIdChosenAction());
+    });
 
     btnUp.disableProperty().bind(vm.canUp().not());
-    btnUp.setOnAction(event -> vm.upAction());
+    btnUp.setOnAction(event -> {
+        vm.upAction();
+        chosenActions.getSelectionModel().select(vm.getIdChosenAction());
+    });
 
     btnEmptyAll.disableProperty().bind(vm.canRemoveAll().not());
     btnEmptyAll.setOnAction(event -> vm.removeAll());
 
     btnDuplicate.setOnAction(event -> vm.copyAction());
     btnDuplicate.disableProperty().bind(vm.canDuplicate().not());
+
+    btnLoad.setOnAction(event -> {
+        currentActionIndex = 0;
+        spritePane.getChildren().clear();
+        playerSprite = new PlayerSprite(250,250,0);
+        spritePane.getChildren().add(playerSprite);
+        chosenActions.getSelectionModel().select(0);
+        btnLoad.setText("Reintialiser");
+        btnExecute.setDisable(false);
+    });
+    btnLoad.disableProperty().bind(vm.canLoadProgram().not());
+
+    btnExecute.setOnAction(event -> {
+        ObservableList<Actionable> program = vm.getChosenAction();
+        if (currentActionIndex < program.size()) {
+            Actionable action = program.get(currentActionIndex);
+            chosenActions.getSelectionModel().select(currentActionIndex + 1);
+            executeActions(action);
+            currentActionIndex++;
+            if (currentActionIndex > vm.getChosenAction().size() - 1) {
+                btnExecute.setDisable(true);
+            }
+        }
+    });
+    vm.getChosenAction().addListener((ListChangeListener<Actionable>) event -> {
+        btnExecute.setDisable(true);
+        btnLoad.setText("Charger");
+    });
+  }
+
+  private void executeActions(Actionable action){
+      String name = action.getName();
+      int value = action.getProperty() != null ? action.getProperty().get() : 0;
+      switch (name) {
+          case "Avancer de" -> playerSprite.moveForward(value);
+          case "Tourner à gauche" -> playerSprite.turnLeft(value);
+          case "Tourner à droite" -> playerSprite.turnRight(value);
+          case "Lever stylo" -> playerSprite.turnRight(0);
+          case "Abaisser stylo" -> playerSprite.turnRight(0);
+      }
   }
 
   private void bindActionDetails() {
@@ -302,30 +355,30 @@ public class MainView extends VBox {
   }
 
   private Pane createSpritePane() {
-    Pane spritePane = new Pane();
+
     spritePane.setMinSize(500, 500);
 
     // Instance du joueur avec les paramètres :
-    PlayerSprite player = new PlayerSprite(250, 250, 0);
+    this.playerSprite = new PlayerSprite(250, 250, 0);
 
     // Debug movement + rotation
-      player.turnLeft(90);      // Now facing Left (180°)
-     player.moveForward(100);  // Pos: (150, 250)
-      player.turnLeft(90);      // Now facing Down (270°)
-      player.moveForward(80);   // Pos: (150, 330)
-      player.turnRight(45);     // Now facing Down-Right (225°)
-      player.moveForward(50);   // Pos: (~115, ~365)
-      player.turnRight(135);    // Now facing Up (90°)
-      player.moveForward(120);  // Pos: (~115, 245)
-      player.turnRight(90);     // Now facing Right (0°)
-      player.moveForward(100);  // Pos: (215, 245) - Back near center
-      player.turnLeft(30);      // Now facing Up-Right (30°)
-      player.moveForward(40);   // Pos: (~250, ~225)
-      player.turnRight(120);    // Now facing Down-Right (-90° / 270°)
-      player.moveForward(60);   // Pos: (~250, 285)
+//      player.turnLeft(90);      // Now facing Left (180°)
+//     player.moveForward(100);  // Pos: (150, 250)
+//      player.turnLeft(90);      // Now facing Down (270°)
+//      player.moveForward(80);   // Pos: (150, 330)
+//      player.turnRight(45);     // Now facing Down-Right (225°)
+//      player.moveForward(50);   // Pos: (~115, ~365)
+//      player.turnRight(135);    // Now facing Up (90°)
+//      player.moveForward(120);  // Pos: (~115, 245)
+//      player.turnRight(90);     // Now facing Right (0°)
+//      player.moveForward(100);  // Pos: (215, 245) - Back near center
+//      player.turnLeft(30);      // Now facing Up-Right (30°)
+//      player.moveForward(40);   // Pos: (~250, ~225)
+//      player.turnRight(120);    // Now facing Down-Right (-90° / 270°)
+//      player.moveForward(60);   // Pos: (~250, 285)
 
 
-    spritePane.getChildren().add(player);
+    spritePane.getChildren().add(playerSprite);
     return spritePane;
   }
 }
