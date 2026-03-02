@@ -1,5 +1,6 @@
 package scratch.view;
 
+import javafx.beans.binding.Bindings;
 import javafx.beans.property.IntegerProperty;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -11,6 +12,7 @@ import javafx.scene.shape.Polygon;
 import javafx.scene.text.Text;
 import javafx.scene.control.*;
 import javafx.stage.FileChooser;
+import javafx.util.Callback;
 import javafx.util.converter.NumberStringConverter;
 import scratch.model.Actionable;
 import scratch.model.Move;
@@ -136,6 +138,42 @@ public class MainView extends VBox {
     VBox.setVgrow(appContainer, Priority.ALWAYS);
   }
 
+  // Méthode pour générer des cellules personnalisées (cercle de couleur + texte)
+  private Callback<ListView<Actionable>, ListCell<Actionable>> createActionCellFactory() {
+    return actionableListView -> new ListCell<Actionable>() {
+      @Override
+      protected void updateItem(Actionable item, boolean empty) {
+        super.updateItem(item, empty);
+
+        // Coupe l'ancien binding car les cellules sont recyclées
+        textProperty().unbind();
+
+        // Pas d'action à afficher
+        if(empty || item == null) {
+          setText(null);
+          setGraphic(null);
+          return;
+        }
+
+        if(item.getProperty() != null) {
+          // permet de fabriquer un texte à chaque fois que la propriété change
+          textProperty().bind(Bindings.createStringBinding(
+                  () -> item.getPrefix() + item.getProperty().get(),
+                  item.getProperty()
+          ));
+        } else {
+          setText(item.getPrefix());  // Pour les actions sans propriété (stylo)
+        }
+
+        Color color = item.getColor();
+        Circle circle = new Circle(5, color);
+
+        setTextFill(color);
+        setGraphic(circle);
+      }
+    };
+  }
+
   // =========================================================================
   // BINDINGS (MVVM)
   // =========================================================================
@@ -151,6 +189,9 @@ public class MainView extends VBox {
     // Remplissage
     availableActions.setItems(vm.getAllAction());
     chosenActions.setItems(vm.getChosenAction());
+
+    availableActions.setCellFactory(createActionCellFactory());
+    chosenActions.setCellFactory(createActionCellFactory());
 
     // Synchronisation des sélections avec le VM
     vm.selectedActionProperty().bind(availableActions.getSelectionModel().selectedItemProperty());
@@ -202,7 +243,6 @@ public class MainView extends VBox {
           actionParamField.setVisible(true);
           actionParamField.setManaged(true);
 
-//          actionParamField.textProperty().bindBidirectional(currentBoundProperty, new NumberStringConverter());
           actionParamField.setText(String.valueOf(newVal.getProperty().get()));
         } else {
           actionParamField.setVisible(false);
