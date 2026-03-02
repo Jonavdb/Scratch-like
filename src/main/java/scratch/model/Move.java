@@ -56,4 +56,8 @@ public class Move implements Actionable{
     public String toString() {
         return name + " " + getDistance();
     }
+
+    public String getName() {
+        return name;
+    }
 }

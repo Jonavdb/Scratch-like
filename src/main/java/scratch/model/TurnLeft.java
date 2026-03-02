@@ -57,4 +57,9 @@ public class TurnLeft implements Actionable{
     public String toString() {
         return name + " " + getAngle();
     }
+
+    @Override
+    public String getName() {
+        return name;
+    }
 }
