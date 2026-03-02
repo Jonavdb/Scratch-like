@@ -307,23 +307,18 @@ public class MainView extends VBox {
     // Instance du joueur avec les paramètres :
     PlayerSprite player = new PlayerSprite(250, 250, 0);
 
-    // Debug movement + rotation
-//      player.turnLeft(90);      // Now facing Left (180°)
-//      player.moveForward(100);  // Pos: (150, 250)
-//      player.turnLeft(90);      // Now facing Down (270°)
-//      player.moveForward(80);   // Pos: (150, 330)
-//      player.turnRight(45);     // Now facing Down-Right (225°)
-//      player.moveForward(50);   // Pos: (~115, ~365)
-//      player.turnRight(135);    // Now facing Up (90°)
-//      player.moveForward(120);  // Pos: (~115, 245)
-//      player.turnRight(90);     // Now facing Right (0°)
-//      player.moveForward(100);  // Pos: (215, 245) - Back near center
-//      player.turnLeft(30);      // Now facing Up-Right (30°)
-//      player.moveForward(40);   // Pos: (~250, ~225)
-//      player.turnRight(120);    // Now facing Down-Right (-90° / 270°)
-//      player.moveForward(60);   // Pos: (~250, 285)
-
-
+    // Debug movement + rotation + trace du personnage
+    player.turnLeft(90);
+    player.moveForward(100);
+    player.turnLeft(45);
+    player.moveForward(100);
+    player.penUp();
+    player.turnLeft(60);
+    player.moveForward(40);
+    player.turnLeft(45);
+    player.moveForward(50);
+    player.penDown();
+    player.moveForward(30);
     spritePane.getChildren().add(player);
     return spritePane;
   }
