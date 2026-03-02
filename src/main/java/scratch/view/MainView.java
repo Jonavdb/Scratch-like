@@ -1,5 +1,6 @@
 package scratch.view;
 
+import javafx.beans.binding.Bindings;
 import javafx.beans.property.IntegerProperty;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -144,6 +145,9 @@ public class MainView extends VBox {
       protected void updateItem(Actionable item, boolean empty) {
         super.updateItem(item, empty);
 
+        // Coupe l'ancien binding car les cellules sont recyclées
+        textProperty().unbind();
+
         // Pas d'action à afficher
         if(empty || item == null) {
           setText(null);
@@ -151,9 +155,15 @@ public class MainView extends VBox {
           return;
         }
 
-        setText(item.getPrefix() +
-                (item.getProperty() != null ? item.getProperty().get() : "")
-        );
+        if(item.getProperty() != null) {
+          // permet de fabriquer un texte à chaque fois que la propriété change
+          textProperty().bind(Bindings.createStringBinding(
+                  () -> item.getPrefix() + item.getProperty().get(),
+                  item.getProperty()
+          ));
+        } else {
+          setText(item.getPrefix());  // Pour les actions sans propriété (stylo)
+        }
 
         Color color = item.getColor();
         Circle circle = new Circle(5, color);
