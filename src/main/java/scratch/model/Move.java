@@ -2,6 +2,7 @@ package scratch.model;
 
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
+import javafx.scene.paint.Color;
 
 public class Move implements Actionable{
     private final String name;
@@ -45,6 +46,11 @@ public class Move implements Actionable{
     @Override
     public String toSave() {
         return "MOVE_FORWARD;" + getDistance();
+    }
+
+    @Override
+    public Color getColor() {
+        return Color.BLUE;
     }
 
     public String toString() {

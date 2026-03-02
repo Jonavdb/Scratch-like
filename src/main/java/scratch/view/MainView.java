@@ -148,31 +148,17 @@ public class MainView extends VBox {
         if(empty || item == null) {
           setText(null);
           setGraphic(null);
-        } else {
-          if(item.getProperty() != null) {
-            setText(item.getPrefix() + item.getProperty().get());
-          } else {
-            setText(item.getPrefix());
-          }
-
-          // Petit cercle de couleur
-          Circle circle = new Circle(4);
-
-          // Logique d'affichage de couleurs
-          if (item instanceof Move) {
-            setTextFill(Color.BLUE);
-            circle.setFill(Color.BLUE);
-          } else if (item instanceof TurnLeft || item instanceof TurnRight) {
-            setTextFill(Color.RED);
-            circle.setFill(Color.RED);
-          } else {
-            setTextFill(Color.GREEN);
-            circle.setFill(Color.GREEN);
-          }
-
-          // Ajout du cercle à gauche du texte
-          setGraphic(circle);
+          return;
         }
+
+        setText(item.getPrefix() +
+                (item.getProperty() != null ? item.getProperty().get() : "")
+        );
+
+        Color color = item.getColor();
+        Circle circle = new Circle(5, color);
+        setTextFill(color);
+        setGraphic(circle);
       }
     };
   }

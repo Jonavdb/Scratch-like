@@ -1,6 +1,7 @@
 package scratch.model;
 
 import javafx.beans.property.IntegerProperty;
+import javafx.scene.paint.Color;
 
 public interface Actionable {
     void execute();
@@ -9,4 +10,5 @@ public interface Actionable {
     IntegerProperty getProperty();
     String getPrefix();
     String getSuffix();
+    Color getColor();
 }
