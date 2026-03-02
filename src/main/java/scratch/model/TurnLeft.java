@@ -31,7 +31,7 @@ public class TurnLeft implements Actionable{
 
     @Override
     public String getPrefix() {
-        return "Angle vers la gauche ";
+        return "Tourner à gauche de ";
     }
 
     @Override

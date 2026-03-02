@@ -157,6 +157,7 @@ public class MainView extends VBox {
 
         Color color = item.getColor();
         Circle circle = new Circle(5, color);
+
         setTextFill(color);
         setGraphic(circle);
       }

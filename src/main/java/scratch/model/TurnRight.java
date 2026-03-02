@@ -30,7 +30,7 @@ public class TurnRight implements Actionable {
 
     @Override
     public String getPrefix() {
-        return "Tourner à la droite de ";
+        return "Tourner à droite de ";
     }
 
     @Override
