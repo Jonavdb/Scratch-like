@@ -3,7 +3,7 @@ package scratch.model;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 
-public class TurnRight implements Actionable{
+public class TurnRight implements Actionable {
     private final String name;
     private IntegerProperty angle;
 
@@ -29,7 +29,7 @@ public class TurnRight implements Actionable{
 
     @Override
     public String getPrefix() {
-        return "Angle vers la droite ";
+        return "Tourner à la droite de ";
     }
 
     @Override

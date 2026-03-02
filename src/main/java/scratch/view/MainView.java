@@ -11,6 +11,7 @@ import javafx.scene.shape.Polygon;
 import javafx.scene.text.Text;
 import javafx.scene.control.*;
 import javafx.stage.FileChooser;
+import javafx.util.Callback;
 import javafx.util.converter.NumberStringConverter;
 import scratch.model.Actionable;
 import scratch.model.Move;
@@ -136,6 +137,46 @@ public class MainView extends VBox {
     VBox.setVgrow(appContainer, Priority.ALWAYS);
   }
 
+  // Méthode pour générer des cellules personnalisées (cercle de couleur + texte)
+  private Callback<ListView<Actionable>, ListCell<Actionable>> createActionCellFactory() {
+    return actionableListView -> new ListCell<Actionable>() {
+      @Override
+      protected void updateItem(Actionable item, boolean empty) {
+        super.updateItem(item, empty);
+
+        // Pas d'action à afficher
+        if(empty || item == null) {
+          setText(null);
+          setGraphic(null);
+        } else {
+          if(item.getProperty() != null) {
+            setText(item.getPrefix() + item.getProperty().get());
+          } else {
+            setText(item.getPrefix());
+          }
+
+          // Petit cercle de couleur
+          Circle circle = new Circle(4);
+
+          // Logique d'affichage de couleurs
+          if (item instanceof Move) {
+            setTextFill(Color.BLUE);
+            circle.setFill(Color.BLUE);
+          } else if (item instanceof TurnLeft || item instanceof TurnRight) {
+            setTextFill(Color.RED);
+            circle.setFill(Color.RED);
+          } else {
+            setTextFill(Color.GREEN);
+            circle.setFill(Color.GREEN);
+          }
+
+          // Ajout du cercle à gauche du texte
+          setGraphic(circle);
+        }
+      }
+    };
+  }
+
   // =========================================================================
   // BINDINGS (MVVM)
   // =========================================================================
@@ -151,6 +192,9 @@ public class MainView extends VBox {
     // Remplissage
     availableActions.setItems(vm.getAllAction());
     chosenActions.setItems(vm.getChosenAction());
+
+    availableActions.setCellFactory(createActionCellFactory());
+    chosenActions.setCellFactory(createActionCellFactory());
 
     // Synchronisation des sélections avec le VM
     vm.selectedActionProperty().bind(availableActions.getSelectionModel().selectedItemProperty());
@@ -202,7 +246,6 @@ public class MainView extends VBox {
           actionParamField.setVisible(true);
           actionParamField.setManaged(true);
 
-//          actionParamField.textProperty().bindBidirectional(currentBoundProperty, new NumberStringConverter());
           actionParamField.setText(String.valueOf(newVal.getProperty().get()));
         } else {
           actionParamField.setVisible(false);
