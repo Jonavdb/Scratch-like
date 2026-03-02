@@ -190,7 +190,7 @@ public class PlayerSprite extends Group {
       if(distance <= 0 || distance > 100)
           return;
 
-      // For a potential line
+      // Pour une potentielle ligne
       var currX = body.getLayoutX();
       var currY = body.getLayoutY();
 
@@ -201,8 +201,6 @@ public class PlayerSprite extends Group {
       // Trigonométrie pour avancer
       double diffX = distance * Math.cos(radians);  // NouveauX = cosinus(angle) * vitesse
       double diffY = distance * Math.sin(radians);  // NouveauY = sinus(angle) * vitesse
-
-
 
       // L'angle réel sur le cercle (0 à 360)
       double realAngle = angleOffsetRecalibror + currTurnValue;
@@ -219,7 +217,7 @@ public class PlayerSprite extends Group {
       body.setLayoutX(body.getLayoutX() + diffX);
       body.setLayoutY(body.getLayoutY() + (directionY * Math.abs(diffY)));
 
-      // When pen is down
+      // Quand le stylo est abaissé
       if(hasTrail) {
           var line = new Line(currX, currY, nextX, nextY);
           line.setStroke(Color.FORESTGREEN);
