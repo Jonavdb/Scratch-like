@@ -25,7 +25,7 @@ public abstract class Turn implements Actionable {
   }
 
   @Override
-  public void execute() {
+  public void execute(PlayerState state) {
   }
 
   @Override
