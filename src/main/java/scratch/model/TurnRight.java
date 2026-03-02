@@ -2,8 +2,9 @@ package scratch.model;
 
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
+import javafx.scene.paint.Color;
 
-public class TurnRight implements Actionable{
+public class TurnRight implements Actionable {
     private final String name;
     private IntegerProperty angle;
 
@@ -29,7 +30,7 @@ public class TurnRight implements Actionable{
 
     @Override
     public String getPrefix() {
-        return "Angle vers la droite ";
+        return "Tourner à droite de ";
     }
 
     @Override
@@ -45,6 +46,11 @@ public class TurnRight implements Actionable{
     @Override
     public String toSave() {
         return "TURN_RIGHT;" + getAngle();
+    }
+
+    @Override
+    public Color getColor() {
+        return Color.RED;
     }
 
     public String toString() {

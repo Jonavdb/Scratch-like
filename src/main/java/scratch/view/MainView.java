@@ -1,5 +1,6 @@
 package scratch.view;
 
+import javafx.beans.binding.Bindings;
 import javafx.beans.property.IntegerProperty;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
@@ -13,6 +14,7 @@ import javafx.scene.shape.Polygon;
 import javafx.scene.text.Text;
 import javafx.scene.control.*;
 import javafx.stage.FileChooser;
+import javafx.util.Callback;
 import javafx.util.converter.NumberStringConverter;
 import scratch.model.Actionable;
 import scratch.model.Move;
@@ -67,7 +69,6 @@ public class MainView extends VBox {
   private final VBox sceneBox = new VBox();
   private final Button btnLoad = new Button("Charger");
   private final Button btnExecute = new Button("Exécuter");
-
 
   public MainView(MainViewModel vm) {
     this.vm = vm;
@@ -143,6 +144,42 @@ public class MainView extends VBox {
     VBox.setVgrow(appContainer, Priority.ALWAYS);
   }
 
+  // Méthode pour générer des cellules personnalisées (cercle de couleur + texte)
+  private Callback<ListView<Actionable>, ListCell<Actionable>> createActionCellFactory() {
+    return actionableListView -> new ListCell<Actionable>() {
+      @Override
+      protected void updateItem(Actionable item, boolean empty) {
+        super.updateItem(item, empty);
+
+        // Coupe l'ancien binding car les cellules sont recyclées
+        textProperty().unbind();
+
+        // Pas d'action à afficher
+        if(empty || item == null) {
+          setText(null);
+          setGraphic(null);
+          return;
+        }
+
+        if(item.getProperty() != null) {
+          // permet de fabriquer un texte à chaque fois que la propriété change
+          textProperty().bind(Bindings.createStringBinding(
+                  () -> item.getPrefix() + item.getProperty().get(),
+                  item.getProperty()
+          ));
+        } else {
+          setText(item.getPrefix());  // Pour les actions sans propriété (stylo)
+        }
+
+        Color color = item.getColor();
+        Circle circle = new Circle(5, color);
+
+        setTextFill(color);
+        setGraphic(circle);
+      }
+    };
+  }
+
   // =========================================================================
   // BINDINGS (MVVM)
   // =========================================================================
@@ -158,6 +195,9 @@ public class MainView extends VBox {
     // Remplissage
     availableActions.setItems(vm.getAllAction());
     chosenActions.setItems(vm.getChosenAction());
+
+    availableActions.setCellFactory(createActionCellFactory());
+    chosenActions.setCellFactory(createActionCellFactory());
 
     // Synchronisation des sélections avec le VM
     vm.selectedActionProperty().bind(availableActions.getSelectionModel().selectedItemProperty());
@@ -235,8 +275,8 @@ public class MainView extends VBox {
           case "Avancer de" -> playerSprite.moveForward(value);
           case "Tourner à gauche" -> playerSprite.turnLeft(value);
           case "Tourner à droite" -> playerSprite.turnRight(value);
-          case "Lever stylo" -> playerSprite.turnRight(0);
-          case "Abaisser stylo" -> playerSprite.turnRight(0);
+          case "Lever stylo" -> playerSprite.penUp();
+          case "Abaisser stylo" -> playerSprite.penDown();
       }
   }
 

@@ -1,6 +1,7 @@
 package scratch.model;
 
 import javafx.beans.property.IntegerProperty;
+import javafx.scene.paint.Color;
 
 public class Up implements Actionable{
     private final String name;
@@ -36,6 +37,11 @@ public class Up implements Actionable{
     @Override
     public String getSuffix() {
         return "";
+    }
+
+    @Override
+    public Color getColor() {
+        return Color.GREEN;
     }
 
     public String toString() {

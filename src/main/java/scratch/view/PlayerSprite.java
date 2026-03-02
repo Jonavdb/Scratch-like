@@ -3,7 +3,12 @@ package scratch.view;
 import javafx.scene.Group;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
+import javafx.scene.shape.Line;
 import javafx.scene.shape.Polygon;
+
+import java.awt.*;
+import java.util.HashMap;
+import java.util.Map;
 
 /* Représente le personnage sur le plateau.
  * Hérite de Group pour pouvoir combiner le corps (triangle) et le nez (cercle).
@@ -18,6 +23,7 @@ public class PlayerSprite extends Group {
   private final double angleOffsetRecalibror = 90;
   private double headX;
   private double headY;
+  private boolean hasTrail = true;
 
   public PlayerSprite(double startX, double startY, double initialTurnValue) {
     currTurnValue = initialTurnValue;
@@ -184,6 +190,10 @@ public class PlayerSprite extends Group {
       if(distance <= 0 || distance > 100)
           return;
 
+      // Pour une potentielle ligne
+      var currX = body.getLayoutX();
+      var currY = body.getLayoutY();
+
       // On calcule l'angle de déplacement (en radians). On ajoute PI/2 (90 degrés)
       // car l'avant de notre triangle est décalé par rapport au zéro mathématique.
       double radians = Math.toRadians(currTurnValue) + Math.PI / 2;
@@ -200,22 +210,33 @@ public class PlayerSprite extends Group {
       boolean facingUp = normalized < 180 && normalized > 1;
 
       int directionY = facingUp ? -1 : 1; // L'angle réel sur le cercle (0 à 360)
+      double nextX = currX + diffX;
+      double nextY = currY + (directionY * Math.abs(diffY));
 
       // Appliquer le déplacement à la position actuelle
       body.setLayoutX(body.getLayoutX() + diffX);
       body.setLayoutY(body.getLayoutY() + (directionY * Math.abs(diffY)));
+
+      // Quand le stylo est abaissé
+      if(hasTrail) {
+          var line = new Line(currX, currY, nextX, nextY);
+          line.setStroke(Color.FORESTGREEN);
+          this.getChildren().add(line);
+      }
 
       // =========================================================================
       // CRÉATION DU NEZ (Repère visuel)
       // =========================================================================
       head.setTranslateX(headX + body.getLayoutX());
       head.setTranslateY(headY + body.getLayoutY());
-
-
   }
 
-  public double getTurnValue() {
-      return currTurnValue;
+  public void penUp() {
+      hasTrail = false;
+  }
+
+  public void penDown() {
+      hasTrail = true;
   }
 
 }
