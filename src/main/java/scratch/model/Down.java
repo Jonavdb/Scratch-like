@@ -11,8 +11,8 @@ public class Down implements Actionable {
     }
 
     @Override
-    public void execute(PlayerState state) {
-        state.setpenDown(true);
+    public void execute(Player player) {
+        player.setpenDown(true);
     }
 
     @Override

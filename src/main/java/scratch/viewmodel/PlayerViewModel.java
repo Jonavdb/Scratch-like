@@ -1,0 +1,63 @@
+package scratch.viewmodel;
+
+import javafx.beans.InvalidationListener;
+import javafx.beans.property.*;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.geometry.Point2D;
+import scratch.model.Actionable;
+import scratch.model.Player;
+
+public class PlayerViewModel {
+    private final Player player;
+
+    private final ObservableList<Double> bodyPoints = FXCollections.observableArrayList();
+    private final DoubleProperty headX = new SimpleDoubleProperty(0);
+    private final DoubleProperty headY = new SimpleDoubleProperty(0);
+
+
+    public PlayerViewModel(Player player) {
+        this.player = player;
+
+        // Initialize the list with 6 placeholders (x1, y1, x2, y2, x3, y3)
+        for (int i = 0; i < 6; ++i) bodyPoints.add(0.0);
+
+        // Update body points whenever player moves or rotate
+        InvalidationListener listener = obs ->  updatePoints();
+        player.positionProperty().addListener(listener);
+        player.angleProperty().addListener(listener);
+
+        updatePoints();
+    }
+
+    public void updatePoints() {
+        double currentX = player.getX();
+        double currentY = player.getY();
+        double currentAngle = player.getAngle();
+
+        double xP1 = currentX + player.getSize() * Math.sin(Math.toRadians(60)) * Math.cos(Math.toRadians(currentAngle+ 90));
+        double yP1 = currentY - player.getSize() * Math.sin(Math.toRadians(60)) * Math.sin(Math.toRadians(currentAngle + 90));
+        double xP2 = currentX - player.getSize() * Math.sin(Math.toRadians(30)) * Math.cos(Math.toRadians(currentAngle));
+        double yP2 = currentY + player.getSize() * Math.sin(Math.toRadians(30)) * Math.sin(Math.toRadians(currentAngle));
+        double xP3 = currentX + player.getSize() * Math.sin(Math.toRadians(30)) * Math.cos(Math.toRadians(currentAngle));
+        double yP3 = currentY - player.getSize() * Math.sin(Math.toRadians(30)) * Math.sin(Math.toRadians(currentAngle));
+
+        bodyPoints.setAll(xP1, yP1, xP2, yP2, xP3, yP3);
+        headX.set(xP1);
+        headY.set(yP1);
+    }
+
+    public ObservableList<Double> getBodyPoints() {
+        return bodyPoints;
+    }
+
+    public ReadOnlyDoubleProperty headXProperty() {return headX;}
+    public ReadOnlyDoubleProperty headYProperty() {return headY;}
+
+    public void processAction(Actionable action) {
+        action.execute(player);
+    }
+
+    public ReadOnlyObjectProperty<Point2D> positionProperty() {return player.positionProperty();}
+    public ReadOnlyBooleanProperty penDowProperty() { return player.penDownProperty();}
+}

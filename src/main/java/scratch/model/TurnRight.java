@@ -14,9 +14,9 @@ public class TurnRight implements Actionable {
     }
 
     @Override
-    public void execute(PlayerState state) {
+    public void execute(Player player) {
         int turnValue = this.getProperty().get();
-        state.setAngle(state.getAngle() - turnValue);
+        player.setAngle(player.getAngle() - turnValue);
     }
 
     public int getAngle(){

@@ -11,8 +11,8 @@ public class Up implements Actionable{
     }
 
     @Override
-    public void execute(PlayerState state) {
-        state.setpenDown(false);
+    public void execute(Player player) {
+        player.setpenDown(false);
     }
 
     @Override

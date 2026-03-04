@@ -8,8 +8,8 @@ import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.ObservableList;
 import scratch.model.*;
+import scratch.view.PlayerView;
 
-import javax.imageio.IIOException;
 import java.io.*;
 import java.util.Scanner;
 
@@ -18,7 +18,12 @@ public class MainViewModel {
     private ObjectProperty<Actionable> selectedAction = new SimpleObjectProperty<>();
     private IntegerProperty idChosenAction = new SimpleIntegerProperty(-1);
 
+    // debug
+    private int currActionIndex = 0;
+    private PlayerViewModel playerVm = new PlayerViewModel(new Player());
+
     public MainViewModel(ChosenActions chosenActions) {
+
         this.chosenActions = chosenActions;
     }
 
@@ -121,6 +126,12 @@ public class MainViewModel {
         }
     }
 
+    public void executeAction() {
+        Actionable action = chosenActions.get(currActionIndex);
+        playerVm.processAction(action);
+        ++currActionIndex;
+    }
+
     public BooleanBinding canUp() {
         return idChosenAction.greaterThan(0);
     }
@@ -165,5 +176,22 @@ public class MainViewModel {
 
     public void setIdChosenAction(int idChosenAction) {
         this.idChosenAction.set(idChosenAction);
+    }
+
+    public int getCurrentActionIndex() {
+        return currActionIndex;
+    }
+
+    public void setCurrentActionIndex(int idx) {
+        currActionIndex = idx;
+    }
+
+    public PlayerViewModel getPlayerViewModel() {
+        return playerVm;
+    }
+
+    public PlayerViewModel resetPlayerViewModel() {
+        playerVm = new PlayerViewModel(new Player());
+        return playerVm;
     }
 }
