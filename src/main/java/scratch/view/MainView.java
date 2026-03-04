@@ -16,10 +16,7 @@ import javafx.scene.control.*;
 import javafx.stage.FileChooser;
 import javafx.util.Callback;
 import javafx.util.converter.NumberStringConverter;
-import scratch.model.Actionable;
-import scratch.model.Move;
-import scratch.model.TurnLeft;
-import scratch.model.TurnRight;
+import scratch.model.*;
 import scratch.viewmodel.MainViewModel;
 
 import java.io.File;
@@ -29,6 +26,7 @@ public class MainView extends VBox {
   private IntegerProperty currentBoundProperty = null;
   private int currentActionIndex = 0;
   private PlayerSprite playerSprite;
+  private PlayerState state = new PlayerState();
   private Pane spritePane = new Pane();
 
   // Conteneur Principal
@@ -240,9 +238,10 @@ public class MainView extends VBox {
     btnDuplicate.disableProperty().bind(vm.canDuplicate().not());
 
     btnLoad.setOnAction(event -> {
+        this.state = new PlayerState();
         currentActionIndex = 0;
         spritePane.getChildren().clear();
-        playerSprite = new PlayerSprite(250,250,0);
+        playerSprite = new PlayerSprite(state);
         spritePane.getChildren().add(playerSprite);
         chosenActions.getSelectionModel().select(0);
         btnLoad.setText("Reintialiser");
@@ -269,15 +268,7 @@ public class MainView extends VBox {
   }
 
   private void executeActions(Actionable action){
-      String name = action.getName();
-      int value = action.getProperty() != null ? action.getProperty().get() : 0;
-      switch (name) {
-          case "Avancer de" -> playerSprite.moveForward(value);
-          case "Tourner à gauche" -> playerSprite.turnLeft(value);
-          case "Tourner à droite" -> playerSprite.turnRight(value);
-          case "Lever stylo" -> playerSprite.penUp();
-          case "Abaisser stylo" -> playerSprite.penDown();
-      }
+      action.execute(state);
   }
 
   private void bindActionDetails() {
@@ -399,7 +390,7 @@ public class MainView extends VBox {
     spritePane.setMinSize(500, 500);
 
     // Instance du joueur avec les paramètres :
-    this.playerSprite = new PlayerSprite(250, 250, 0);
+    this.playerSprite = new PlayerSprite(state);
 
     // Debug movement + rotation
 //      player.turnLeft(90);      // Now facing Left (180°)
