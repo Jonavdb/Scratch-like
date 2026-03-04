@@ -10,23 +10,20 @@ import javafx.scene.Group;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
-import javafx.scene.shape.Polygon;
 import javafx.scene.text.Text;
 import javafx.scene.control.*;
 import javafx.stage.FileChooser;
 import javafx.util.Callback;
-import javafx.util.converter.NumberStringConverter;
 import scratch.model.*;
 import scratch.viewmodel.MainViewModel;
+import scratch.viewmodel.PlayerViewModel;
 
 import java.io.File;
 
 public class MainView extends VBox {
   private final MainViewModel vm;
   private IntegerProperty currentBoundProperty = null;
-  private int currentActionIndex = 0;
-  private PlayerSprite playerSprite;
-  private PlayerState state = new PlayerState();
+  private PlayerView playerView;
   private Pane spritePane = new Pane();
 
   // Conteneur Principal
@@ -238,11 +235,10 @@ public class MainView extends VBox {
     btnDuplicate.disableProperty().bind(vm.canDuplicate().not());
 
     btnLoad.setOnAction(event -> {
-        this.state = new PlayerState();
-        currentActionIndex = 0;
+        vm.setCurrentActionIndex(0);
         spritePane.getChildren().clear();
-        playerSprite = new PlayerSprite(state);
-        spritePane.getChildren().add(playerSprite);
+        playerView = new PlayerView(vm.resetPlayerViewModel());
+        spritePane.getChildren().add(playerView);
         chosenActions.getSelectionModel().select(0);
         btnLoad.setText("Reintialiser");
         btnExecute.setDisable(false);
@@ -251,11 +247,11 @@ public class MainView extends VBox {
 
     btnExecute.setOnAction(event -> {
         ObservableList<Actionable> program = vm.getChosenAction();
+        var currentActionIndex = vm.getCurrentActionIndex();
         if (currentActionIndex < program.size()) {
-            Actionable action = program.get(currentActionIndex);
-            chosenActions.getSelectionModel().select(currentActionIndex + 1);
-            executeActions(action);
-            currentActionIndex++;
+            vm.executeAction();
+            currentActionIndex = vm.getCurrentActionIndex();
+            chosenActions.getSelectionModel().select( vm.getCurrentActionIndex());
             if (currentActionIndex > vm.getChosenAction().size() - 1) {
                 btnExecute.setDisable(true);
             }
@@ -267,9 +263,9 @@ public class MainView extends VBox {
     });
   }
 
-  private void executeActions(Actionable action){
-      action.execute(state);
-  }
+//  private void executeActions(Actionable action){
+//      action.execute(state);
+//  }
 
   private void bindActionDetails() {
     /* Listener sur la liste */
@@ -390,7 +386,7 @@ public class MainView extends VBox {
     spritePane.setMinSize(500, 500);
 
     // Instance du joueur avec les paramètres :
-    this.playerSprite = new PlayerSprite(state);
+    this.playerView = new PlayerView(vm.getPlayerViewModel());
 
     // Debug movement + rotation
 //      player.turnLeft(90);      // Now facing Left (180°)
@@ -409,7 +405,7 @@ public class MainView extends VBox {
 //      player.moveForward(60);   // Pos: (~250, 285)
 
 
-    spritePane.getChildren().add(playerSprite);
+    spritePane.getChildren().add(playerView);
     return spritePane;
   }
 }

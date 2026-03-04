@@ -15,7 +15,7 @@ public class Move implements Actionable{
     }
 
     @Override
-    public void execute(PlayerState state) {
+    public void execute(Player player) {
         int dist = this.getProperty().get();
         if(dist <= 0 || dist > 100)
             return;
@@ -32,7 +32,7 @@ public class Move implements Actionable{
         // =========================================================================
         // On calcule l'angle de déplacement (en radians). On ajoute PI/2 (90 degrés)
         // car l'avant de notre triangle est décalé par rapport au zéro mathématique.
-        double radians = Math.toRadians(state.getAngle()) + Math.PI / 2;
+        double radians = Math.toRadians(player.getAngle()) + Math.PI / 2;
 
         // Trigonométrie pour avancer
         double diffX = dist * Math.cos(radians);  // NouveauX = cosinus(angle) * vitesse
@@ -46,7 +46,7 @@ public class Move implements Actionable{
 //        boolean facingUp = normalized < 180 && normalized > 1;
 
 //        int directionY = facingUp ? -1 : 1; // L'angle réel sur le cercle (0 à 360)
-        state.setPosition(new Point2D(state.getX() + diffX, state.getY() - diffY));
+        player.setPosition(new Point2D(player.getX() + diffX, player.getY() - diffY));
     }
 
     public int getDistance() {

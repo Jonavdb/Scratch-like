@@ -5,7 +5,7 @@ import javafx.scene.paint.Color;
 
 public interface Actionable {
 
-    void execute(PlayerState state);
+    void execute(Player player);
     Actionable copy();
     String toSave();
     IntegerProperty getProperty();
