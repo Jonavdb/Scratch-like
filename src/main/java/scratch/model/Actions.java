@@ -3,10 +3,7 @@ package scratch.model;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
-public class Actions {
-    private Actions() {
-
-    }
+public abstract class Actions {
 
     private static ObservableList<Actionable> actions = FXCollections.observableArrayList(
             new Move("Avancer de", 30),

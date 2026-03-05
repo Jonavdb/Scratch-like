@@ -120,12 +120,11 @@ public class MainView extends VBox {
 
   private void configureScene() {
     GridPane gridPane = createGrid(10, 10);
-    Pane spritePane = createSpritePane();
+    spritePane = createSpritePane();
     Group board = new Group(gridPane, spritePane);
 
     HBox btnContainerScene = new HBox(10, btnLoad, btnExecute);
     btnContainerScene.setAlignment(Pos.CENTER);
-    btnExecute.setDisable(true);
 
     sceneBox.setSpacing(10);
     sceneBox.setPadding(new Insets(0, 0, 0, 20));
@@ -235,37 +234,22 @@ public class MainView extends VBox {
     btnDuplicate.disableProperty().bind(vm.canDuplicate().not());
 
     btnLoad.setOnAction(event -> {
-        vm.setCurrentActionIndex(0);
+        vm.resetCommands();
         spritePane.getChildren().clear();
-        playerView = new PlayerView(vm.resetPlayerViewModel());
+        playerView = new PlayerView(vm.getPlayerViewModel());
         spritePane.getChildren().add(playerView);
         chosenActions.getSelectionModel().select(0);
-        btnLoad.setText("Reintialiser");
-        btnExecute.setDisable(false);
     });
+    btnLoad.textProperty().bind(vm.getLoadTextButton());
     btnLoad.disableProperty().bind(vm.canLoadProgram().not());
 
     btnExecute.setOnAction(event -> {
-        ObservableList<Actionable> program = vm.getChosenAction();
-        var currentActionIndex = vm.getCurrentActionIndex();
-        if (currentActionIndex < program.size()) {
-            vm.executeAction();
-            currentActionIndex = vm.getCurrentActionIndex();
-            chosenActions.getSelectionModel().select( vm.getCurrentActionIndex());
-            if (currentActionIndex > vm.getChosenAction().size() - 1) {
-                btnExecute.setDisable(true);
-            }
-        }
+        vm.executeAction();
+        chosenActions.getSelectionModel().select( vm.getCurrentActionIndex());
     });
-    vm.getChosenAction().addListener((ListChangeListener<Actionable>) event -> {
-        btnExecute.setDisable(true);
-        btnLoad.setText("Charger");
-    });
+    btnExecute.disableProperty().bind(vm.canExecuteProgram().not());
+    btnExecute.textProperty().bind(vm.getExecuteTextButton());
   }
-
-//  private void executeActions(Actionable action){
-//      action.execute(state);
-//  }
 
   private void bindActionDetails() {
     /* Listener sur la liste */
