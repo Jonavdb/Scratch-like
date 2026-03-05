@@ -1,11 +1,11 @@
 package scratch.viewmodel;
 
+import javafx.beans.InvalidationListener;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.BooleanBinding;
-import javafx.beans.property.IntegerProperty;
-import javafx.beans.property.ObjectProperty;
-import javafx.beans.property.SimpleIntegerProperty;
-import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.binding.StringBinding;
+import javafx.beans.property.*;
+import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import scratch.model.*;
 import scratch.view.PlayerView;
@@ -17,14 +17,21 @@ public class MainViewModel {
     private ChosenActions chosenActions;
     private ObjectProperty<Actionable> selectedAction = new SimpleObjectProperty<>();
     private IntegerProperty idChosenAction = new SimpleIntegerProperty(-1);
+    private BooleanProperty isLoad = new SimpleBooleanProperty(false);
+    private BooleanProperty isPlaying = new SimpleBooleanProperty(false);
 
     // debug
-    private int currActionIndex = 0;
+    private IntegerProperty currActionIndex = new SimpleIntegerProperty(0);
     private PlayerViewModel playerVm = new PlayerViewModel(new Player());
 
     public MainViewModel(ChosenActions chosenActions) {
 
         this.chosenActions = chosenActions;
+        this.chosenActions.getChosenActions().addListener((ListChangeListener<Actionable>) change -> {
+            this.setIsPlaying(false);
+            currActionIndex.set(0);
+            isLoad.set(false);
+        });
     }
 
     public ObservableList<Actionable> getAllAction() {
@@ -127,9 +134,11 @@ public class MainViewModel {
     }
 
     public void executeAction() {
-        Actionable action = chosenActions.get(currActionIndex);
-        playerVm.processAction(action);
-        ++currActionIndex;
+        if (currActionIndex.get() < chosenActions.getChosenActions().size()) {
+            Actionable action = chosenActions.get(currActionIndex.get());
+            playerVm.processAction(action);
+            currActionIndex.set(currActionIndex.get() + 1);
+        }
     }
 
     public BooleanBinding canUp() {
@@ -153,7 +162,7 @@ public class MainViewModel {
     }
 
     public BooleanBinding canLoadProgram(){
-        return Bindings.isNotEmpty(chosenActions.getChosenActions());
+        return Bindings.isNotEmpty(chosenActions.getChosenActions()).and(isPlaying.not());
     }
 
     public BooleanBinding canRemoveAll() { return Bindings.isNotEmpty(chosenActions.getChosenActions()); }
@@ -179,11 +188,19 @@ public class MainViewModel {
     }
 
     public int getCurrentActionIndex() {
-        return currActionIndex;
+        return currActionIndex.get();
     }
 
     public void setCurrentActionIndex(int idx) {
-        currActionIndex = idx;
+        currActionIndex.set(idx);
+    }
+
+    public boolean getIsPlaying(){
+        return isPlaying.get();
+    }
+
+    public void setIsPlaying(boolean value){
+        isPlaying.set(value);
     }
 
     public PlayerViewModel getPlayerViewModel() {
@@ -194,4 +211,28 @@ public class MainViewModel {
         playerVm = new PlayerViewModel(new Player());
         return playerVm;
     }
+
+    public StringBinding getLoadTextButton(){
+        return Bindings.when(currActionIndex.isEqualTo(0)).then("Charger").otherwise("Reintialiser");
+    }
+
+    public StringBinding getExecuteTextButton(){
+        return Bindings.when(currActionIndex.greaterThan(0)).then("Suivant").otherwise("Executer");
+    }
+
+    public void resetCommands(){
+        currActionIndex.set(0);
+        isLoad.set(true);
+        resetPlayerViewModel();
+    }
+
+    public BooleanBinding canExecuteProgram(){
+        return Bindings.createBooleanBinding(()->
+            !chosenActions.getChosenActions().isEmpty() && currActionIndex.get() < chosenActions.getChosenActions().size() && isLoad.get() && !isPlaying.get(),
+            chosenActions.getChosenActions(),
+            currActionIndex, isLoad, isPlaying
+        );
+    }
+
+
 }

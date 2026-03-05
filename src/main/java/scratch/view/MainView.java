@@ -1,5 +1,7 @@
 package scratch.view;
 
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.IntegerProperty;
 import javafx.collections.ListChangeListener;
@@ -14,6 +16,7 @@ import javafx.scene.text.Text;
 import javafx.scene.control.*;
 import javafx.stage.FileChooser;
 import javafx.util.Callback;
+import javafx.util.Duration;
 import scratch.model.*;
 import scratch.viewmodel.MainViewModel;
 import scratch.viewmodel.PlayerViewModel;
@@ -64,6 +67,7 @@ public class MainView extends VBox {
   private final VBox sceneBox = new VBox();
   private final Button btnLoad = new Button("Charger");
   private final Button btnExecute = new Button("Exécuter");
+  private final Button btnExecuteAll = new Button("Exécuter tout");
 
   public MainView(MainViewModel vm) {
     this.vm = vm;
@@ -120,12 +124,11 @@ public class MainView extends VBox {
 
   private void configureScene() {
     GridPane gridPane = createGrid(10, 10);
-    Pane spritePane = createSpritePane();
+    spritePane = createSpritePane();
     Group board = new Group(gridPane, spritePane);
 
-    HBox btnContainerScene = new HBox(10, btnLoad, btnExecute);
+    HBox btnContainerScene = new HBox(10, btnLoad, btnExecute, btnExecuteAll);
     btnContainerScene.setAlignment(Pos.CENTER);
-    btnExecute.setDisable(true);
 
     sceneBox.setSpacing(10);
     sceneBox.setPadding(new Insets(0, 0, 0, 20));
@@ -235,37 +238,45 @@ public class MainView extends VBox {
     btnDuplicate.disableProperty().bind(vm.canDuplicate().not());
 
     btnLoad.setOnAction(event -> {
-        vm.setCurrentActionIndex(0);
+        vm.resetCommands();
         spritePane.getChildren().clear();
-        playerView = new PlayerView(vm.resetPlayerViewModel());
+        playerView = new PlayerView(vm.getPlayerViewModel());
         spritePane.getChildren().add(playerView);
         chosenActions.getSelectionModel().select(0);
-        btnLoad.setText("Reintialiser");
-        btnExecute.setDisable(false);
     });
+    btnLoad.textProperty().bind(vm.getLoadTextButton());
     btnLoad.disableProperty().bind(vm.canLoadProgram().not());
 
     btnExecute.setOnAction(event -> {
-        ObservableList<Actionable> program = vm.getChosenAction();
-        var currentActionIndex = vm.getCurrentActionIndex();
-        if (currentActionIndex < program.size()) {
-            vm.executeAction();
-            currentActionIndex = vm.getCurrentActionIndex();
-            chosenActions.getSelectionModel().select( vm.getCurrentActionIndex());
-            if (currentActionIndex > vm.getChosenAction().size() - 1) {
-                btnExecute.setDisable(true);
-            }
-        }
+        vm.executeAction();
+        chosenActions.getSelectionModel().select( vm.getCurrentActionIndex());
     });
-    vm.getChosenAction().addListener((ListChangeListener<Actionable>) event -> {
-        btnExecute.setDisable(true);
-        btnLoad.setText("Charger");
-    });
-  }
+    btnExecute.disableProperty().bind(vm.canExecuteProgram().not());
+    btnExecute.textProperty().bind(vm.getExecuteTextButton());
 
-//  private void executeActions(Actionable action){
-//      action.execute(state);
-//  }
+    btnExecuteAll.setOnAction(event -> {
+      vm.setIsPlaying(true);
+        Timeline timeline = new Timeline();
+      KeyFrame keyframe = new KeyFrame(Duration.millis(150), event_1 -> {
+          if (!vm.getIsPlaying()){
+              timeline.stop();
+              return;
+          }
+          if (vm.getCurrentActionIndex() < vm.getChosenAction().size()) {
+              vm.executeAction();
+              chosenActions.getSelectionModel().select(vm.getCurrentActionIndex());
+          } else {
+              timeline.stop();
+              vm.setIsPlaying(false);
+          }
+      });
+      timeline.getKeyFrames().add(keyframe);
+      timeline.setCycleCount(Timeline.INDEFINITE);
+      timeline.play();
+    });
+
+    btnExecuteAll.disableProperty().bind(vm.canExecuteProgram().not());
+  }
 
   private void bindActionDetails() {
     /* Listener sur la liste */

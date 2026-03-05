@@ -18,8 +18,10 @@ public class ChosenActions {
             }
     );
 
+    private final ObservableList<Actionable> unmodifiableChosenActions = FXCollections.unmodifiableObservableList(chosenActions);
+
     public ObservableList<Actionable> getChosenActions() {
-        return FXCollections.unmodifiableObservableList(chosenActions);
+        return unmodifiableChosenActions;
     }
 
     public void add(Actionable action) {
