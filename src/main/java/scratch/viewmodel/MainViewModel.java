@@ -18,6 +18,7 @@ public class MainViewModel {
     private ObjectProperty<Actionable> selectedAction = new SimpleObjectProperty<>();
     private IntegerProperty idChosenAction = new SimpleIntegerProperty(-1);
     private BooleanProperty isLoad = new SimpleBooleanProperty(false);
+    private BooleanProperty isPlaying = new SimpleBooleanProperty(false);
 
     // debug
     private IntegerProperty currActionIndex = new SimpleIntegerProperty(0);
@@ -27,6 +28,7 @@ public class MainViewModel {
 
         this.chosenActions = chosenActions;
         this.chosenActions.getChosenActions().addListener((ListChangeListener<Actionable>) change -> {
+            this.setIsPlaying(false);
             currActionIndex.set(0);
             isLoad.set(false);
         });
@@ -160,7 +162,7 @@ public class MainViewModel {
     }
 
     public BooleanBinding canLoadProgram(){
-        return Bindings.isNotEmpty(chosenActions.getChosenActions());
+        return Bindings.isNotEmpty(chosenActions.getChosenActions()).and(isPlaying.not());
     }
 
     public BooleanBinding canRemoveAll() { return Bindings.isNotEmpty(chosenActions.getChosenActions()); }
@@ -193,6 +195,14 @@ public class MainViewModel {
         currActionIndex.set(idx);
     }
 
+    public boolean getIsPlaying(){
+        return isPlaying.get();
+    }
+
+    public void setIsPlaying(boolean value){
+        isPlaying.set(value);
+    }
+
     public PlayerViewModel getPlayerViewModel() {
         return playerVm;
     }
@@ -218,9 +228,9 @@ public class MainViewModel {
 
     public BooleanBinding canExecuteProgram(){
         return Bindings.createBooleanBinding(()->
-            !chosenActions.getChosenActions().isEmpty() && currActionIndex.get() < chosenActions.getChosenActions().size() && isLoad.get(),
+            !chosenActions.getChosenActions().isEmpty() && currActionIndex.get() < chosenActions.getChosenActions().size() && isLoad.get() && !isPlaying.get(),
             chosenActions.getChosenActions(),
-            currActionIndex, isLoad
+            currActionIndex, isLoad, isPlaying
         );
     }
 

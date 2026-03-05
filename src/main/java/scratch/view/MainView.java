@@ -1,5 +1,7 @@
 package scratch.view;
 
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.IntegerProperty;
 import javafx.collections.ListChangeListener;
@@ -14,6 +16,7 @@ import javafx.scene.text.Text;
 import javafx.scene.control.*;
 import javafx.stage.FileChooser;
 import javafx.util.Callback;
+import javafx.util.Duration;
 import scratch.model.*;
 import scratch.viewmodel.MainViewModel;
 import scratch.viewmodel.PlayerViewModel;
@@ -64,6 +67,7 @@ public class MainView extends VBox {
   private final VBox sceneBox = new VBox();
   private final Button btnLoad = new Button("Charger");
   private final Button btnExecute = new Button("Exécuter");
+  private final Button btnExecuteAll = new Button("Exécuter tout");
 
   public MainView(MainViewModel vm) {
     this.vm = vm;
@@ -123,7 +127,7 @@ public class MainView extends VBox {
     spritePane = createSpritePane();
     Group board = new Group(gridPane, spritePane);
 
-    HBox btnContainerScene = new HBox(10, btnLoad, btnExecute);
+    HBox btnContainerScene = new HBox(10, btnLoad, btnExecute, btnExecuteAll);
     btnContainerScene.setAlignment(Pos.CENTER);
 
     sceneBox.setSpacing(10);
@@ -249,6 +253,29 @@ public class MainView extends VBox {
     });
     btnExecute.disableProperty().bind(vm.canExecuteProgram().not());
     btnExecute.textProperty().bind(vm.getExecuteTextButton());
+
+    btnExecuteAll.setOnAction(event -> {
+      vm.setIsPlaying(true);
+        Timeline timeline = new Timeline();
+      KeyFrame keyframe = new KeyFrame(Duration.millis(150), event_1 -> {
+          if (!vm.getIsPlaying()){
+              timeline.stop();
+              return;
+          }
+          if (vm.getCurrentActionIndex() < vm.getChosenAction().size()) {
+              vm.executeAction();
+              chosenActions.getSelectionModel().select(vm.getCurrentActionIndex());
+          } else {
+              timeline.stop();
+              vm.setIsPlaying(false);
+          }
+      });
+      timeline.getKeyFrames().add(keyframe);
+      timeline.setCycleCount(Timeline.INDEFINITE);
+      timeline.play();
+    });
+
+    btnExecuteAll.disableProperty().bind(vm.canExecuteProgram().not());
   }
 
   private void bindActionDetails() {
