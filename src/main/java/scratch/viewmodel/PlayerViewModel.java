@@ -4,9 +4,9 @@ import javafx.beans.InvalidationListener;
 import javafx.beans.property.*;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.geometry.Point2D;
 import scratch.model.Actionable;
 import scratch.model.Player;
+import scratch.model.CustomPoint2D;
 
 public class PlayerViewModel {
     private final Player player;
@@ -58,6 +58,6 @@ public class PlayerViewModel {
         action.execute(player);
     }
 
-    public ReadOnlyObjectProperty<Point2D> positionProperty() {return player.positionProperty();}
+    public ReadOnlyObjectProperty<CustomPoint2D> positionProperty() {return player.positionProperty();}
     public ReadOnlyBooleanProperty penDowProperty() { return player.penDownProperty();}
 }

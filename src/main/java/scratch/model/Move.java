@@ -2,7 +2,6 @@ package scratch.model;
 
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
-import javafx.geometry.Point2D;
 import javafx.scene.paint.Color;
 
 public class Move implements Actionable{
@@ -46,7 +45,7 @@ public class Move implements Actionable{
 //        boolean facingUp = normalized < 180 && normalized > 1;
 
 //        int directionY = facingUp ? -1 : 1; // L'angle réel sur le cercle (0 à 360)
-        player.setPosition(new Point2D(player.getX() + diffX, player.getY() - diffY));
+        player.setPosition(new CustomPoint2D(player.getX() + diffX, player.getY() - diffY));
     }
 
     public int getDistance() {
