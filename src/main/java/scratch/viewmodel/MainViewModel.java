@@ -2,10 +2,7 @@ package scratch.viewmodel;
 
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.BooleanBinding;
-import javafx.beans.property.IntegerProperty;
-import javafx.beans.property.ObjectProperty;
-import javafx.beans.property.SimpleIntegerProperty;
-import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.property.*;
 import javafx.collections.ObservableList;
 import scratch.model.*;
 import scratch.view.PlayerView;
@@ -17,14 +14,18 @@ public class MainViewModel {
     private ChosenActions chosenActions;
     private ObjectProperty<Actionable> selectedAction = new SimpleObjectProperty<>();
     private IntegerProperty idChosenAction = new SimpleIntegerProperty(-1);
+    private final BooleanProperty errorProperty = new SimpleBooleanProperty(false);
 
     // debug
     private int currActionIndex = 0;
     private PlayerViewModel playerVm = new PlayerViewModel(new Player());
 
     public MainViewModel(ChosenActions chosenActions) {
-
         this.chosenActions = chosenActions;
+    }
+
+    public ReadOnlyBooleanProperty errorProperty() {
+        return errorProperty;
     }
 
     public ObservableList<Actionable> getAllAction() {
@@ -184,6 +185,27 @@ public class MainViewModel {
 
     public void setCurrentActionIndex(int idx) {
         currActionIndex = idx;
+    }
+
+    public void validateAndUpdateValue(Actionable selectedAction, String newText) {
+        if(selectedAction == null || selectedAction.getProperty() == null) {
+            errorProperty.set(false);
+            return;
+        }
+
+        try {
+            int value = Integer.parseInt(newText);
+            boolean isValid = Actions.isValueValid(selectedAction, value);
+
+            if (isValid) {
+                errorProperty.set(false); // Pas d'erreur
+                selectedAction.getProperty().set(value); // On met à jour la valeur
+            } else {
+                errorProperty.set(true); // Erreur de bornes
+            }
+        } catch (NumberFormatException e) {
+            errorProperty.set(true); // Erreur : ce n'est pas un nombre
+        }
     }
 
     public PlayerViewModel getPlayerViewModel() {
