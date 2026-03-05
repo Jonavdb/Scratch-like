@@ -268,35 +268,41 @@ public class MainView extends VBox {
   }
 
   private void bindActionDetails() {
-    /* Listener sur la liste */
-    chosenActions.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
-      // Appliquer le nouveau
-      if (newVal != null) {
-        labelPrefix.setText(newVal.getPrefix());
-        labelSuffix.setText(newVal.getSuffix());
-        labelSuffix.setVisible(true);
+    var selectedItemProp = chosenActions.getSelectionModel().selectedItemProperty();
 
-        if(newVal.getProperty() != null) {
-          actionParamField.setVisible(true);
-          actionParamField.setManaged(true);
-          actionParamField.setText(String.valueOf(newVal.getProperty().get()));
-        } else {
-          actionParamField.setVisible(false);
-          actionParamField.setManaged(false);
-          actionParamField.clear();
-        }
+    // Binding du Prefix
+    labelPrefix.textProperty().bind(Bindings.createStringBinding(() -> {
+      Actionable action = selectedItemProp.get();
+      return action != null ? action.getPrefix() : "(aucune action sélectionnée)";
+    }, selectedItemProp));
+
+    // Binding du Suffix
+    labelSuffix.textProperty().bind(Bindings.createStringBinding(() -> {
+      Actionable action = selectedItemProp.get();
+      return action != null ? action.getSuffix() : "";
+    }, selectedItemProp));
+
+    // Binding de la visibilité
+    var hasParameterBinding = Bindings.createBooleanBinding(() -> {
+      Actionable action = selectedItemProp.get();
+      return action != null && action.getProperty() != null;
+    }, selectedItemProp);
+
+    actionParamField.visibleProperty().bind(hasParameterBinding);
+    actionParamField.managedProperty().bind(hasParameterBinding);
+
+    // Listener (quand on clique sur une nouvelle action, on met à jour le texte de la case)
+    selectedItemProp.addListener((obs, oldVal, newVal) -> {
+      if (newVal != null && newVal.getProperty() != null) {
+        actionParamField.setText(String.valueOf(newVal.getProperty().get()));
       } else {
-        // Quand RIEN n'est sélectionné
-        labelPrefix.setText("(aucune action sélectionnée)");
-        labelSuffix.setText("");
-        actionParamField.setVisible(false);
-        actionParamField.setManaged(false);
+       actionParamField.clear();
       }
     });
 
-    /* Listener sur le champ texte */
+    // Listener (quand on tape au clavier, on envoie au ViewModel)
     actionParamField.textProperty().addListener((obs, oldText, newText) -> {
-      Actionable selectedAction = chosenActions.getSelectionModel().getSelectedItem();
+      Actionable selectedAction = selectedItemProp.get();
       vm.validateAndUpdateValue(selectedAction, newText);
     });
   }
