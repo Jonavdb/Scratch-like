@@ -3,7 +3,9 @@ package scratch.view;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.beans.binding.Bindings;
+import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
@@ -187,6 +189,8 @@ public class MainView extends VBox {
     bindButtons();
     bindActionDetails();
     bindMenuActions();
+    errorLabel.visibleProperty().bind(vm.errorProperty());
+    errorLabel.managedProperty().bind(vm.errorProperty());
   }
 
   private void bindLists() {
@@ -279,70 +283,42 @@ public class MainView extends VBox {
   }
 
   private void bindActionDetails() {
-    /* Listener sur la liste */
-    chosenActions.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
-      // Appliquer le nouveau
-      if (newVal != null) {
-        errorLabel.setVisible(false);
-        errorLabel.setManaged(false);
+    var selectedItemProp = chosenActions.getSelectionModel().selectedItemProperty();
 
-        labelPrefix.setText(newVal.getPrefix());
-        labelSuffix.setText(newVal.getSuffix());
-        labelSuffix.setVisible(true);
+    // Binding du Prefix
+    labelPrefix.textProperty().bind(Bindings.createStringBinding(() -> {
+      Actionable action = selectedItemProp.get();
+      return action != null ? action.getPrefix() : "(aucune action sélectionnée)";
+    }, selectedItemProp));
 
-        if(newVal.getProperty() != null) {
-          actionParamField.setVisible(true);
-          actionParamField.setManaged(true);
+    // Binding du Suffix
+    labelSuffix.textProperty().bind(Bindings.createStringBinding(() -> {
+      Actionable action = selectedItemProp.get();
+      return action != null ? action.getSuffix() : "";
+    }, selectedItemProp));
 
-//          actionParamField.textProperty().bindBidirectional(currentBoundProperty, new NumberStringConverter());
-          actionParamField.setText(String.valueOf(newVal.getProperty().get()));
-        } else {
-          actionParamField.setVisible(false);
-          actionParamField.setManaged(false);
-          actionParamField.clear();
-        }
+    // Binding de la visibilité
+    var hasParameterBinding = Bindings.createBooleanBinding(() -> {
+      Actionable action = selectedItemProp.get();
+      return action != null && action.getProperty() != null;
+    }, selectedItemProp);
+
+    actionParamField.visibleProperty().bind(hasParameterBinding);
+    actionParamField.managedProperty().bind(hasParameterBinding);
+
+    // Listener (quand on clique sur une nouvelle action, on met à jour le texte de la case)
+    selectedItemProp.addListener((obs, oldVal, newVal) -> {
+      if (newVal != null && newVal.getProperty() != null) {
+        actionParamField.setText(String.valueOf(newVal.getProperty().get()));
       } else {
-        // Quand RIEN n'est sélectionné
-        labelPrefix.setText("(aucune action sélectionnée)");
-        labelSuffix.setText("");
-        actionParamField.setVisible(false);
-        actionParamField.setManaged(false);
-        errorLabel.setVisible(false);
-        errorLabel.setManaged(false);
+       actionParamField.clear();
       }
     });
 
-    /* Listener sur le champ texte */
+    // Listener (quand on tape au clavier, on envoie au ViewModel)
     actionParamField.textProperty().addListener((obs, oldText, newText) -> {
-      Actionable selectedAction = chosenActions.getSelectionModel().getSelectedItem();
-
-      if(selectedAction == null || selectedAction.getProperty() == null) return;
-
-      try {
-        int value = Integer.parseInt(newText);
-        boolean isValid = false;
-
-        // Validation des bornes
-        if(selectedAction instanceof Move) {
-          isValid = value > 0 && value <= 100;
-        } else if (selectedAction instanceof TurnLeft || selectedAction instanceof TurnRight) {
-          isValid = value >= 1 && value <= 180;
-        }
-
-        // Application sur errorLabel
-        if(isValid) {
-          errorLabel.setVisible(false);
-          errorLabel.setManaged(false);
-          selectedAction.getProperty().set(value);  // on met à jour le modèle
-        } else {
-          errorLabel.setVisible(true);
-          errorLabel.setManaged(true);
-        }
-      } catch(NumberFormatException e) {
-        // Si l'utilisateur tape des lettres ou vide la case
-        errorLabel.setVisible(true);
-        errorLabel.setManaged(true);
-      }
+      Actionable selectedAction = selectedItemProp.get();
+      vm.validateAndUpdateValue(selectedAction, newText);
     });
   }
 
