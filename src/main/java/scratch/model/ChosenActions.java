@@ -1,9 +1,7 @@
 package scratch.model;
-
 import javafx.beans.Observable;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import org.controlsfx.control.action.Action;
 
 public class ChosenActions {
 

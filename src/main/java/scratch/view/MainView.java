@@ -3,11 +3,7 @@ package scratch.view;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.beans.binding.Bindings;
-import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.IntegerProperty;
-import javafx.beans.property.SimpleBooleanProperty;
-import javafx.collections.ListChangeListener;
-import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Group;
@@ -21,7 +17,6 @@ import javafx.util.Callback;
 import javafx.util.Duration;
 import scratch.model.*;
 import scratch.viewmodel.MainViewModel;
-import scratch.viewmodel.PlayerViewModel;
 
 import java.io.File;
 
@@ -372,26 +367,10 @@ public class MainView extends VBox {
 
     spritePane.setMinSize(500, 500);
 
-    // Instance du joueur avec les paramètres :
+    // Instance de la vue du joueur
     this.playerView = new PlayerView(vm.getPlayerViewModel());
 
-    // Debug movement + rotation
-//      player.turnLeft(90);      // Now facing Left (180°)
-//     player.moveForward(100);  // Pos: (150, 250)
-//      player.turnLeft(90);      // Now facing Down (270°)
-//      player.moveForward(80);   // Pos: (150, 330)
-//      player.turnRight(45);     // Now facing Down-Right (225°)
-//      player.moveForward(50);   // Pos: (~115, ~365)
-//      player.turnRight(135);    // Now facing Up (90°)
-//      player.moveForward(120);  // Pos: (~115, 245)
-//      player.turnRight(90);     // Now facing Right (0°)
-//      player.moveForward(100);  // Pos: (215, 245) - Back near center
-//      player.turnLeft(30);      // Now facing Up-Right (30°)
-//      player.moveForward(40);   // Pos: (~250, ~225)
-//      player.turnRight(120);    // Now facing Down-Right (-90° / 270°)
-//      player.moveForward(60);   // Pos: (~250, 285)
-
-
+    // Ajout de la vue du joueur au visuel de la grille
     spritePane.getChildren().add(playerView);
     return spritePane;
   }

@@ -16,9 +16,4 @@ public class CustomPoint2D {
     public double getY() {
         return this.y;
     }
-
-    public void setLocation(double x, double y) {
-        this.x = x;
-        this.y = y;
-    }
 }

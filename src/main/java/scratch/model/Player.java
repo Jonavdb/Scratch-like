@@ -9,10 +9,6 @@ public class Player {
     private final BooleanProperty penDown = new SimpleBooleanProperty(true);
 
 
-    public CustomPoint2D getPosition(){
-        return position.get();
-    }
-
     public void setPosition(CustomPoint2D value){
         position.setValue(value);
     }
