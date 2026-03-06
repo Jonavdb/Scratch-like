@@ -1,8 +1,8 @@
 package scratch.model;
 
 public class CustomPoint2D {
-    private double x;
-    private double y;
+    private final double x;
+    private final double y;
 
     public CustomPoint2D(double x, double y) {
         this.x = x;
