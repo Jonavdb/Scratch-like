@@ -1,6 +1,4 @@
 package scratch.viewmodel;
-
-import javafx.beans.InvalidationListener;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.BooleanBinding;
 import javafx.beans.binding.StringBinding;
@@ -8,7 +6,7 @@ import javafx.collections.ListChangeListener;
 import javafx.beans.property.*;
 import javafx.collections.ObservableList;
 import scratch.model.*;
-import scratch.view.PlayerView;
+
 
 import java.io.*;
 import java.util.Scanner;

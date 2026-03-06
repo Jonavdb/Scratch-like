@@ -15,10 +15,6 @@ public class PlayerView extends Group {
     private final Polygon body = new Polygon();
     private final Circle head = new Circle(2, Color.BLACK);
 
-    // Debug
-    private final double size = 15;
-
-
     public PlayerView(PlayerViewModel vm) {
         Bindings.bindContent(body.getPoints(), vm.getBodyPoints());
         head.translateXProperty().bind(vm.headXProperty());

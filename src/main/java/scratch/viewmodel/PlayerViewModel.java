@@ -19,11 +19,11 @@ public class PlayerViewModel {
     public PlayerViewModel(Player player) {
         this.player = player;
 
-        // Initialize the list with 6 placeholders (x1, y1, x2, y2, x3, y3)
+        // Initialisation de la liste des points du joueur ie.triangle (x1, y1, x2, y2, x3, y3)
         for (int i = 0; i < 6; ++i) bodyPoints.add(0.0);
 
-        // Update body points whenever player moves or rotate
-        InvalidationListener listener = obs ->  updatePoints();
+        // Mise à jour des points quand le joueur bouge ou tourne
+        InvalidationListener listener = (obs) ->  updatePoints();
         player.positionProperty().addListener(listener);
         player.angleProperty().addListener(listener);
 
@@ -34,13 +34,15 @@ public class PlayerViewModel {
         double currentX = player.getX();
         double currentY = player.getY();
         double currentAngle = player.getAngle();
+        double size = player.getSize();
+        double angleRecalibrer = 90;
 
-        double xP1 = currentX + player.getSize() * Math.sin(Math.toRadians(60)) * Math.cos(Math.toRadians(currentAngle+ 90));
-        double yP1 = currentY - player.getSize() * Math.sin(Math.toRadians(60)) * Math.sin(Math.toRadians(currentAngle + 90));
-        double xP2 = currentX - player.getSize() * Math.sin(Math.toRadians(30)) * Math.cos(Math.toRadians(currentAngle));
-        double yP2 = currentY + player.getSize() * Math.sin(Math.toRadians(30)) * Math.sin(Math.toRadians(currentAngle));
-        double xP3 = currentX + player.getSize() * Math.sin(Math.toRadians(30)) * Math.cos(Math.toRadians(currentAngle));
-        double yP3 = currentY - player.getSize() * Math.sin(Math.toRadians(30)) * Math.sin(Math.toRadians(currentAngle));
+        double xP1 = currentX + size * Math.sin(Math.toRadians(60)) * Math.cos(Math.toRadians(currentAngle + angleRecalibrer));
+        double yP1 = currentY - size * Math.sin(Math.toRadians(60)) * Math.sin(Math.toRadians(currentAngle + angleRecalibrer));
+        double xP2 = currentX - size * Math.sin(Math.toRadians(30)) * Math.cos(Math.toRadians(currentAngle));
+        double yP2 = currentY + size * Math.sin(Math.toRadians(30)) * Math.sin(Math.toRadians(currentAngle));
+        double xP3 = currentX + size * Math.sin(Math.toRadians(30)) * Math.cos(Math.toRadians(currentAngle));
+        double yP3 = currentY - size * Math.sin(Math.toRadians(30)) * Math.sin(Math.toRadians(currentAngle));
 
         bodyPoints.setAll(xP1, yP1, xP2, yP2, xP3, yP3);
         headX.set(xP1);
