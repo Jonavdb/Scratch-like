@@ -22,7 +22,7 @@ public class Up implements Actionable{
 
     @Override
     public String toSave() {
-        return "PEN_DOWN;0";
+        return "PEN_UP;0";
     }
 
     @Override
