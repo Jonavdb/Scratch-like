@@ -163,8 +163,28 @@ public class MainViewModel {
         return idChosenAction.greaterThanOrEqualTo(0);
     }
 
-    public BooleanBinding canLoadProgram(){
-        return Bindings.isNotEmpty(chosenActions.getChosenActions()).and(isPlaying.not());
+    public BooleanBinding canLoadProgram() {
+        return Bindings.createBooleanBinding(() -> {
+            ObservableList<Actionable> list = chosenActions.getChosenActions();
+            if (list.isEmpty() || isPlaying.get()) {
+                return false;
+            }
+            boolean isPenDown = true;
+            for (Actionable action : list) {
+                if (action instanceof Down) {
+                    if (isPenDown) {
+                        return false;
+                    }
+                    isPenDown = true;
+                } else if (action instanceof Up) {
+                    if (!isPenDown) {
+                        return false;
+                    }
+                    isPenDown = false;
+                }
+            }
+            return true;
+        }, chosenActions.getChosenActions(), isPlaying);
     }
 
     public BooleanBinding canRemoveAll() { return Bindings.isNotEmpty(chosenActions.getChosenActions()); }
