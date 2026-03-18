@@ -98,19 +98,26 @@ public class MainViewModel {
     }
 
     public void loadFile(File file){
-        if (file == null)
-            return;
+        if (file == null) return;
+
         try (Scanner scan = new Scanner(file)) {
             chosenActions.removeAll();
+
             while (scan.hasNextLine()) {
                 String line = scan.nextLine();
+                if(line.trim().isEmpty()) return;
+
                 String[] parts = line.split(";");
                 String action = parts[0];
-                int value = Integer.parseInt(parts[1]);
+
+                // On récupère la valeur en TEXTE (s'il y en a une)
+                String textValue = (parts.length > 1) ? parts[1] : "";
+
                 Actionable newAction = null;
+
                 switch (action) {
                     case "MOVE_FORWARD":
-                        newAction = new Move("Avancer de ", value);
+                        newAction = new Move("Avancer de ", textValue);
                         break;
                     case "PEN_UP":
                         newAction = new Up("Lever stylo");
@@ -119,10 +126,10 @@ public class MainViewModel {
                         newAction = new Down("Abaisser stylo");
                         break;
                     case "TURN_RIGHT":
-                        newAction = new TurnRight("Tourner à droite de ", value);
+                        newAction = new TurnRight("Tourner à droite de ", textValue);
                         break;
                     case "TURN_LEFT":
-                        newAction = new TurnLeft("Tourner à gauche de ", value);
+                        newAction = new TurnLeft("Tourner à gauche de ", textValue);
                         break;
                 }
                 if (newAction != null) {
@@ -130,6 +137,7 @@ public class MainViewModel {
                 }
             }
             System.out.println("Chargement réussi !");
+
         } catch (FileNotFoundException e){
             System.err.println("Fichier introuvable : " + e.getMessage());
         }
@@ -231,18 +239,13 @@ public class MainViewModel {
             return;
         }
 
-        try {
-            int value = Integer.parseInt(newText);
-            boolean isValid = Actions.isValueValid(selectedAction, value);
+        boolean isValid = Actions.isValueValid(selectedAction, newText);
 
-            if (isValid) {
-                errorProperty.set(false); // Pas d'erreur
-                selectedAction.getProperty().set(value); // On met à jour la valeur
-            } else {
-                errorProperty.set(true); // Erreur de bornes
-            }
-        } catch (NumberFormatException e) {
-            errorProperty.set(true); // Erreur : ce n'est pas un nombre
+        if (isValid) {
+            errorProperty.set(false);
+            selectedAction.getProperty().set(newText); // On sauvegarde le texte ("90" ou "nb")
+        } else {
+            errorProperty.set(true);
         }
     }
 
