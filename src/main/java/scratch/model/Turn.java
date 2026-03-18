@@ -15,21 +15,9 @@ public abstract class Turn implements Actionable {
     this.angle = new SimpleStringProperty(angle);
   }
 
+  public abstract void execute(Player player);
   public abstract String getPrefix();
   public abstract Actionable copy();
-
-  public void execute(Player player) {
-    String angleText = this.getProperty().get();
-    int turnValue = 0;
-
-    try {
-      turnValue = Integer.parseInt(angleText);
-    } catch (NumberFormatException e) {
-      return;
-    }
-
-    player.setAngle(player.getAngle() + turnValue);
-  }
 
   public String getAngle(){
     return angle.get();
