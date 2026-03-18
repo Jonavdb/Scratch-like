@@ -5,14 +5,8 @@ import javafx.beans.property.SimpleIntegerProperty;
 import javafx.scene.paint.Color;
 
 public class TurnLeft extends Turn {
-    public TurnLeft(String name, int angle) {
+    public TurnLeft(String name, String angle) {
       super(name, angle);
-    }
-
-    @Override
-    public void execute(Player player) {
-        int turnValue = this.getProperty().get();
-        player.setAngle(player.getAngle() + turnValue);
     }
 
     @Override

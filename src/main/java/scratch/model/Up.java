@@ -1,6 +1,7 @@
 package scratch.model;
 
 import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.StringProperty;
 import javafx.scene.paint.Color;
 
 public class Up implements Actionable{
@@ -26,7 +27,7 @@ public class Up implements Actionable{
     }
 
     @Override
-    public IntegerProperty getProperty() {
+    public StringProperty getProperty() {
         return null;
     }
 

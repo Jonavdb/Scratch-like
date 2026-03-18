@@ -2,22 +2,36 @@ package scratch.model;
 
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
 import javafx.scene.paint.Color;
 
 public abstract class Turn implements Actionable {
   private final String name;
-  private final IntegerProperty angle;
+  private final StringProperty angle;
 
-  public Turn(String name, int angle) {
+  public Turn(String name, String angle) {
     this.name = name;
-    this.angle = new SimpleIntegerProperty(angle);
+    this.angle = new SimpleStringProperty(angle);
   }
 
-  public abstract void execute(Player player);
   public abstract String getPrefix();
   public abstract Actionable copy();
 
-  public int getAngle(){
+  public void execute(Player player) {
+    String angleText = this.getProperty().get();
+    int turnValue = 0;
+
+    try {
+      turnValue = Integer.parseInt(angleText);
+    } catch (NumberFormatException e) {
+      return;
+    }
+
+    player.setAngle(player.getAngle() + turnValue);
+  }
+
+  public String getAngle(){
     return angle.get();
   }
 
@@ -25,7 +39,7 @@ public abstract class Turn implements Actionable {
     return name;
   }
 
-  public void setAngle(int newAngle) {
+  public void setAngle(String newAngle) {
     angle.set(newAngle);
   }
 
@@ -33,7 +47,7 @@ public abstract class Turn implements Actionable {
     return " degrés";
   }
 
-  public IntegerProperty getProperty() {
+  public StringProperty getProperty() {
     return angle;
   }
 
