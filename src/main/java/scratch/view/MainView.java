@@ -17,6 +17,7 @@ import javafx.util.Callback;
 import javafx.util.Duration;
 import scratch.model.*;
 import scratch.viewmodel.MainViewModel;
+import javafx.scene.control.Slider;
 
 import java.io.File;
 
@@ -65,6 +66,7 @@ public class MainView extends VBox {
   private final Button btnLoad = new Button("Charger");
   private final Button btnExecute = new Button("Exécuter");
   private final Button btnExecuteAll = new Button("Exécuter tout");
+  private final Slider slider = new Slider(0.01, 5, 0.01);
 
   public MainView(MainViewModel vm) {
     this.vm = vm;
@@ -126,10 +128,15 @@ public class MainView extends VBox {
 
     HBox btnContainerScene = new HBox(10, btnLoad, btnExecute, btnExecuteAll);
     btnContainerScene.setAlignment(Pos.CENTER);
-
+    slider.setShowTickLabels(true);
+    slider.setShowTickMarks(true);
+    slider.setMajorTickUnit(1);
+    slider.setBlockIncrement(0.1f);
+    slider.setMaxWidth(Double.MAX_VALUE);
     sceneBox.setSpacing(10);
     sceneBox.setPadding(new Insets(0, 0, 0, 20));
-    sceneBox.getChildren().addAll(new Text("Scene"), board, btnContainerScene);
+    VBox.setMargin(slider, new Insets(0,5,0,5));
+    sceneBox.getChildren().addAll(new Text("Scene"), board, btnContainerScene, slider);
   }
 
   private void configureLayoutGlobal() {
@@ -255,8 +262,8 @@ public class MainView extends VBox {
 
     btnExecuteAll.setOnAction(event -> {
       vm.setIsPlaying(true);
-        Timeline timeline = new Timeline();
-      KeyFrame keyframe = new KeyFrame(Duration.millis(150), event_1 -> {
+      Timeline timeline = new Timeline();
+      KeyFrame keyframe = new KeyFrame(Duration.seconds(1), event_1 -> {
           if (!vm.getIsPlaying()){
               timeline.stop();
               return;
@@ -271,6 +278,9 @@ public class MainView extends VBox {
       });
       timeline.getKeyFrames().add(keyframe);
       timeline.setCycleCount(Timeline.INDEFINITE);
+      timeline.setRate(1.0/slider.getValue());
+      slider.valueProperty().addListener((obs, oldVal, newVal) ->
+              timeline.setRate(1.0/newVal.doubleValue()));
       timeline.play();
     });
 
