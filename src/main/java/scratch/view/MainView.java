@@ -65,8 +65,11 @@ public class MainView extends VBox {
   private final VBox sceneBox = new VBox();
   private final Button btnLoad = new Button("Charger");
   private final Button btnExecute = new Button("Exécuter");
-  private final Button btnExecuteAll = new Button("Exécuter tout");
+  private final Button btnStop = new Button("Arreter");
   private final Slider slider = new Slider(0.01, 5, 0.01);
+  private final ToggleGroup groupOfExecute = new ToggleGroup();
+  private final RadioButton automatic_execute = new RadioButton("Exécution automatique");
+  private final RadioButton step_execute = new RadioButton("Exécution manuelle");
 
   public MainView(MainViewModel vm) {
     this.vm = vm;
@@ -126,7 +129,7 @@ public class MainView extends VBox {
     spritePane = createSpritePane();
     Group board = new Group(gridPane, spritePane);
 
-    HBox btnContainerScene = new HBox(10, btnLoad, btnExecute, btnExecuteAll);
+    HBox btnContainerScene = new HBox(10, btnLoad, btnExecute, btnStop);
     btnContainerScene.setAlignment(Pos.CENTER);
     slider.setShowTickLabels(true);
     slider.setShowTickMarks(true);
@@ -136,7 +139,12 @@ public class MainView extends VBox {
     sceneBox.setSpacing(10);
     sceneBox.setPadding(new Insets(0, 0, 0, 20));
     VBox.setMargin(slider, new Insets(0,5,0,5));
-    sceneBox.getChildren().addAll(new Text("Scene"), board, btnContainerScene, slider);
+    automatic_execute.setToggleGroup(groupOfExecute);
+    automatic_execute.setSelected(true);
+    step_execute.setToggleGroup(groupOfExecute);
+    HBox btnExecuteContainerScene = new HBox(10, automatic_execute, step_execute);
+    btnExecuteContainerScene.setAlignment(Pos.CENTER);
+    sceneBox.getChildren().addAll(new Text("Scene"), board, btnExecuteContainerScene, btnContainerScene, slider);
   }
 
   private void configureLayoutGlobal() {
@@ -254,37 +262,41 @@ public class MainView extends VBox {
     btnLoad.disableProperty().bind(vm.canLoadProgram().not());
 
     btnExecute.setOnAction(event -> {
-        vm.executeAction();
-        chosenActions.getSelectionModel().select( vm.getCurrentActionIndex());
+        if (groupOfExecute.getSelectedToggle() == step_execute) {
+            vm.executeAction();
+            chosenActions.getSelectionModel().select(vm.getCurrentActionIndex());
+        } else if (groupOfExecute.getSelectedToggle() == automatic_execute) {
+            vm.setIsPlaying(true);
+            Timeline timeline = new Timeline();
+            KeyFrame keyframe = new KeyFrame(Duration.seconds(1), event_1 -> {
+                if (!vm.getIsPlaying() || vm.getIsStop()){
+                    timeline.stop();
+                    return;
+                }
+                if (vm.getCurrentActionIndex() < vm.getChosenAction().size()) {
+                    vm.executeAction();
+                    chosenActions.getSelectionModel().select(vm.getCurrentActionIndex());
+                } else {
+                    timeline.stop();
+                    vm.setIsPlaying(false);
+                }
+            });
+            timeline.getKeyFrames().add(keyframe);
+            timeline.setCycleCount(Timeline.INDEFINITE);
+            timeline.setRate(1.0/slider.getValue());
+            slider.valueProperty().addListener((obs, oldVal, newVal) ->
+                    timeline.setRate(1.0/newVal.doubleValue()));
+            timeline.play();
+        }
     });
     btnExecute.disableProperty().bind(vm.canExecuteProgram().not());
     btnExecute.textProperty().bind(vm.getExecuteTextButton());
-
-    btnExecuteAll.setOnAction(event -> {
-      vm.setIsPlaying(true);
-      Timeline timeline = new Timeline();
-      KeyFrame keyframe = new KeyFrame(Duration.seconds(1), event_1 -> {
-          if (!vm.getIsPlaying()){
-              timeline.stop();
-              return;
-          }
-          if (vm.getCurrentActionIndex() < vm.getChosenAction().size()) {
-              vm.executeAction();
-              chosenActions.getSelectionModel().select(vm.getCurrentActionIndex());
-          } else {
-              timeline.stop();
-              vm.setIsPlaying(false);
-          }
-      });
-      timeline.getKeyFrames().add(keyframe);
-      timeline.setCycleCount(Timeline.INDEFINITE);
-      timeline.setRate(1.0/slider.getValue());
-      slider.valueProperty().addListener((obs, oldVal, newVal) ->
-              timeline.setRate(1.0/newVal.doubleValue()));
-      timeline.play();
-    });
-
-    btnExecuteAll.disableProperty().bind(vm.canExecuteProgram().not());
+    btnStop.setOnAction(event -> vm.setIsStop(true));
+    btnStop.disableProperty().bind(vm.canStop().not());
+    btnStop.visibleProperty().bind(groupOfExecute.selectedToggleProperty().isEqualTo(automatic_execute));
+    btnStop.managedProperty().bind(btnStop.visibleProperty());
+    slider.visibleProperty().bind(btnStop.visibleProperty());
+    slider.managedProperty().bind(btnStop.visibleProperty());
   }
 
   private void bindActionDetails() {

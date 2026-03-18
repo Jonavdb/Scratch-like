@@ -18,6 +18,7 @@ public class MainViewModel {
     private BooleanProperty isLoad = new SimpleBooleanProperty(false);
     private BooleanProperty isPlaying = new SimpleBooleanProperty(false);
     private final BooleanProperty errorProperty = new SimpleBooleanProperty(false);
+    private final BooleanProperty isStop = new SimpleBooleanProperty(false);
 
     // debug
     private IntegerProperty currActionIndex = new SimpleIntegerProperty(0);
@@ -196,6 +197,20 @@ public class MainViewModel {
     }
 
     public BooleanBinding canRemoveAll() { return Bindings.isNotEmpty(chosenActions.getChosenActions()); }
+
+    public BooleanBinding canStop() {
+        return Bindings.createBooleanBinding(() -> {
+            return isPlaying.get();
+        }, isPlaying);
+    }
+
+    public boolean getIsStop(){
+        return isStop.get();
+    }
+
+    public void setIsStop(boolean stop){
+        this.isStop.set(stop);
+    }
 
     public Actionable getSelectedAction() {
         return selectedAction.get();
