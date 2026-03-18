@@ -5,39 +5,43 @@ import javafx.beans.property.SimpleIntegerProperty;
 import javafx.scene.paint.Color;
 
 public abstract class Turn implements Actionable {
+  private final String name;
   private final IntegerProperty angle;
 
-  public Turn(int angle) {
+  public Turn(String name, int angle) {
+    this.name = name;
     this.angle = new SimpleIntegerProperty(angle);
   }
+
+  public abstract void execute(Player player);
+  public abstract String getPrefix();
+  public abstract Actionable copy();
 
   public int getAngle(){
     return angle.get();
   }
 
-  public void setAngle(int angle) {
-    this.angle.set(angle);
+  public String getName() {
+    return name;
   }
 
-  @Override
+  public void setAngle(int newAngle) {
+    angle.set(newAngle);
+  }
+
+  public String getSuffix() {
+    return " degrés";
+  }
+
   public IntegerProperty getProperty() {
     return angle;
   }
 
-  @Override
-  public void execute(Player player) {
-  }
-
-  @Override
-  public String getPrefix() {
-    return "";
-  }
-
-  @Override
   public Color getColor() {
     return Color.RED;
   }
 
-  @Override
-  public abstract Actionable copy();
+  public String toString() {
+    return name + " " + getAngle();
+  }
 }
