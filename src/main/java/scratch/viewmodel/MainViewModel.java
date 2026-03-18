@@ -5,6 +5,9 @@ import javafx.beans.binding.StringBinding;
 import javafx.collections.ListChangeListener;
 import javafx.beans.property.*;
 import javafx.collections.ObservableList;
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
+import javafx.util.Duration;
 import scratch.model.*;
 
 
@@ -19,6 +22,8 @@ public class MainViewModel {
     private BooleanProperty isPlaying = new SimpleBooleanProperty(false);
     private final BooleanProperty errorProperty = new SimpleBooleanProperty(false);
     private final BooleanProperty isStop = new SimpleBooleanProperty(false);
+    private final DoubleProperty speed = new SimpleDoubleProperty(1.0);
+    private Timeline timeline;
 
     // debug
     private IntegerProperty currActionIndex = new SimpleIntegerProperty(0);
@@ -208,8 +213,19 @@ public class MainViewModel {
         return isStop.get();
     }
 
-    public void setIsStop(boolean stop){
-        this.isStop.set(stop);
+    public void stopAutoExecute(){
+        isStop.set(true);
+        isPlaying.set(false);
+        if (timeline != null)
+            timeline.stop();
+    }
+
+    public double getSpeed() {
+        return speed.get();
+    }
+
+    public DoubleProperty speedProperty() {
+        return speed;
     }
 
     public Actionable getSelectedAction() {
@@ -226,6 +242,10 @@ public class MainViewModel {
 
     public IntegerProperty idChosenActionProperty() {
         return idChosenAction;
+    }
+
+    public IntegerProperty currActionIndexProperty() {
+        return currActionIndex;
     }
 
     public void setIdChosenAction(int idChosenAction) {
@@ -293,6 +313,31 @@ public class MainViewModel {
             chosenActions.getChosenActions(),
             currActionIndex, isLoad, isPlaying
         );
+    }
+
+    public void startAutoExecute(){
+        isPlaying.set(true);
+        isStop.set(false);
+        timeline = new Timeline();
+        KeyFrame keyFrame = new KeyFrame(Duration.seconds(1), event_1 -> {
+            if (!isPlaying.get() || isStop.get()){
+                timeline.stop();
+                return;
+            }
+            if (currActionIndex.get() < chosenActions.getChosenActions().size()) {
+                executeAction();
+            } else {
+                timeline.stop();
+                isPlaying.set(false);
+            }
+        });
+        timeline.getKeyFrames().add(keyFrame);
+        timeline.setCycleCount(Timeline.INDEFINITE);
+        speed.addListener((obs, oldVal, newVal) -> {
+            timeline.setRate(1.0 / newVal.doubleValue());
+        });
+        timeline.setRate(1.0 / speed.get());
+        timeline.play();
     }
 
 

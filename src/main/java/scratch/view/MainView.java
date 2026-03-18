@@ -1,7 +1,5 @@
 package scratch.view;
 
-import javafx.animation.KeyFrame;
-import javafx.animation.Timeline;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.IntegerProperty;
 import javafx.geometry.Insets;
@@ -14,7 +12,6 @@ import javafx.scene.text.Text;
 import javafx.scene.control.*;
 import javafx.stage.FileChooser;
 import javafx.util.Callback;
-import javafx.util.Duration;
 import scratch.model.*;
 import scratch.viewmodel.MainViewModel;
 import javafx.scene.control.Slider;
@@ -201,6 +198,9 @@ public class MainView extends VBox {
     bindMenuActions();
     errorLabel.visibleProperty().bind(vm.errorProperty());
     errorLabel.managedProperty().bind(vm.errorProperty());
+    vm.currActionIndexProperty().addListener((obs, oldVal, newVal) -> {
+        chosenActions.getSelectionModel().select(newVal.intValue());
+    });
   }
 
   private void bindLists() {
@@ -264,37 +264,17 @@ public class MainView extends VBox {
     btnExecute.setOnAction(event -> {
         if (groupOfExecute.getSelectedToggle() == step_execute) {
             vm.executeAction();
-            chosenActions.getSelectionModel().select(vm.getCurrentActionIndex());
         } else if (groupOfExecute.getSelectedToggle() == automatic_execute) {
-            vm.setIsPlaying(true);
-            Timeline timeline = new Timeline();
-            KeyFrame keyframe = new KeyFrame(Duration.seconds(1), event_1 -> {
-                if (!vm.getIsPlaying() || vm.getIsStop()){
-                    timeline.stop();
-                    return;
-                }
-                if (vm.getCurrentActionIndex() < vm.getChosenAction().size()) {
-                    vm.executeAction();
-                    chosenActions.getSelectionModel().select(vm.getCurrentActionIndex());
-                } else {
-                    timeline.stop();
-                    vm.setIsPlaying(false);
-                }
-            });
-            timeline.getKeyFrames().add(keyframe);
-            timeline.setCycleCount(Timeline.INDEFINITE);
-            timeline.setRate(1.0/slider.getValue());
-            slider.valueProperty().addListener((obs, oldVal, newVal) ->
-                    timeline.setRate(1.0/newVal.doubleValue()));
-            timeline.play();
+            vm.startAutoExecute();
         }
     });
     btnExecute.disableProperty().bind(vm.canExecuteProgram().not());
     btnExecute.textProperty().bind(vm.getExecuteTextButton());
-    btnStop.setOnAction(event -> vm.setIsStop(true));
+    btnStop.setOnAction(event -> vm.stopAutoExecute());
     btnStop.disableProperty().bind(vm.canStop().not());
     btnStop.visibleProperty().bind(groupOfExecute.selectedToggleProperty().isEqualTo(automatic_execute));
     btnStop.managedProperty().bind(btnStop.visibleProperty());
+    slider.valueProperty().bindBidirectional(vm.speedProperty());
     slider.visibleProperty().bind(btnStop.visibleProperty());
     slider.managedProperty().bind(btnStop.visibleProperty());
   }
