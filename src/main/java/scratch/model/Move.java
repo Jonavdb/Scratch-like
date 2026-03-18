@@ -2,22 +2,31 @@ package scratch.model;
 
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
 import javafx.scene.paint.Color;
 
 public class Move implements Actionable{
     private final String name;
-    private IntegerProperty distance;
+    private final StringProperty distance;
 
-    public Move(String name, int distance){
+    public Move(String name, String distance){
         this.name = name;
-        this.distance = new SimpleIntegerProperty(distance);
+        this.distance = new SimpleStringProperty(distance);
     }
 
     @Override
     public void execute(Player player) {
-        int dist = this.getProperty().get();
-        if(dist <= 0 || dist > 100)
+        String distanceText = this.getProperty().get();
+        int dist = 0;
+
+        try {
+            dist = Integer.parseInt(distanceText);
+        } catch (NumberFormatException e) {
             return;
+        }
+
+        if(dist <= 0 || dist > 100) return;
 
         double radians = Math.toRadians(player.getAngle()) + Math.PI / 2;
 
@@ -28,11 +37,15 @@ public class Move implements Actionable{
         player.setPosition(new CustomPoint2D(player.getX() + diffX, player.getY() - diffY));
     }
 
-    public int getDistance() {
+    public String getDistance() {
         return distance.get();
     }
 
-    public IntegerProperty getProperty() {
+    public void setDistance(String distance) {
+        this.distance.set(distance);
+    }
+
+    public StringProperty getProperty() {
         return distance;
     }
 
@@ -46,9 +59,6 @@ public class Move implements Actionable{
         return " pixels";
     }
 
-    public void setDistance(int distance) {
-        this.distance.set(distance);
-    }
 
     @Override
     public Actionable copy() {
