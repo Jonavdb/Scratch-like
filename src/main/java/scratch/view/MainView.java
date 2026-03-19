@@ -51,8 +51,8 @@ public class MainView extends VBox {
 
   // Action détails (sous le programme)
   private final Label labelPrefix = new Label("(aucune action selectionnée)");
-  private final TextField actionParamField = new TextField();
-  private final Label labelSuffix = new Label("");
+  private final TextField actionParamField = new TextField("");
+  private final Label labelSuffix = new Label();
   private final Label errorLabel = new Label("Erreur valeur");
 
   private final HBox detailContent = new HBox(5, labelPrefix, actionParamField, labelSuffix);
@@ -159,7 +159,7 @@ public class MainView extends VBox {
         if(item.getProperty() != null) {
           // permet de fabriquer un texte à chaque fois que la propriété change
           textProperty().bind(Bindings.createStringBinding(
-                  () -> item.getPrefix() + item.getProperty().get(),
+                  () -> item.getName() + " " + item.getProperty().get(),
                   item.getProperty()
           ));
         } else {
@@ -313,7 +313,8 @@ public class MainView extends VBox {
     // Listener (quand on tape au clavier, on envoie au ViewModel)
     actionParamField.textProperty().addListener((obs, oldText, newText) -> {
       Actionable selectedAction = selectedItemProp.get();
-      vm.validateAndUpdateValue(selectedAction, newText);
+      var sanitized = newText.strip();
+      vm.validateAndUpdateValue(selectedAction, sanitized);
     });
   }
 

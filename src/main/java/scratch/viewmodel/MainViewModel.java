@@ -226,6 +226,7 @@ public class MainViewModel {
             selectedAction.getProperty().set(newText); // On sauvegarde le texte ("90" ou "nb")
         } else {
             errorProperty.set(true);
+            selectedAction.getProperty().set(""); // Reset case vide
         }
     }
 

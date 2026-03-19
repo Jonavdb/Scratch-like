@@ -30,12 +30,12 @@ public class DeclareVariable implements Actionable {
 
     @Override
     public String getPrefix() {
-        return "Déclaration variable ";
+        return "Déclaration de la variable";
     }
 
     @Override
     public String getSuffix() {
-        return getNameVariable();
+        return "";
     }
 
     @Override
@@ -47,7 +47,7 @@ public class DeclareVariable implements Actionable {
     @Override
     public Color getColor() {return Color.AQUA.darker();}
 
-    public String toString() {return name + " " + getNameVariable();}
+    public String toString() {return name;}
 
     @Override
     public String getName() {return name;}
