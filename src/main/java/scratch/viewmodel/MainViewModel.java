@@ -5,6 +5,7 @@ import javafx.beans.binding.StringBinding;
 import javafx.collections.ListChangeListener;
 import javafx.beans.property.*;
 import javafx.collections.ObservableList;
+import javafx.scene.control.ListView;
 import scratch.model.*;
 
 
@@ -14,7 +15,7 @@ import java.util.Scanner;
 public class MainViewModel {
     private ChosenActions chosenActions;
     private ObjectProperty<Actionable> selectedAction = new SimpleObjectProperty<>();
-    private IntegerProperty idChosenAction = new SimpleIntegerProperty(-1);
+    private IntegerProperty idChosenAction = new SimpleIntegerProperty(-1); // -1 pour quand il y ait premier el, il soit à 0
     private BooleanProperty isLoad = new SimpleBooleanProperty(false);
     private BooleanProperty isPlaying = new SimpleBooleanProperty(false);
     private final BooleanProperty errorProperty = new SimpleBooleanProperty(false);
@@ -45,9 +46,17 @@ public class MainViewModel {
     }
 
     public void addAction() {
-        Actionable toAdd = selectedAction.get();
-        Actionable addItem = toAdd.copy();
-        chosenActions.add(addItem);
+        Actionable actionToAdd = selectedAction.get();
+        if(actionToAdd == null) return;
+        Actionable addItem = actionToAdd.copy();
+
+        int targetIndex = idChosenAction.get();
+
+        if(targetIndex >= 0) {
+            chosenActions.addAtPosition(targetIndex + 1, actionToAdd);  // on le met après l'élément sélectionné
+        } else {
+            chosenActions.add(addItem); // si rien de sélectionné, on le met à la fin
+        }
     }
 
     public void removeAction() {

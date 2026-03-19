@@ -4,7 +4,6 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
 public class ChosenActions {
-
     private ObservableList<Actionable> chosenActions = FXCollections.observableArrayList(
             action -> {
                 if (action != null && action.getProperty() != null) {
@@ -24,6 +23,10 @@ public class ChosenActions {
 
     public void add(Actionable action) {
         chosenActions.add(action);
+    }
+
+    public void addAtPosition(int item, Actionable action) {
+        chosenActions.add(item, action);
     }
 
     public Actionable remove(int idx){
