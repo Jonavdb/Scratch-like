@@ -5,6 +5,9 @@ import javafx.beans.binding.StringBinding;
 import javafx.collections.ListChangeListener;
 import javafx.beans.property.*;
 import javafx.collections.ObservableList;
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
+import javafx.util.Duration;
 import scratch.model.*;
 
 
@@ -18,6 +21,9 @@ public class MainViewModel {
     private BooleanProperty isLoad = new SimpleBooleanProperty(false);
     private BooleanProperty isPlaying = new SimpleBooleanProperty(false);
     private final BooleanProperty errorProperty = new SimpleBooleanProperty(false);
+    private final BooleanProperty isStop = new SimpleBooleanProperty(false);
+    private final DoubleProperty speed = new SimpleDoubleProperty(1.0);
+    private Timeline timeline;
 
     // debug
     private IntegerProperty currActionIndex = new SimpleIntegerProperty(0);
@@ -171,11 +177,56 @@ public class MainViewModel {
         return idChosenAction.greaterThanOrEqualTo(0);
     }
 
-    public BooleanBinding canLoadProgram(){
-        return Bindings.isNotEmpty(chosenActions.getChosenActions()).and(isPlaying.not());
+    public BooleanBinding canLoadProgram() {
+        return Bindings.createBooleanBinding(() -> {
+            ObservableList<Actionable> list = chosenActions.getChosenActions();
+            if (list.isEmpty() || isPlaying.get()) {
+                return false;
+            }
+            boolean isPenDown = true;
+            for (Actionable action : list) {
+                if (action instanceof Down) {
+                    if (isPenDown) {
+                        return false;
+                    }
+                    isPenDown = true;
+                } else if (action instanceof Up) {
+                    if (!isPenDown) {
+                        return false;
+                    }
+                    isPenDown = false;
+                }
+            }
+            return true;
+        }, chosenActions.getChosenActions(), isPlaying);
     }
 
     public BooleanBinding canRemoveAll() { return Bindings.isNotEmpty(chosenActions.getChosenActions()); }
+
+    public BooleanBinding canStop() {
+        return Bindings.createBooleanBinding(() -> {
+            return isPlaying.get();
+        }, isPlaying);
+    }
+
+    public boolean getIsStop(){
+        return isStop.get();
+    }
+
+    public void stopAutoExecute(){
+        isStop.set(true);
+        isPlaying.set(false);
+        if (timeline != null)
+            timeline.stop();
+    }
+
+    public double getSpeed() {
+        return speed.get();
+    }
+
+    public DoubleProperty speedProperty() {
+        return speed;
+    }
 
     public Actionable getSelectedAction() {
         return selectedAction.get();
@@ -191,6 +242,10 @@ public class MainViewModel {
 
     public IntegerProperty idChosenActionProperty() {
         return idChosenAction;
+    }
+
+    public IntegerProperty currActionIndexProperty() {
+        return currActionIndex;
     }
 
     public void setIdChosenAction(int idChosenAction) {
@@ -258,6 +313,31 @@ public class MainViewModel {
             chosenActions.getChosenActions(),
             currActionIndex, isLoad, isPlaying
         );
+    }
+
+    public void startAutoExecute(){
+        isPlaying.set(true);
+        isStop.set(false);
+        timeline = new Timeline();
+        KeyFrame keyFrame = new KeyFrame(Duration.seconds(1), event_1 -> {
+            if (!isPlaying.get() || isStop.get()){
+                timeline.stop();
+                return;
+            }
+            if (currActionIndex.get() < chosenActions.getChosenActions().size()) {
+                executeAction();
+            } else {
+                timeline.stop();
+                isPlaying.set(false);
+            }
+        });
+        timeline.getKeyFrames().add(keyFrame);
+        timeline.setCycleCount(Timeline.INDEFINITE);
+        speed.addListener((obs, oldVal, newVal) -> {
+            timeline.setRate(1.0 / newVal.doubleValue());
+        });
+        timeline.setRate(1.0 / speed.get());
+        timeline.play();
     }
 
 

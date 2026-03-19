@@ -1,7 +1,5 @@
 package scratch.view;
 
-import javafx.animation.KeyFrame;
-import javafx.animation.Timeline;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.IntegerProperty;
 import javafx.geometry.Insets;
@@ -14,9 +12,9 @@ import javafx.scene.text.Text;
 import javafx.scene.control.*;
 import javafx.stage.FileChooser;
 import javafx.util.Callback;
-import javafx.util.Duration;
 import scratch.model.*;
 import scratch.viewmodel.MainViewModel;
+import javafx.scene.control.Slider;
 
 import java.io.File;
 
@@ -64,7 +62,11 @@ public class MainView extends VBox {
   private final VBox sceneBox = new VBox();
   private final Button btnLoad = new Button("Charger");
   private final Button btnExecute = new Button("Exécuter");
-  private final Button btnExecuteAll = new Button("Exécuter tout");
+  private final Button btnStop = new Button("Arreter");
+  private final Slider slider = new Slider(0.01, 5, 0.01);
+  private final ToggleGroup groupOfExecute = new ToggleGroup();
+  private final RadioButton automatic_execute = new RadioButton("Exécution automatique");
+  private final RadioButton step_execute = new RadioButton("Exécution manuelle");
 
   public MainView(MainViewModel vm) {
     this.vm = vm;
@@ -124,12 +126,22 @@ public class MainView extends VBox {
     spritePane = createSpritePane();
     Group board = new Group(gridPane, spritePane);
 
-    HBox btnContainerScene = new HBox(10, btnLoad, btnExecute, btnExecuteAll);
+    HBox btnContainerScene = new HBox(10, btnLoad, btnExecute, btnStop);
     btnContainerScene.setAlignment(Pos.CENTER);
-
+    slider.setShowTickLabels(true);
+    slider.setShowTickMarks(true);
+    slider.setMajorTickUnit(1);
+    slider.setBlockIncrement(0.1f);
+    slider.setMaxWidth(Double.MAX_VALUE);
     sceneBox.setSpacing(10);
     sceneBox.setPadding(new Insets(0, 0, 0, 20));
-    sceneBox.getChildren().addAll(new Text("Scene"), board, btnContainerScene);
+    VBox.setMargin(slider, new Insets(0,5,0,5));
+    automatic_execute.setToggleGroup(groupOfExecute);
+    automatic_execute.setSelected(true);
+    step_execute.setToggleGroup(groupOfExecute);
+    HBox btnExecuteContainerScene = new HBox(10, automatic_execute, step_execute);
+    btnExecuteContainerScene.setAlignment(Pos.CENTER);
+    sceneBox.getChildren().addAll(new Text("Scene"), board, btnExecuteContainerScene, btnContainerScene, slider);
   }
 
   private void configureLayoutGlobal() {
@@ -186,6 +198,9 @@ public class MainView extends VBox {
     bindMenuActions();
     errorLabel.visibleProperty().bind(vm.errorProperty());
     errorLabel.managedProperty().bind(vm.errorProperty());
+    vm.currActionIndexProperty().addListener((obs, oldVal, newVal) -> {
+        chosenActions.getSelectionModel().select(newVal.intValue());
+    });
   }
 
   private void bindLists() {
@@ -247,34 +262,21 @@ public class MainView extends VBox {
     btnLoad.disableProperty().bind(vm.canLoadProgram().not());
 
     btnExecute.setOnAction(event -> {
-        vm.executeAction();
-        chosenActions.getSelectionModel().select( vm.getCurrentActionIndex());
+        if (groupOfExecute.getSelectedToggle() == step_execute) {
+            vm.executeAction();
+        } else if (groupOfExecute.getSelectedToggle() == automatic_execute) {
+            vm.startAutoExecute();
+        }
     });
     btnExecute.disableProperty().bind(vm.canExecuteProgram().not());
     btnExecute.textProperty().bind(vm.getExecuteTextButton());
-
-    btnExecuteAll.setOnAction(event -> {
-      vm.setIsPlaying(true);
-        Timeline timeline = new Timeline();
-      KeyFrame keyframe = new KeyFrame(Duration.millis(150), event_1 -> {
-          if (!vm.getIsPlaying()){
-              timeline.stop();
-              return;
-          }
-          if (vm.getCurrentActionIndex() < vm.getChosenAction().size()) {
-              vm.executeAction();
-              chosenActions.getSelectionModel().select(vm.getCurrentActionIndex());
-          } else {
-              timeline.stop();
-              vm.setIsPlaying(false);
-          }
-      });
-      timeline.getKeyFrames().add(keyframe);
-      timeline.setCycleCount(Timeline.INDEFINITE);
-      timeline.play();
-    });
-
-    btnExecuteAll.disableProperty().bind(vm.canExecuteProgram().not());
+    btnStop.setOnAction(event -> vm.stopAutoExecute());
+    btnStop.disableProperty().bind(vm.canStop().not());
+    btnStop.visibleProperty().bind(groupOfExecute.selectedToggleProperty().isEqualTo(automatic_execute));
+    btnStop.managedProperty().bind(btnStop.visibleProperty());
+    slider.valueProperty().bindBidirectional(vm.speedProperty());
+    slider.visibleProperty().bind(btnStop.visibleProperty());
+    slider.managedProperty().bind(btnStop.visibleProperty());
   }
 
   private void bindActionDetails() {
