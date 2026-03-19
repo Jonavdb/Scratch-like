@@ -9,7 +9,9 @@ public abstract class Actions {
             new TurnLeft("Tourner à gauche", "90"),
             new TurnRight("Tourner à droite", "90"),
             new Up("Lever stylo"),
-            new Down("Abaisser stylo")
+            new Down("Abaisser stylo"),
+            new Repeat("Répéter"),
+            new EndRepeat("Arreter la répétition")
     );
 
     public static ObservableList<Actionable> getActions() {
