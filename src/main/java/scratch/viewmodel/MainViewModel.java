@@ -11,8 +11,12 @@ import javafx.util.Duration;
 import scratch.model.*;
 
 
+import javax.swing.*;
 import java.io.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
+import java.util.Stack;
 
 public class MainViewModel {
     private ChosenActions chosenActions;
@@ -24,6 +28,7 @@ public class MainViewModel {
     private final BooleanProperty isStop = new SimpleBooleanProperty(false);
     private final DoubleProperty speed = new SimpleDoubleProperty(1.0);
     private Timeline timeline;
+    private List<Actionable> program;
 
     // debug
     private IntegerProperty currActionIndex = new SimpleIntegerProperty(0);
@@ -150,9 +155,10 @@ public class MainViewModel {
     }
 
     public void executeAction() {
-        if (currActionIndex.get() < chosenActions.getChosenActions().size()) {
-            Actionable action = chosenActions.get(currActionIndex.get());
-            playerVm.processAction(action);
+        if (currActionIndex.get() < program.size()) {
+            System.out.println(program.size());
+            System.out.println(currActionIndex.get());
+            playerVm.processAction(program.get(currActionIndex.get()));
             currActionIndex.set(currActionIndex.get() + 1);
         }
     }
@@ -303,15 +309,17 @@ public class MainViewModel {
 
     public void resetCommands(){
         currActionIndex.set(0);
-        isLoad.set(true);
         resetPlayerViewModel();
+        List<Actionable> tree = listIntoTree(chosenActions.getChosenActions());
+        program = new ArrayList<>();
+        TreeIntoList(tree, program);
+        isLoad.set(true);
     }
 
     public BooleanBinding canExecuteProgram(){
         return Bindings.createBooleanBinding(()->
-            !chosenActions.getChosenActions().isEmpty() && currActionIndex.get() < chosenActions.getChosenActions().size() && isLoad.get() && !isPlaying.get(),
-            chosenActions.getChosenActions(),
-            currActionIndex, isLoad, isPlaying
+            program != null && !chosenActions.getChosenActions().isEmpty() && currActionIndex.get() < program.size() && isLoad.get() && !isPlaying.get(),
+                chosenActions.getChosenActions(), currActionIndex, isLoad, isPlaying
         );
     }
 
@@ -324,7 +332,7 @@ public class MainViewModel {
                 timeline.stop();
                 return;
             }
-            if (currActionIndex.get() < chosenActions.getChosenActions().size()) {
+            if (currActionIndex.get() < program.size()) {
                 executeAction();
             } else {
                 timeline.stop();
@@ -338,6 +346,40 @@ public class MainViewModel {
         });
         timeline.setRate(1.0 / speed.get());
         timeline.play();
+    }
+
+    private List<Actionable> listIntoTree(List<Actionable> basicList){
+        List<Actionable> tree = new ArrayList<>();
+        Stack<List<Actionable>> stack = new Stack<>();
+        stack.push(tree);
+        for(Actionable action : basicList) {
+            if (action instanceof Repeat){
+                Repeat repeat = (Repeat) action.copy();
+                stack.peek().add(repeat);
+                stack.push(repeat.getChildren());
+            } else if (action instanceof EndRepeat) {
+                if (stack.size() > 1){
+                    stack.pop();
+                }
+            } else {
+                stack.peek().add(action.copy());
+            }
+        }
+        return tree;
+    }
+
+    private void TreeIntoList(List<Actionable> tree, List<Actionable> result){
+        for (Actionable action : tree) {
+            if (action instanceof Repeat) {
+                Repeat repeat = (Repeat) action;
+                int n = Integer.parseInt(repeat.getTick());
+                for (int i = 0; i < n; ++i){
+                    TreeIntoList(repeat.getChildren(), result);
+                }
+            } else {
+                result.add(action);
+            }
+        } // applatissement du répeat à l'execution
     }
 
 

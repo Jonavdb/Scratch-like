@@ -9,7 +9,7 @@ import java.util.List;
 public class Repeat implements Actionable {
     private final String name;
     private final ActionBlock actions = new ActionBlock("repeat");
-    private final StringProperty tick = new SimpleStringProperty("10");
+    private final StringProperty tick = new SimpleStringProperty("50");
     public Repeat(String name) {
         this.name = name;
     }
@@ -62,5 +62,13 @@ public class Repeat implements Actionable {
 
     public List<Actionable> getChildren(){
         return actions.getChildren();
+    }
+
+    public String getTick() {
+        return tick.get();
+    }
+
+    public StringProperty tickProperty() {
+        return tick;
     }
 }
