@@ -28,8 +28,7 @@ public class MainViewModel {
     private final BooleanProperty isStop = new SimpleBooleanProperty(false);
     private final DoubleProperty speed = new SimpleDoubleProperty(1.0);
     private Timeline timeline;
-    private List<Actionable> program;
-
+    private Execution executor = new Execution();
     // debug
     private IntegerProperty currActionIndex = new SimpleIntegerProperty(0);
     private PlayerViewModel playerVm = new PlayerViewModel(new Player());
@@ -155,10 +154,9 @@ public class MainViewModel {
     }
 
     public void executeAction() {
-        if (currActionIndex.get() < program.size()) {
-            System.out.println(program.size());
-            System.out.println(currActionIndex.get());
-            playerVm.processAction(program.get(currActionIndex.get()));
+        Actionable next = executor.getNextAction();
+        if (next != null){
+            playerVm.processAction(next);
             currActionIndex.set(currActionIndex.get() + 1);
         }
     }
@@ -308,17 +306,15 @@ public class MainViewModel {
     }
 
     public void resetCommands(){
-        currActionIndex.set(0);
         resetPlayerViewModel();
-        List<Actionable> tree = listIntoTree(chosenActions.getChosenActions());
-        program = new ArrayList<>();
-        TreeIntoList(tree, program);
+        executor.init(chosenActions.getChosenActions());
+        currActionIndex.set(0);
         isLoad.set(true);
     }
 
     public BooleanBinding canExecuteProgram(){
         return Bindings.createBooleanBinding(()->
-            program != null && !chosenActions.getChosenActions().isEmpty() && currActionIndex.get() < program.size() && isLoad.get() && !isPlaying.get(),
+            executor != null && !chosenActions.getChosenActions().isEmpty() && !executor.isDone() && isLoad.get() && !isPlaying.get(),
                 chosenActions.getChosenActions(), currActionIndex, isLoad, isPlaying
         );
     }
@@ -332,8 +328,10 @@ public class MainViewModel {
                 timeline.stop();
                 return;
             }
-            if (currActionIndex.get() < program.size()) {
-                executeAction();
+            Actionable next = executor.getNextAction();
+            if (next != null) {
+                playerVm.processAction(next);
+                currActionIndex.set(currActionIndex.get() + 1);
             } else {
                 timeline.stop();
                 isPlaying.set(false);
@@ -346,26 +344,6 @@ public class MainViewModel {
         });
         timeline.setRate(1.0 / speed.get());
         timeline.play();
-    }
-
-    private List<Actionable> listIntoTree(List<Actionable> basicList){
-        List<Actionable> tree = new ArrayList<>();
-        Stack<List<Actionable>> stack = new Stack<>();
-        stack.push(tree);
-        for(Actionable action : basicList) {
-            if (action instanceof Repeat){
-                Repeat repeat = (Repeat) action.copy();
-                stack.peek().add(repeat);
-                stack.push(repeat.getChildren());
-            } else if (action instanceof EndRepeat) {
-                if (stack.size() > 1){
-                    stack.pop();
-                }
-            } else {
-                stack.peek().add(action.copy());
-            }
-        }
-        return tree;
     }
 
     private void TreeIntoList(List<Actionable> tree, List<Actionable> result){
