@@ -47,12 +47,12 @@ public class ActionBlock implements Actionable {
   }
 
   @Override
-  public StringProperty getProperty() {
+  public StringProperty getFirstProperty() {
     return null;
   }
 
   @Override
-  public String getName() {
+  public String toString() {
     return name;
   }
 
@@ -64,7 +64,7 @@ public class ActionBlock implements Actionable {
   @Override
   public String toSave() {
     StringBuilder sb = new StringBuilder();
-    sb.append("REPEAT;").append(this.getProperty().get()).append("\n"); // ex: REPEAT;4
+    sb.append("REPEAT;").append(this.getFirstProperty().get()).append("\n"); // ex: REPEAT;4
 
     for (Actionable action : this.getChildren()) {
       sb.append(action.toSave()).append("\n");

@@ -24,7 +24,7 @@ public class DeclareVariable implements Actionable {
     public void setSetNameVariable(String name) {this.nameVariable.set(name);}
 
     @Override
-    public StringProperty getProperty() {
+    public StringProperty getFirstProperty() {
         return nameVariable;
     }
 
@@ -39,6 +39,4 @@ public class DeclareVariable implements Actionable {
 
     public String toString() {return name;}
 
-    @Override
-    public String getName() {return name;}
 }

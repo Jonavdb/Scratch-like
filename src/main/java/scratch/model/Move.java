@@ -15,7 +15,7 @@ public class Move implements Actionable{
 
     @Override
     public void execute(Player player) {
-        String distanceText = this.getProperty().get();
+        String distanceText = this.getFirstProperty().get();
         int dist = 0;
 
         try {
@@ -43,7 +43,7 @@ public class Move implements Actionable{
         this.distance.set(distance);
     }
 
-    public StringProperty getProperty() {
+    public StringProperty getFirstProperty() {
         return distance;
     }
 
@@ -63,10 +63,6 @@ public class Move implements Actionable{
     }
 
     public String toString() {
-        return name + " " + getDistance();
-    }
-
-    public String getName() {
         return name;
     }
 }

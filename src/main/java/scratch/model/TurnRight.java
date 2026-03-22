@@ -6,7 +6,7 @@ public class TurnRight extends Turn {
     }
 
     public void execute(Player player) {
-        String angleText = this.getProperty().get();
+        String angleText = this.getFirstProperty().get();
         int turnValue = 0;
 
         try {
@@ -20,7 +20,7 @@ public class TurnRight extends Turn {
 
     @Override
     public Actionable copy() {
-        return new TurnRight(this.getName(), this.getAngle());
+        return new TurnRight(this.toString(), this.getAngle());
     }
 
     @Override

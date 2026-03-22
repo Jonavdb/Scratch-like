@@ -376,7 +376,7 @@ public class MainView extends VBox {
     // Binding de la visibilité
     var hasParameterBinding = Bindings.createBooleanBinding(() -> {
       Actionable action = selectedItemProp.get();
-      return action != null && action.getProperty() != null;
+      return action != null && action.getFirstProperty() != null;
     }, selectedItemProp);
 
     actionParamField.visibleProperty().bind(hasParameterBinding);
@@ -384,8 +384,8 @@ public class MainView extends VBox {
 
     // Listener (quand on clique sur une nouvelle action, on met à jour le texte de la case)
     selectedItemProp.addListener((obs, oldVal, newVal) -> {
-      if (newVal != null && newVal.getProperty() != null) {
-        actionParamField.setText(String.valueOf(newVal.getProperty().get()));
+      if (newVal != null && newVal.getFirstProperty() != null) {
+        actionParamField.setText(String.valueOf(newVal.getFirstProperty().get()));
       } else {
        actionParamField.clear();
       }

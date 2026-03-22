@@ -22,7 +22,7 @@ public abstract class Turn implements Actionable {
     return angle.get();
   }
 
-  public String getName() {
+  public String toString() {
     return name;
   }
 
@@ -30,7 +30,7 @@ public abstract class Turn implements Actionable {
     angle.set(newAngle);
   }
 
-  public StringProperty getProperty() {
+  public StringProperty getFirstProperty() {
     return angle;
   }
 
@@ -38,7 +38,4 @@ public abstract class Turn implements Actionable {
     return Color.RED;
   }
 
-  public String toString() {
-    return name + " " + getAngle();
-  }
 }

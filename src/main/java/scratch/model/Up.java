@@ -27,7 +27,7 @@ public class Up implements Actionable{
     }
 
     @Override
-    public StringProperty getProperty() {
+    public StringProperty getFirstProperty() {
         return null;
     }
 
@@ -41,8 +41,4 @@ public class Up implements Actionable{
         return name;
     }
 
-    @Override
-    public String getName() {
-        return name;
-    }
 }

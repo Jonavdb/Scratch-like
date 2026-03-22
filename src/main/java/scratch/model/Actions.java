@@ -6,6 +6,7 @@ public abstract class Actions {
 
     private static ObservableList<Actionable> actions = FXCollections.observableArrayList(
             new DeclareVariable("Déclaration variable", " "),
+            new AssignVariable("Assignation", " ", " "),
             new Move("Avancer de", "30"),
             new TurnLeft("Tourner à gauche", "90"),
             new TurnRight("Tourner à droite", "90"),
