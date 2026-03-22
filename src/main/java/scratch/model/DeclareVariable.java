@@ -37,6 +37,7 @@ public class DeclareVariable implements Actionable {
     @Override
     public Color getColor() {return Color.AQUA.darker();}
 
+    @Override
     public String toString() {return name;}
 
 }
