@@ -48,13 +48,19 @@ public class MainView extends VBox {
   private final Button btnEmptyAll = new Button("Vider tout");
 
   // Action détails (sous le programme)
+
+  // TODO : remove this
   private final Label labelPrefix = new Label("(aucune action selectionnée)");
-  private final TextField actionParamField = new TextField();
-  private final Label labelSuffix = new Label("");
+  private final TextField actionParamField = new TextField("");
+  private final Label labelSuffix = new Label();
   private final Label errorLabel = new Label("Erreur valeur");
 
   private final HBox detailContent = new HBox(5, labelPrefix, actionParamField, labelSuffix);
   private final VBox detailContentContainer = new VBox(detailContent, errorLabel);
+
+  // TODO -> declare here a custom container for each action
+  //  varDeclareContent, varAssignmentContent, incrementAndDecrementContent, moveContent, turnContent,
+  //  repeatContent, endRepeatContent, upContent, downContent
 
   private final TitledPane detailPane = new TitledPane("Détail de l'action", detailContentContainer);
 
@@ -168,15 +174,50 @@ public class MainView extends VBox {
           return;
         }
 
-        if(item.getProperty() != null) {
+        // Verifier le type d'action
+          /*switch (item) {
+              case DeclareVariable d -> {
+                  // TODO : set text based on the type of action
+              }
+              case AssignVariable a  -> {
+                  // TODO : set text based on the type of action
+              }
+              case IncDecVariable id -> {
+                  // TODO : set text based on the type of action
+              }
+              case Move m            -> {
+                  // TODO : set text based on the type of action
+              }
+              case TurnLeft tl       -> {
+                  // TODO : set text based on the type of action
+              }
+              case TurnRight tr      -> {
+                  // TODO : set text based on the type of action
+              }
+              case Repeat r          -> {
+                  // TODO : set text based on the type of action
+              }
+              case EndRepeat er      -> {
+                  // TODO : set text based on the type of action
+              }
+              case Up u              -> {
+                  // TODO : set text based on the type of action
+              }
+              case Down d            -> {
+                  // TODO : set text based on the type of action
+              }
+          }*/
+
+        // TODO : remove
+       /* if(item.getProperty() != null) {
           // permet de fabriquer un texte à chaque fois que la propriété change
           textProperty().bind(Bindings.createStringBinding(
-                  () -> item.getPrefix() + item.getProperty().get(),
+                  () -> item.getName() + " " + item.getProperty().get(),
                   item.getProperty()
           ));
         } else {
           setText(item.getPrefix());  // Pour les actions sans propriété (stylo)
-        }
+        }*/
 
         Color color = item.getColor();
         Circle circle = new Circle(5, color);
@@ -217,6 +258,44 @@ public class MainView extends VBox {
     chosenActions.getSelectionModel().selectedIndexProperty().addListener((obs, oldVal, newVal) -> {
       if (newVal != null) {
         vm.setIdChosenAction(newVal.intValue());
+
+        // TODO : 1. retrieve the selected action
+        // TODO : 2. update detail panel based on the action type
+          // TODO : ex: func updateDetailContainer(Actionable chosenAction)
+         /* switch (chosenAction) {
+              case DeclareVariable d -> {
+                  // TODO : setup detail panel
+              }
+              case AssignVariable a  -> {
+                  // TODO : setup detail panel
+              }
+              case IncDecVariable id -> {
+                  // TODO : setup detail panel
+              }
+              case Move m            -> {
+                  // TODO : setup detail panel
+              }
+              case TurnLeft tl       -> {
+                  // TODO : setup detail panel
+              }
+              case TurnRight tr      -> {
+                  // TODO : setup detail panel
+              }
+              case Repeat r          -> {
+                  // TODO : setup detail panel
+              }
+              case EndRepeat er      -> {
+                  // TODO : setup detail panel
+              }
+              case Up u              -> {
+                  // TODO : setup detail panel
+              }
+              case Down d            -> {
+                  // TODO : setup detail panel
+              }
+          }*/
+
+
       }
     });
 
@@ -283,6 +362,8 @@ public class MainView extends VBox {
     var selectedItemProp = chosenActions.getSelectionModel().selectedItemProperty();
 
     // Binding du Prefix
+      // TODO : remove
+      /*
     labelPrefix.textProperty().bind(Bindings.createStringBinding(() -> {
       Actionable action = selectedItemProp.get();
       return action != null ? action.getPrefix() : "(aucune action sélectionnée)";
@@ -292,12 +373,12 @@ public class MainView extends VBox {
     labelSuffix.textProperty().bind(Bindings.createStringBinding(() -> {
       Actionable action = selectedItemProp.get();
       return action != null ? action.getSuffix() : "";
-    }, selectedItemProp));
+    }, selectedItemProp));*/
 
     // Binding de la visibilité
     var hasParameterBinding = Bindings.createBooleanBinding(() -> {
       Actionable action = selectedItemProp.get();
-      return action != null && action.getProperty() != null;
+      return action != null && action.getFirstProperty() != null;
     }, selectedItemProp);
 
     actionParamField.visibleProperty().bind(hasParameterBinding);
@@ -305,8 +386,8 @@ public class MainView extends VBox {
 
     // Listener (quand on clique sur une nouvelle action, on met à jour le texte de la case)
     selectedItemProp.addListener((obs, oldVal, newVal) -> {
-      if (newVal != null && newVal.getProperty() != null) {
-        actionParamField.setText(String.valueOf(newVal.getProperty().get()));
+      if (newVal != null && newVal.getFirstProperty() != null) {
+        actionParamField.setText(String.valueOf(newVal.getFirstProperty().get()));
       } else {
        actionParamField.clear();
       }
@@ -315,7 +396,8 @@ public class MainView extends VBox {
     // Listener (quand on tape au clavier, on envoie au ViewModel)
     actionParamField.textProperty().addListener((obs, oldText, newText) -> {
       Actionable selectedAction = selectedItemProp.get();
-      vm.validateAndUpdateValue(selectedAction, newText);
+      var sanitized = newText.strip();
+      vm.validateAndUpdateValue(selectedAction, sanitized);
     });
   }
 

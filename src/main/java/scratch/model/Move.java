@@ -1,7 +1,5 @@
 package scratch.model;
 
-import javafx.beans.property.IntegerProperty;
-import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.scene.paint.Color;
@@ -17,7 +15,7 @@ public class Move implements Actionable{
 
     @Override
     public void execute(Player player) {
-        String distanceText = this.getProperty().get();
+        String distanceText = this.getFirstProperty().get();
         int dist = 0;
 
         try {
@@ -45,20 +43,9 @@ public class Move implements Actionable{
         this.distance.set(distance);
     }
 
-    public StringProperty getProperty() {
+    public StringProperty getFirstProperty() {
         return distance;
     }
-
-    @Override
-    public String getPrefix() {
-        return "Avancer de ";
-    }
-
-    @Override
-    public String getSuffix() {
-        return " pixels";
-    }
-
 
     @Override
     public Actionable copy() {
@@ -76,10 +63,6 @@ public class Move implements Actionable{
     }
 
     public String toString() {
-        return name + " " + getDistance();
-    }
-
-    public String getName() {
         return name;
     }
 }

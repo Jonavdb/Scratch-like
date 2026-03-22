@@ -16,14 +16,13 @@ public abstract class Turn implements Actionable {
   }
 
   public abstract void execute(Player player);
-  public abstract String getPrefix();
   public abstract Actionable copy();
 
   public String getAngle(){
     return angle.get();
   }
 
-  public String getName() {
+  public String toString() {
     return name;
   }
 
@@ -31,11 +30,7 @@ public abstract class Turn implements Actionable {
     angle.set(newAngle);
   }
 
-  public String getSuffix() {
-    return " degrés";
-  }
-
-  public StringProperty getProperty() {
+  public StringProperty getFirstProperty() {
     return angle;
   }
 
@@ -43,7 +38,4 @@ public abstract class Turn implements Actionable {
     return Color.RED;
   }
 
-  public String toString() {
-    return name + " " + getAngle();
-  }
 }

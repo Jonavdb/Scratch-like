@@ -1,16 +1,12 @@
 package scratch.model;
 
-import javafx.beans.property.IntegerProperty;
-import javafx.beans.property.SimpleIntegerProperty;
-import javafx.scene.paint.Color;
-
 public class TurnLeft extends Turn {
     public TurnLeft(String name, String angle) {
       super(name, angle);
     }
 
     public void execute(Player player) {
-        String angleText = this.getProperty().get();
+        String angleText = this.getFirstProperty().get();
         int turnValue = 0;
 
         try {
@@ -22,14 +18,10 @@ public class TurnLeft extends Turn {
         player.setAngle(player.getAngle() + turnValue);
     }
 
-    @Override
-    public String getPrefix() {
-        return "Tourner à gauche de ";
-    }
 
     @Override
     public Actionable copy() {
-        return new TurnLeft(this.getName(), this.getAngle());
+        return new TurnLeft(this.toString(), this.getAngle());
     }
 
     @Override

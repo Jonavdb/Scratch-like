@@ -27,18 +27,8 @@ public class Down implements Actionable {
     }
 
     @Override
-    public StringProperty getProperty() {
+    public StringProperty getFirstProperty() {
         return null;
-    }
-
-    @Override
-    public String getPrefix() {
-        return "Abaisser le stylo";
-    }
-
-    @Override
-    public String getSuffix() {
-        return "";
     }
 
     @Override
@@ -48,11 +38,6 @@ public class Down implements Actionable {
 
     @Override
     public String toString() {
-        return name;
-    }
-
-    @Override
-    public String getName() {
         return name;
     }
 }

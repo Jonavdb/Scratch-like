@@ -278,7 +278,7 @@ public class MainViewModel {
     }
 
     public void validateAndUpdateValue(Actionable selectedAction, String newText) {
-        if(selectedAction == null || selectedAction.getProperty() == null) {
+        if(selectedAction == null || selectedAction.getFirstProperty() == null) {
             errorProperty.set(false);
             return;
         }
@@ -287,9 +287,10 @@ public class MainViewModel {
 
         if (isValid) {
             errorProperty.set(false);
-            selectedAction.getProperty().set(newText); // On sauvegarde le texte ("90" ou "nb")
+            selectedAction.getFirstProperty().set(newText); // On sauvegarde le texte ("90" ou "nb")
         } else {
             errorProperty.set(true);
+            selectedAction.getFirstProperty().set(""); // Reset case vide
         }
     }
 
