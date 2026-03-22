@@ -16,7 +16,6 @@ public abstract class Turn implements Actionable {
   }
 
   public abstract void execute(Player player);
-  public abstract String getPrefix();
   public abstract Actionable copy();
 
   public String getAngle(){
@@ -29,10 +28,6 @@ public abstract class Turn implements Actionable {
 
   public void setAngle(String newAngle) {
     angle.set(newAngle);
-  }
-
-  public String getSuffix() {
-    return " degrés";
   }
 
   public StringProperty getProperty() {

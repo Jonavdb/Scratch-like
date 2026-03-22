@@ -1,10 +1,8 @@
 package scratch.model;
 
-import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.StringProperty;
 import javafx.scene.paint.Color;
 
-import javax.swing.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -46,16 +44,6 @@ public class ActionBlock implements Actionable {
       copyBlock.addAction(action.copy());
     }
     return copyBlock;
-  }
-
-  @Override
-  public String getPrefix() {
-    return "Séquence : " + name;
-  }
-
-  @Override
-  public String getSuffix() {
-    return " (" + childrenActions.size() + " actions)";
   }
 
   @Override

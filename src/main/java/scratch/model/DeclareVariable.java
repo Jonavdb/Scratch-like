@@ -29,20 +29,10 @@ public class DeclareVariable implements Actionable {
     }
 
     @Override
-    public String getPrefix() {
-        return "Déclaration de la variable";
-    }
-
-    @Override
-    public String getSuffix() {
-        return "";
-    }
-
-    @Override
     public Actionable copy() {return new DeclareVariable(this.name, this.getNameVariable());}
 
     @Override
-    public String toSave() {return "DECLARE_VARIABLE;" + getNameVariable();}
+    public String toSave() {return "VAR_DECLARATION;" + getNameVariable();}
 
     @Override
     public Color getColor() {return Color.AQUA.darker();}
