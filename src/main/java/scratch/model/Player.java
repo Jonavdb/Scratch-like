@@ -1,13 +1,16 @@
 package scratch.model;
 import javafx.beans.property.*;
 
+import java.util.HashMap;
+import java.util.Map;
+
 
 public class Player {
     private final ObjectProperty<CustomPoint2D> position = new SimpleObjectProperty<>(new CustomPoint2D(250,250));
     private final DoubleProperty angle = new SimpleDoubleProperty(0);
     private final DoubleProperty size = new SimpleDoubleProperty(15);
     private final BooleanProperty penDown = new SimpleBooleanProperty(true);
-
+    private Map<String, Integer> variables = new HashMap<>();
 
     public void setPosition(CustomPoint2D value){
         position.setValue(value);
@@ -17,6 +20,10 @@ public class Player {
         return position;
     }
 
+    public int getVariableValue(String name) {
+        return variables.getOrDefault(name, 0);
+    }
+
     public double getX() {
         return position.get().getX();
     }
@@ -24,7 +31,6 @@ public class Player {
     public double getY() {
         return position.get().getY();
     }
-
 
     public double getAngle() {
         return angle.get();
@@ -52,5 +58,13 @@ public class Player {
 
     public BooleanProperty penDownProperty() {
         return penDown;
+    }
+
+    public void declareVariable(String name) {
+        variables.put(name, 0);
+    }
+
+    public void resetVariables() {
+        variables.clear();
     }
 }

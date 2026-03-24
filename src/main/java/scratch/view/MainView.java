@@ -157,6 +157,64 @@ public class MainView extends VBox {
     VBox.setVgrow(appContainer, Priority.ALWAYS);
   }
 
+  private void updateDetailContainer(Actionable chosenAction) {
+    detailContent.getChildren().clear();  // nettoyage initial
+
+    if(chosenAction == null) {
+      detailContent.getChildren().add(new Label("(aucune action sélectionnée)"));
+      return;
+    }
+
+    switch(chosenAction) {
+      case DeclareVariable declareVariable -> {
+        Label label = new Label("Déclaration de la variable ");
+        TextField textField = new TextField();
+        textField.textProperty().bindBidirectional(declareVariable.getFirstProperty());
+
+        HBox hbox = new HBox(10, label, textField);
+        hbox.setAlignment(Pos.CENTER_LEFT);
+        detailContentContainer.getChildren().add(hbox);
+      }
+//      case AssignVariable a  -> {
+//        // TODO : set text based on the type of action
+//      }
+//      case IncDecVariable id -> {
+//        // TODO : set text based on the type of action
+//      }
+      case Move move -> {
+        Label label = new Label("Avancer de ");
+        TextField textField = new TextField();
+        textField.textProperty().bindBidirectional(move.getFirstProperty());
+
+        HBox hbox = new HBox(10, label, textField);
+        hbox.setAlignment(Pos.CENTER_LEFT);
+        detailContentContainer.getChildren().add(hbox);
+      }
+      case TurnLeft turnLeft -> {
+        // TODO : set text based on the type of action
+      }
+      case TurnRight turnRight -> {
+        // TODO : set text based on the type of action
+      }
+//      case Repeat repeat -> {
+//        // TODO : set text based on the type of action
+//      }
+//      case EndRepeat endRepeat -> {
+//        // TODO : set text based on the type of action
+//      }
+      case Up up -> {
+        // TODO : set text based on the type of action
+      }
+      case Down down -> {
+        // TODO : set text based on the type of action
+      }
+      default -> {
+        // Au cas où une action n'est pas encore gérée
+        detailContentContainer.getChildren().add(new Label("Détail de : " + chosenAction.getFirstProperty()));
+      }
+    }
+  }
+
   // Méthode pour générer des cellules personnalisées (cercle de couleur + texte)
   private Callback<ListView<Actionable>, ListCell<Actionable>> createActionCellFactory() {
     return actionableListView -> new ListCell<Actionable>() {
@@ -175,49 +233,65 @@ public class MainView extends VBox {
         }
 
         // Verifier le type d'action
-          /*switch (item) {
-              case DeclareVariable d -> {
-                  // TODO : set text based on the type of action
+          switch (item) {
+            case DeclareVariable declareVariable -> {
+              textProperty().bind(Bindings.createStringBinding(
+                      () -> declareVariable.toString() + " " + declareVariable.getFirstProperty().get(),
+                      declareVariable.getFirstProperty()
+              ));
+            }
+            case AssignVariable assignVariable -> {
+             textProperty().bind(Bindings.createStringBinding(
+                     () -> assignVariable.toString() + " " + assignVariable.getFirstProperty().get(),
+                     assignVariable.getFirstProperty()
+             ));
+            }
+//            case IncDecVariable id -> {
+//              // TODO : set text based on the type of action
+//            }
+            case Move move -> {
+             textProperty().bind(Bindings.createStringBinding(
+                     () -> move.toString() + " " + move.getFirstProperty().get(),
+                     move.getFirstProperty()
+             ));
+            }
+            case TurnLeft turnLeft -> {
+              textProperty().bind(Bindings.createStringBinding(
+                      () -> turnLeft.toString() + " " + turnLeft.getFirstProperty().get(),
+                      turnLeft.getFirstProperty()
+              ));
+            }
+            case TurnRight turnRight -> {
+              textProperty().bind(Bindings.createStringBinding(
+                      () -> turnRight.toString() + " " + turnRight.getFirstProperty().get(),
+                      turnRight.getFirstProperty()
+              ));
+            }
+//            case Repeat r -> {
+//              // TODO : set text based on the type of action
+//            }
+//            case EndRepeat er -> {
+//              // TODO : set text based on the type of action
+//            }
+            case Up up -> {
+              setText(up.toString());
+            }
+            case Down down -> {
+              setText(down.toString());
+            }
+            default -> {
+              // Si l'action possède une propriété modifiable (ex: un nouveau type de bloc)
+              if (item.getFirstProperty() != null) {
+                textProperty().bind(Bindings.createStringBinding(
+                        () -> item.getFirstProperty() + ""
+                ));
               }
-              case AssignVariable a  -> {
-                  // TODO : set text based on the type of action
+              // Si c'est une action simple sans paramètre
+              else {
+                setText(item.toString());
               }
-              case IncDecVariable id -> {
-                  // TODO : set text based on the type of action
-              }
-              case Move m            -> {
-                  // TODO : set text based on the type of action
-              }
-              case TurnLeft tl       -> {
-                  // TODO : set text based on the type of action
-              }
-              case TurnRight tr      -> {
-                  // TODO : set text based on the type of action
-              }
-              case Repeat r          -> {
-                  // TODO : set text based on the type of action
-              }
-              case EndRepeat er      -> {
-                  // TODO : set text based on the type of action
-              }
-              case Up u              -> {
-                  // TODO : set text based on the type of action
-              }
-              case Down d            -> {
-                  // TODO : set text based on the type of action
-              }
-          }*/
-
-        // TODO : remove
-       /* if(item.getProperty() != null) {
-          // permet de fabriquer un texte à chaque fois que la propriété change
-          textProperty().bind(Bindings.createStringBinding(
-                  () -> item.getName() + " " + item.getProperty().get(),
-                  item.getProperty()
-          ));
-        } else {
-          setText(item.getPrefix());  // Pour les actions sans propriété (stylo)
-        }*/
+            }
+          }
 
         Color color = item.getColor();
         Circle circle = new Circle(5, color);
@@ -258,44 +332,7 @@ public class MainView extends VBox {
     chosenActions.getSelectionModel().selectedIndexProperty().addListener((obs, oldVal, newVal) -> {
       if (newVal != null) {
         vm.setIdChosenAction(newVal.intValue());
-
-        // TODO : 1. retrieve the selected action
-        // TODO : 2. update detail panel based on the action type
-          // TODO : ex: func updateDetailContainer(Actionable chosenAction)
-         /* switch (chosenAction) {
-              case DeclareVariable d -> {
-                  // TODO : setup detail panel
-              }
-              case AssignVariable a  -> {
-                  // TODO : setup detail panel
-              }
-              case IncDecVariable id -> {
-                  // TODO : setup detail panel
-              }
-              case Move m            -> {
-                  // TODO : setup detail panel
-              }
-              case TurnLeft tl       -> {
-                  // TODO : setup detail panel
-              }
-              case TurnRight tr      -> {
-                  // TODO : setup detail panel
-              }
-              case Repeat r          -> {
-                  // TODO : setup detail panel
-              }
-              case EndRepeat er      -> {
-                  // TODO : setup detail panel
-              }
-              case Up u              -> {
-                  // TODO : setup detail panel
-              }
-              case Down d            -> {
-                  // TODO : setup detail panel
-              }
-          }*/
-
-
+        updateDetailContainer(vm.getChosenAction().get(newVal.intValue()));
       }
     });
 

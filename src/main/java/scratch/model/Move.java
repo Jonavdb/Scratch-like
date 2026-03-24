@@ -21,7 +21,8 @@ public class Move implements Actionable{
         try {
             dist = Integer.parseInt(distanceText);
         } catch (NumberFormatException e) {
-            return;
+            // c'est PAS un chiffre, donc c'est le nom d'une variale (ex: 'val', 'nb', ...)
+            dist = player.getVariableValue(distanceText);
         }
 
         if(dist <= 0 || dist > 100) return;

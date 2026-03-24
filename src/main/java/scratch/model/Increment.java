@@ -5,14 +5,13 @@ import javafx.beans.property.StringProperty;
 import javafx.scene.paint.Color;
 
 public class Increment implements Actionable{
-
-    private final String nameAction;
+    private final String actionName;
     private final StringProperty nameVariable;
     private final StringProperty incrementProperty;
 
-    public Increment(String nameAction, String nameVariable, String incrementParam) {
-        this.nameAction = nameAction;
-        this.nameVariable = new SimpleStringProperty(nameVariable);
+    public Increment(String actionName, String initialVarName, String incrementParam) {
+        this.actionName = actionName;
+        this.nameVariable = new SimpleStringProperty(initialVarName);
         this.incrementProperty = new SimpleStringProperty(incrementParam);
     }
 
@@ -40,7 +39,7 @@ public class Increment implements Actionable{
     }
 
     @Override
-    public Actionable copy() {return new Increment(this.nameAction, this.getNameVariable(), this.getIncrementParam());}
+    public Actionable copy() {return new Increment(this.actionName, this.getNameVariable(), this.getIncrementParam());}
 
     @Override
     public String toSave() {return "INCREMENT_VARIABLE;" + getNameVariable() + ";" + getIncrementParam();}
@@ -49,5 +48,5 @@ public class Increment implements Actionable{
     public Color getColor() {return Color.AQUA.darker();}
 
     @Override
-    public String toString() {return nameAction;}
+    public String toString() {return actionName;}
 }

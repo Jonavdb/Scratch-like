@@ -6,33 +6,32 @@ import javafx.scene.paint.Color;
 
 public class DeclareVariable implements Actionable {
     private final String name;
-    private final StringProperty nameVariable;
+    private final StringProperty variableName;
 
-    public DeclareVariable(String nameAction, String nameVariable) {
+    public DeclareVariable(String nameAction, String initialVarName) {
         this.name = nameAction;
-        this.nameVariable = new SimpleStringProperty(nameVariable);
+        this.variableName = new SimpleStringProperty(initialVarName); // stocke le nom de la variable tapée par l'user
     }
-
 
     @Override
     public void execute(Player player) {
-        // TODO -> ?
+        player.declareVariable(this.variableName.get());
     }
 
-    public String getNameVariable() {return nameVariable.get();}
+    public String getVariableName() {return variableName.get();}
 
-    public void setSetNameVariable(String name) {this.nameVariable.set(name);}
+    public void setSetNameVariable(String name) {this.variableName.set(name);}
 
     @Override
     public StringProperty getFirstProperty() {
-        return nameVariable;
+        return variableName;
     }
 
     @Override
-    public Actionable copy() {return new DeclareVariable(this.name, this.getNameVariable());}
+    public Actionable copy() {return new DeclareVariable(this.name, this.getVariableName());}
 
     @Override
-    public String toSave() {return "VAR_DECLARATION;" + getNameVariable();}
+    public String toSave() {return "VAR_DECLARATION;" + getVariableName();}
 
     @Override
     public Color getColor() {return Color.AQUA.darker();}
