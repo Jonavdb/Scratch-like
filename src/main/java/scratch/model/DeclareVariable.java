@@ -23,7 +23,7 @@ public class DeclareVariable implements Actionable {
     public void setSetNameVariable(String name) {this.variableName.set(name);}
 
     @Override
-    public StringProperty getFirstProperty() {
+    public StringProperty getProperty() {
         return variableName;
     }
 

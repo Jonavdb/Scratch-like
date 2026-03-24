@@ -8,7 +8,6 @@ import javafx.collections.ObservableList;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.util.Duration;
-import javafx.scene.control.ListView;
 import scratch.model.*;
 
 
@@ -278,7 +277,7 @@ public class MainViewModel {
     }
 
     public void validateAndUpdateValue(Actionable selectedAction, String newText) {
-        if(selectedAction == null || selectedAction.getFirstProperty() == null) {
+        if(selectedAction == null || selectedAction.getProperty() == null) {
             errorProperty.set(false);
             return;
         }
@@ -287,10 +286,10 @@ public class MainViewModel {
 
         if (isValid) {
             errorProperty.set(false);
-            selectedAction.getFirstProperty().set(newText); // On sauvegarde le texte ("90" ou "nb")
+            selectedAction.getProperty().set(newText); // On sauvegarde le texte ("90" ou "nb")
         } else {
             errorProperty.set(true);
-            selectedAction.getFirstProperty().set(""); // Reset case vide
+            selectedAction.getProperty().set(""); // Reset case vide
         }
     }
 

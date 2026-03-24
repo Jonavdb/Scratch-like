@@ -6,7 +6,7 @@ public class TurnLeft extends Turn {
     }
 
     public void execute(Player player) {
-        String angleText = this.getFirstProperty().get();
+        String angleText = this.getProperty().get();
         int turnValue = 0;
 
         try {

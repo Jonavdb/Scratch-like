@@ -6,12 +6,12 @@ import javafx.scene.paint.Color;
 
 public class Increment implements Actionable{
     private final String actionName;
-    private final StringProperty nameVariable;
+    private final StringProperty variableName;
     private final StringProperty incrementProperty;
 
     public Increment(String actionName, String initialVarName, String incrementParam) {
         this.actionName = actionName;
-        this.nameVariable = new SimpleStringProperty(initialVarName);
+        this.variableName = new SimpleStringProperty(initialVarName);
         this.incrementProperty = new SimpleStringProperty(incrementParam);
     }
 
@@ -20,9 +20,9 @@ public class Increment implements Actionable{
         // TODO -> ?
     }
 
-    public String getNameVariable() {return nameVariable.get();}
+    public String getVariableName() {return variableName.get();}
 
-    public void setSetNameVariable(String name) {this.nameVariable.set(name);}
+    public void setSetNameVariable(String name) {this.variableName.set(name);}
 
     public String getIncrementParam() {return incrementProperty.get();}
 
@@ -30,8 +30,8 @@ public class Increment implements Actionable{
         incrementProperty.set(param);}
 
     @Override
-    public StringProperty getFirstProperty() {
-        return nameVariable;
+    public StringProperty getProperty() {
+        return variableName;
     }
 
     public StringProperty getIncrementProperty() {
@@ -39,10 +39,10 @@ public class Increment implements Actionable{
     }
 
     @Override
-    public Actionable copy() {return new Increment(this.actionName, this.getNameVariable(), this.getIncrementParam());}
+    public Actionable copy() {return new Increment(this.actionName, this.getVariableName(), this.getIncrementParam());}
 
     @Override
-    public String toSave() {return "INCREMENT_VARIABLE;" + getNameVariable() + ";" + getIncrementParam();}
+    public String toSave() {return "INCREMENT_VARIABLE;" + getVariableName() + ";" + getIncrementParam();}
 
     @Override
     public Color getColor() {return Color.AQUA.darker();}

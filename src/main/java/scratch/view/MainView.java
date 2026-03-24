@@ -158,7 +158,7 @@ public class MainView extends VBox {
   }
 
   private void updateDetailContainer(Actionable chosenAction) {
-    detailContent.getChildren().clear();  // nettoyage initial
+    detailContentContainer.getChildren().clear();  // nettoyage initial
 
     if(chosenAction == null) {
       detailContent.getChildren().add(new Label("(aucune action sélectionnée)"));
@@ -169,32 +169,74 @@ public class MainView extends VBox {
       case DeclareVariable declareVariable -> {
         Label label = new Label("Déclaration de la variable ");
         TextField textField = new TextField();
-        textField.textProperty().bindBidirectional(declareVariable.getFirstProperty());
+        textField.setPrefWidth(50);
+        textField.textProperty().bindBidirectional(declareVariable.getProperty());
 
         HBox hbox = new HBox(10, label, textField);
         hbox.setAlignment(Pos.CENTER_LEFT);
         detailContentContainer.getChildren().add(hbox);
       }
-//      case AssignVariable a  -> {
-//        // TODO : set text based on the type of action
-//      }
-//      case IncDecVariable id -> {
-//        // TODO : set text based on the type of action
-//      }
+      case AssignVariable assignVariable -> {
+        Label variableLabel = new Label("Assignation de la variable ");
+        Label valueLabel = new Label(" valeur : ");
+
+        TextField variableNameField = new TextField();
+        variableNameField.setPrefWidth(50);
+        TextField incrementValueField = new TextField();
+        incrementValueField.setPrefWidth(50);
+
+        variableNameField.textProperty().bindBidirectional(assignVariable.getProperty());
+        incrementValueField.textProperty().bindBidirectional(assignVariable.getParamProperty());
+
+        HBox hbox = new HBox(10, variableLabel, variableNameField, valueLabel, incrementValueField);
+        hbox.setAlignment(Pos.CENTER_LEFT);
+        detailContentContainer.getChildren().add(hbox);
+      }
+      case Increment increment -> {
+        Label variableLabel = new Label("Incrémentation de la variable ");
+        Label valueLabel = new Label(" de ");
+
+        TextField variableNameField = new TextField();
+        variableNameField.setPrefWidth(50);
+        TextField incrementValueField = new TextField();
+        incrementValueField.setPrefWidth(50);
+
+        variableNameField.textProperty().bindBidirectional(increment.getProperty());
+        incrementValueField.textProperty().bindBidirectional(increment.getIncrementProperty());
+
+        HBox hbox = new HBox(10, variableLabel, variableNameField, valueLabel, incrementValueField);
+        hbox.setAlignment(Pos.CENTER_LEFT);
+        detailContentContainer.getChildren().add(hbox);
+      }
       case Move move -> {
         Label label = new Label("Avancer de ");
         TextField textField = new TextField();
-        textField.textProperty().bindBidirectional(move.getFirstProperty());
+        textField.setPrefWidth(50);
+        textField.textProperty().bindBidirectional(move.getProperty());
 
         HBox hbox = new HBox(10, label, textField);
         hbox.setAlignment(Pos.CENTER_LEFT);
         detailContentContainer.getChildren().add(hbox);
       }
       case TurnLeft turnLeft -> {
-        // TODO : set text based on the type of action
+        Label label = new Label("Tourner à gauche de ");
+        TextField textField = new TextField();
+        textField.setPrefWidth(50);
+        textField.textProperty().bindBidirectional(turnLeft.getProperty());
+
+        HBox hbox = new HBox(10, label, textField);
+        hbox.setAlignment(Pos.CENTER_LEFT);
+        detailContentContainer.getChildren().add(hbox);
       }
       case TurnRight turnRight -> {
-        // TODO : set text based on the type of action
+        Label label = new Label("Tourner à droite de ");
+        TextField textField = new TextField();
+        textField.setPrefWidth(50);
+        textField.textProperty().bindBidirectional(turnRight.getProperty());
+
+        HBox hbox = new HBox(10, label, textField);
+        hbox.setAlignment(Pos.CENTER_LEFT);
+        detailContentContainer.getChildren().add(hbox);
       }
 //      case Repeat repeat -> {
 //        // TODO : set text based on the type of action
@@ -203,27 +245,52 @@ public class MainView extends VBox {
 //        // TODO : set text based on the type of action
 //      }
       case Up up -> {
-        // TODO : set text based on the type of action
+        Label label = new Label("Lever stylo");
+        detailContentContainer.getChildren().add(label);
       }
       case Down down -> {
-        // TODO : set text based on the type of action
+        Label label = new Label("Abaisser stylo");
+        detailContentContainer.getChildren().add(label);
       }
       default -> {
         // Au cas où une action n'est pas encore gérée
-        detailContentContainer.getChildren().add(new Label("Détail de : " + chosenAction.getFirstProperty()));
+        detailContentContainer.getChildren().add(new Label("Détail de : " + chosenAction.getProperty()));
       }
     }
   }
 
-  // Méthode pour générer des cellules personnalisées (cercle de couleur + texte)
+  // Méthode pour générer des cellules personnalisées (cercle de couleur + texte) dans la colonne de GAUCHE
+  private Callback<ListView<Actionable>, ListCell<Actionable>> createPaletteCellFactory() {
+    return listView -> new ListCell<>() {
+      @Override
+      protected void updateItem(Actionable item, boolean empty) {
+        super.updateItem(item, empty);
+        textProperty().unbind(); // Sécurité
+
+        if (empty || item == null) {
+          setText(null);
+          setGraphic(null);
+          return;
+        }
+
+        // pour la palette, on affiche JUSTE le nom pur (ex: "Inc/Dec variable")
+        setText(item.toString());
+
+        Color color = item.getColor();
+        Circle circle = new Circle(5, color);
+        setTextFill(color);
+        setGraphic(circle);
+      }
+    };
+  }
+
+  // Méthode pour générer des cellules personnalisées (cercle de couleur + texte) dans la colonne du MILIEU
   private Callback<ListView<Actionable>, ListCell<Actionable>> createActionCellFactory() {
     return actionableListView -> new ListCell<Actionable>() {
       @Override
       protected void updateItem(Actionable item, boolean empty) {
         super.updateItem(item, empty);
-
-        // Coupe l'ancien binding car les cellules sont recyclées
-        textProperty().unbind();
+        textProperty().unbind();  // Coupe l'ancien binding car les cellules sont recyclées
 
         // Pas d'action à afficher
         if(empty || item == null) {
@@ -236,35 +303,52 @@ public class MainView extends VBox {
           switch (item) {
             case DeclareVariable declareVariable -> {
               textProperty().bind(Bindings.createStringBinding(
-                      () -> declareVariable.toString() + " " + declareVariable.getFirstProperty().get(),
-                      declareVariable.getFirstProperty()
+                      () -> declareVariable.toString() + " " + declareVariable.getProperty().get(),
+                      declareVariable.getProperty()
               ));
             }
             case AssignVariable assignVariable -> {
              textProperty().bind(Bindings.createStringBinding(
-                     () -> assignVariable.toString() + " " + assignVariable.getFirstProperty().get(),
-                     assignVariable.getFirstProperty()
+                     () -> {
+                       String varName = assignVariable.getProperty().get();
+                       String varValue = assignVariable.getParamProperty().get();
+
+                       // Si le nom de la variable est vide (ou null), on n'affiche que "Assignation"
+                       if (varName == null || varName.trim().isEmpty()) {
+                         return assignVariable.toString();
+                       }
+
+                       // Sinon, on affiche la formule complète "Assignation : nb = 15"
+                       return assignVariable.toString() + " : " + varName + " = " + (varValue != null ? varValue : "");
+                     },
+                     assignVariable.getProperty(),
+                     assignVariable.getParamProperty()
              ));
             }
-//            case IncDecVariable id -> {
-//              // TODO : set text based on the type of action
-//            }
+            case Increment increment -> {
+              textProperty().bind(Bindings.createStringBinding(
+                      () -> increment.toString() + " " + increment.getProperty().get()
+                              + " de " + increment.getIncrementProperty().get(),
+                      increment.getProperty(),
+                      increment.getIncrementProperty()
+              ));
+            }
             case Move move -> {
              textProperty().bind(Bindings.createStringBinding(
-                     () -> move.toString() + " " + move.getFirstProperty().get(),
-                     move.getFirstProperty()
+                     () -> move.toString() + " " + move.getProperty().get(),
+                     move.getProperty()
              ));
             }
             case TurnLeft turnLeft -> {
               textProperty().bind(Bindings.createStringBinding(
-                      () -> turnLeft.toString() + " " + turnLeft.getFirstProperty().get(),
-                      turnLeft.getFirstProperty()
+                      () -> turnLeft.toString() + " " + turnLeft.getProperty().get(),
+                      turnLeft.getProperty()
               ));
             }
             case TurnRight turnRight -> {
               textProperty().bind(Bindings.createStringBinding(
-                      () -> turnRight.toString() + " " + turnRight.getFirstProperty().get(),
-                      turnRight.getFirstProperty()
+                      () -> turnRight.toString() + " " + turnRight.getProperty().get(),
+                      turnRight.getProperty()
               ));
             }
 //            case Repeat r -> {
@@ -280,14 +364,13 @@ public class MainView extends VBox {
               setText(down.toString());
             }
             default -> {
-              // Si l'action possède une propriété modifiable (ex: un nouveau type de bloc)
-              if (item.getFirstProperty() != null) {
+              // Si l'action possède une propriété modifiable (ex: un nouveau type de bloc le jour de l'exam)
+              if (item.getProperty() != null) {
                 textProperty().bind(Bindings.createStringBinding(
-                        () -> item.getFirstProperty() + ""
+                        () -> item.getProperty() + ""
                 ));
               }
-              // Si c'est une action simple sans paramètre
-              else {
+              else {  // Si c'est une action simple sans paramètre
                 setText(item.toString());
               }
             }
@@ -305,7 +388,6 @@ public class MainView extends VBox {
   // =========================================================================
   // BINDINGS (MVVM)
   // =========================================================================
-
   private void setupBindings() {
     bindLists();
     bindButtons();
@@ -323,7 +405,7 @@ public class MainView extends VBox {
     availableActions.setItems(vm.getAllAction());
     chosenActions.setItems(vm.getChosenAction());
 
-    availableActions.setCellFactory(createActionCellFactory());
+    availableActions.setCellFactory(createPaletteCellFactory());
     chosenActions.setCellFactory(createActionCellFactory());
 
     // Synchronisation des sélections avec le VM
@@ -398,24 +480,10 @@ public class MainView extends VBox {
   private void bindActionDetails() {
     var selectedItemProp = chosenActions.getSelectionModel().selectedItemProperty();
 
-    // Binding du Prefix
-      // TODO : remove
-      /*
-    labelPrefix.textProperty().bind(Bindings.createStringBinding(() -> {
-      Actionable action = selectedItemProp.get();
-      return action != null ? action.getPrefix() : "(aucune action sélectionnée)";
-    }, selectedItemProp));
-
-    // Binding du Suffix
-    labelSuffix.textProperty().bind(Bindings.createStringBinding(() -> {
-      Actionable action = selectedItemProp.get();
-      return action != null ? action.getSuffix() : "";
-    }, selectedItemProp));*/
-
     // Binding de la visibilité
     var hasParameterBinding = Bindings.createBooleanBinding(() -> {
       Actionable action = selectedItemProp.get();
-      return action != null && action.getFirstProperty() != null;
+      return action != null && action.getProperty() != null;
     }, selectedItemProp);
 
     actionParamField.visibleProperty().bind(hasParameterBinding);
@@ -423,8 +491,8 @@ public class MainView extends VBox {
 
     // Listener (quand on clique sur une nouvelle action, on met à jour le texte de la case)
     selectedItemProp.addListener((obs, oldVal, newVal) -> {
-      if (newVal != null && newVal.getFirstProperty() != null) {
-        actionParamField.setText(String.valueOf(newVal.getFirstProperty().get()));
+      if (newVal != null && newVal.getProperty() != null) {
+        actionParamField.setText(String.valueOf(newVal.getProperty().get()));
       } else {
        actionParamField.clear();
       }
