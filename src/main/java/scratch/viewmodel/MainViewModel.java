@@ -188,18 +188,33 @@ public class MainViewModel {
     public BooleanBinding canLoadProgram() {
         return Bindings.createBooleanBinding(() -> {
             ObservableList<Actionable> list = chosenActions.getChosenActions();
-            if (list.isEmpty() || isPlaying.get()) {
+
+            if(list.isEmpty() || isPlaying.get()) {
                 return false;
             }
+
             boolean isPenDown = true;
-            for (Actionable action : list) {
-                if (action instanceof Down) {
-                    if (isPenDown) {
+            boolean hasSeenNonDeclaration = false;  // un mouvement, un stylo, une assignation
+
+            for(Actionable action : list) {
+                /* --- Zone de déclaration de variables --- */
+                if(action instanceof DeclareVariable) {
+                    if(hasSeenNonDeclaration) {
+                        return false;   // déclaration après une action non-déclaration -> interdit
+                    }
+                } else {
+                    // On est sur UNE non-déclaration -> on ferme la porte
+                    hasSeenNonDeclaration = true;
+                }
+
+                /* --- Vérification du stylo --- */
+                if(action instanceof Down) {
+                    if(isPenDown) {
                         return false;
                     }
                     isPenDown = true;
-                } else if (action instanceof Up) {
-                    if (!isPenDown) {
+                } else if(action instanceof Up) {
+                    if(!isPenDown) {
                         return false;
                     }
                     isPenDown = false;
