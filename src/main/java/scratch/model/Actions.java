@@ -24,14 +24,17 @@ public abstract class Actions {
     }
 
     public static boolean isValueValid(Actionable action, String textValue) {
-        if (action == null) return false;
+        if (action == null || textValue == null || textValue.trim().isEmpty()) return false;
 
-        // Regex : Commence par une lettre ou un _, suivi de lettres, chiffres ou _
-        if (textValue.matches("^[a-zA-Z_][a-zA-Z0-9_]*$")) {
-            return true; // nom de variable valide
+        boolean isValidVarName = textValue.matches("^[a-zA-Z_][a-zA-Z0-9_]*$"); // commence par une lettre ou un _, suivi de lettres, chiffres ou _
+
+        if(action instanceof DeclareVariable) {
+            return isValidVarName; // les déclarations ne peuvent être QUE des noms de variables
         }
 
-        // Vérification des bornes
+        if(isValidVarName) return true; // pour les mouvements, on accepte un nom de variable OU un chiffre
+
+        // Vérification nombres et bornes
         try {
             int value = Integer.parseInt(textValue);
 
@@ -39,12 +42,13 @@ public abstract class Actions {
                 return value > 0 && value <= 100;
             } else if (action instanceof TurnLeft || action instanceof TurnRight) {
                 return value >= 1 && value <= 180;
+            } else if (action instanceof AssignVariable || action instanceof Increment) {
+                return true; // pas de bornes spécifiques pour l'instant
             }
             return true; // Lever ou Abaisser stylo
 
         } catch (NumberFormatException e) {
-            // Ce n'est ni une variable valide, ni un nombre
-            return false;
+            return false;   // ce n'est ni une variable valide, ni un nombre
         }
     }
 }

@@ -2,6 +2,7 @@ package scratch.view;
 
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.StringProperty;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Group;
@@ -15,7 +16,6 @@ import javafx.util.Callback;
 import scratch.model.*;
 import scratch.viewmodel.MainViewModel;
 import javafx.scene.control.Slider;
-
 import java.io.File;
 
 public class MainView extends VBox {
@@ -48,21 +48,12 @@ public class MainView extends VBox {
   private final Button btnEmptyAll = new Button("Vider tout");
 
   // Action détails (sous le programme)
-
-  // TODO : remove this
-  private final Label labelPrefix = new Label("(aucune action selectionnée)");
-  private final TextField actionParamField = new TextField("");
-  private final Label labelSuffix = new Label();
-  private final Label errorLabel = new Label("Erreur valeur");
-
-  private final HBox detailContent = new HBox(5, labelPrefix, actionParamField, labelSuffix);
-  private final VBox detailContentContainer = new VBox(detailContent, errorLabel);
+  private final VBox detailContentContainer = new VBox(5);
+  private final TitledPane detailPane = new TitledPane("Détail de l'action", detailContentContainer);
 
   // TODO -> declare here a custom container for each action
   //  varDeclareContent, varAssignmentContent, incrementAndDecrementContent, moveContent, turnContent,
   //  repeatContent, endRepeatContent, upContent, downContent
-
-  private final TitledPane detailPane = new TitledPane("Détail de l'action", detailContentContainer);
 
   // Scene (droite)
   private final VBox sceneBox = new VBox();
@@ -92,7 +83,6 @@ public class MainView extends VBox {
   // =========================================================================
   // LAYOUTS
   // =========================================================================
-
   private void configureMenu() {
     fileMenu.getItems().addAll(saveItem, loadItem);
     menuBar.getMenus().add(fileMenu);
@@ -114,15 +104,6 @@ public class MainView extends VBox {
     programBox.setPadding(new Insets(0, 0, 0, 10));
 
     // Détail de l'action
-    actionParamField.setVisible(false);
-    actionParamField.setManaged(false);
-    actionParamField.setPrefWidth(40);
-    detailContent.setAlignment(Pos.CENTER_LEFT);
-
-    errorLabel.setVisible(false);
-    errorLabel.setManaged(false);
-    errorLabel.setTextFill(Color.RED);
-
     programBox.getChildren().addAll(new Text("Programme"), chosenActions, btnContainerProgram, detailPane);
     HBox.setHgrow(programBox, Priority.ALWAYS);
   }
@@ -157,108 +138,70 @@ public class MainView extends VBox {
     VBox.setVgrow(appContainer, Priority.ALWAYS);
   }
 
-  private void updateDetailContainer(Actionable chosenAction) {
-    detailContentContainer.getChildren().clear();  // nettoyage initial
+  private void createSingleParamUI(String labelText, Actionable action, StringProperty property, Label errorLabel) {
+    Label label = new Label(labelText);
+    TextField textField = new TextField();
+    textField.setPrefWidth(50);
+    textField.textProperty().bindBidirectional(property);
 
-    if(chosenAction == null) {
-      detailContent.getChildren().add(new Label("(aucune action sélectionnée)"));
+    setupValidationUI(textField, action, errorLabel);
+
+    HBox hbox = new HBox(10, label, textField);
+    hbox.setAlignment(Pos.CENTER_LEFT);
+    detailContentContainer.getChildren().addAll(hbox, errorLabel);
+  }
+
+  private void createDoubleParamUI(String text1, String text2, Actionable action, StringProperty prop1, StringProperty prop2, Label errorLabel) {
+    Label label1 = new Label(text1);
+    Label label2 = new Label(text2);
+    TextField textField = new TextField();
+    TextField textValue = new TextField();
+    textField.setPrefWidth(50);
+    textValue.setPrefWidth(50);
+
+    textField.textProperty().bindBidirectional(prop1);
+    textValue.textProperty().bindBidirectional(prop2);
+
+    setupValidationUI(textValue, action, errorLabel);
+
+    HBox hbox = new HBox(10, label1, textField, label2, textValue);
+    hbox.setAlignment(Pos.CENTER_LEFT);
+    detailContentContainer.getChildren().addAll(hbox, errorLabel);
+  }
+
+  private void createNoParamUI(String labelText) {
+    detailContentContainer.getChildren().add(new Label(labelText));
+  }
+
+  private void updateDetailContainer(Actionable chosenAction) {
+    detailContentContainer.getChildren().clear();
+
+    if (chosenAction == null) {
+      detailContentContainer.getChildren().add(new Label("(aucune action sélectionnée)"));
       return;
     }
 
-    switch(chosenAction) {
-      case DeclareVariable declareVariable -> {
-        Label label = new Label("Déclaration de la variable ");
-        TextField textField = new TextField();
-        textField.setPrefWidth(50);
-        textField.textProperty().bindBidirectional(declareVariable.getProperty());
+    Label errorLabel = new Label("Erreur valeur");
+    errorLabel.setTextFill(Color.RED);
 
-        HBox hbox = new HBox(10, label, textField);
-        hbox.setAlignment(Pos.CENTER_LEFT);
-        detailContentContainer.getChildren().add(hbox);
-      }
-      case AssignVariable assignVariable -> {
-        Label variableLabel = new Label("Assignation de la variable ");
-        Label valueLabel = new Label(" valeur : ");
+    switch (chosenAction) {
+      // Actions à 1 paramètre
+      case DeclareVariable dv -> createSingleParamUI("Déclaration de la variable ", dv, dv.getProperty(), errorLabel);
+      case Move move          -> createSingleParamUI("Avancer de ", move, move.getProperty(), errorLabel);
+      case TurnLeft tl        -> createSingleParamUI("Tourner à gauche de ", tl, tl.getProperty(), errorLabel);
+      case TurnRight tr       -> createSingleParamUI("Tourner à droite de ", tr, tr.getProperty(), errorLabel);
 
-        TextField variableNameField = new TextField();
-        variableNameField.setPrefWidth(50);
-        TextField incrementValueField = new TextField();
-        incrementValueField.setPrefWidth(50);
+      // Actions à 2 paramètres
+      case AssignVariable av  -> createDoubleParamUI("Assignation de la variable ", " valeur : ", av, av.getProperty(), av.getParamProperty(), errorLabel);
+      case Increment inc      -> createDoubleParamUI("Incrémentation de la variable ", " de ", inc, inc.getProperty(), inc.getIncrementProperty(), errorLabel);
 
-        variableNameField.textProperty().bindBidirectional(assignVariable.getProperty());
-        incrementValueField.textProperty().bindBidirectional(assignVariable.getParamProperty());
+      // Actions sans paramètre
+      case Up up              -> createNoParamUI("Lever stylo");
+      case Down down          -> createNoParamUI("Abaisser stylo");
 
-        HBox hbox = new HBox(10, variableLabel, variableNameField, valueLabel, incrementValueField);
-        hbox.setAlignment(Pos.CENTER_LEFT);
-        detailContentContainer.getChildren().add(hbox);
-      }
-      case Increment increment -> {
-        Label variableLabel = new Label("Incrémentation de la variable ");
-        Label valueLabel = new Label(" de ");
-
-        TextField variableNameField = new TextField();
-        variableNameField.setPrefWidth(50);
-        TextField incrementValueField = new TextField();
-        incrementValueField.setPrefWidth(50);
-
-        variableNameField.textProperty().bindBidirectional(increment.getProperty());
-        incrementValueField.textProperty().bindBidirectional(increment.getIncrementProperty());
-
-        HBox hbox = new HBox(10, variableLabel, variableNameField, valueLabel, incrementValueField);
-        hbox.setAlignment(Pos.CENTER_LEFT);
-        detailContentContainer.getChildren().add(hbox);
-      }
-      case Move move -> {
-        Label label = new Label("Avancer de ");
-        TextField textField = new TextField();
-        textField.setPrefWidth(50);
-        textField.textProperty().bindBidirectional(move.getProperty());
-
-        HBox hbox = new HBox(10, label, textField);
-        hbox.setAlignment(Pos.CENTER_LEFT);
-        detailContentContainer.getChildren().add(hbox);
-      }
-      case TurnLeft turnLeft -> {
-        Label label = new Label("Tourner à gauche de ");
-        TextField textField = new TextField();
-        textField.setPrefWidth(50);
-        textField.textProperty().bindBidirectional(turnLeft.getProperty());
-
-        HBox hbox = new HBox(10, label, textField);
-        hbox.setAlignment(Pos.CENTER_LEFT);
-        detailContentContainer.getChildren().add(hbox);
-      }
-      case TurnRight turnRight -> {
-        Label label = new Label("Tourner à droite de ");
-        TextField textField = new TextField();
-        textField.setPrefWidth(50);
-        textField.textProperty().bindBidirectional(turnRight.getProperty());
-
-        HBox hbox = new HBox(10, label, textField);
-        hbox.setAlignment(Pos.CENTER_LEFT);
-        detailContentContainer.getChildren().add(hbox);
-      }
-//      case Repeat repeat -> {
-//        // TODO : set text based on the type of action
-//      }
-//      case EndRepeat endRepeat -> {
-//        // TODO : set text based on the type of action
-//      }
-      case Up up -> {
-        Label label = new Label("Lever stylo");
-        detailContentContainer.getChildren().add(label);
-      }
-      case Down down -> {
-        Label label = new Label("Abaisser stylo");
-        detailContentContainer.getChildren().add(label);
-      }
-      default -> {
-        // Au cas où une action n'est pas encore gérée
-        detailContentContainer.getChildren().add(new Label("Détail de : " + chosenAction.getProperty()));
-      }
+      default -> detailContentContainer.getChildren().add(new Label("Détail de : " + chosenAction.getProperty()));
     }
   }
-
   // Méthode pour générer des cellules personnalisées (cercle de couleur + texte) dans la colonne de GAUCHE
   private Callback<ListView<Actionable>, ListCell<Actionable>> createPaletteCellFactory() {
     return listView -> new ListCell<>() {
@@ -385,16 +328,25 @@ public class MainView extends VBox {
     };
   }
 
+  private void setupValidationUI(TextField textField, Actionable action, Label errorLabel) {
+    boolean isInitialValid = Actions.isValueValid(action, textField.getText());
+    errorLabel.setVisible(!isInitialValid);
+    errorLabel.setManaged(!isInitialValid);
+
+    textField.textProperty().addListener((obs, oldVal, newVal) -> {
+      boolean isValid = Actions.isValueValid(action, newVal);
+      errorLabel.setVisible(!isValid);
+      errorLabel.setManaged(!isValid);
+    });
+  }
+
   // =========================================================================
-  // BINDINGS (MVVM)
+  // BINDINGS (MVVM) && UTILS
   // =========================================================================
   private void setupBindings() {
     bindLists();
     bindButtons();
-    bindActionDetails();
     bindMenuActions();
-    errorLabel.visibleProperty().bind(vm.errorProperty());
-    errorLabel.managedProperty().bind(vm.errorProperty());
     vm.currActionIndexProperty().addListener((obs, oldVal, newVal) -> {
         chosenActions.getSelectionModel().select(newVal.intValue());
     });
@@ -412,9 +364,13 @@ public class MainView extends VBox {
     vm.selectedActionProperty().bind(availableActions.getSelectionModel().selectedItemProperty());
 
     chosenActions.getSelectionModel().selectedIndexProperty().addListener((obs, oldVal, newVal) -> {
-      if (newVal != null) {
+      if (newVal != null && newVal.intValue() >= 0) {
         vm.setIdChosenAction(newVal.intValue());
         updateDetailContainer(vm.getChosenAction().get(newVal.intValue()));
+      } else {
+        // si la sélection a disparu (index à -1 suite à une suppression par exemple)
+        vm.setIdChosenAction(-1);
+        updateDetailContainer(null); // force le nettoyage de l'interface
       }
     });
 
@@ -422,6 +378,8 @@ public class MainView extends VBox {
     availableActions.setOnMouseClicked(event -> {
       if (event.getClickCount() == 2) vm.addAction();
     });
+
+    updateDetailContainer(null);
   }
 
   private void bindButtons() {
@@ -477,35 +435,6 @@ public class MainView extends VBox {
     slider.managedProperty().bind(btnStop.visibleProperty());
   }
 
-  private void bindActionDetails() {
-    var selectedItemProp = chosenActions.getSelectionModel().selectedItemProperty();
-
-    // Binding de la visibilité
-    var hasParameterBinding = Bindings.createBooleanBinding(() -> {
-      Actionable action = selectedItemProp.get();
-      return action != null && action.getProperty() != null;
-    }, selectedItemProp);
-
-    actionParamField.visibleProperty().bind(hasParameterBinding);
-    actionParamField.managedProperty().bind(hasParameterBinding);
-
-    // Listener (quand on clique sur une nouvelle action, on met à jour le texte de la case)
-    selectedItemProp.addListener((obs, oldVal, newVal) -> {
-      if (newVal != null && newVal.getProperty() != null) {
-        actionParamField.setText(String.valueOf(newVal.getProperty().get()));
-      } else {
-       actionParamField.clear();
-      }
-    });
-
-    // Listener (quand on tape au clavier, on envoie au ViewModel)
-    actionParamField.textProperty().addListener((obs, oldText, newText) -> {
-      Actionable selectedAction = selectedItemProp.get();
-      var sanitized = newText.strip();
-      vm.validateAndUpdateValue(selectedAction, sanitized);
-    });
-  }
-
   private void bindMenuActions() {
     saveItem.setOnAction(event -> handleSaveFile());
     loadItem.setOnAction(event -> handleLoadFile());
@@ -514,7 +443,6 @@ public class MainView extends VBox {
   // =========================================================================
   // FILE CHOOSER & DESSIN
   // =========================================================================
-
   private void handleSaveFile() {
     FileChooser fileChooser = new FileChooser();
     fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Fichier texte", "*.txt"));
