@@ -1,6 +1,5 @@
 package scratch.model;
 
-import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.StringProperty;
 import javafx.scene.paint.Color;
 
@@ -12,7 +11,8 @@ public class Up implements Actionable{
     }
 
     @Override
-    public void execute(Player player) {
+    public void execute(ProgramState state) {
+        var player = state.getPlayer();
         player.setpenDown(false);
     }
 

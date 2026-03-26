@@ -10,7 +10,7 @@ public class EndRepeat implements Actionable {
     }
 
     @Override
-    public void execute(Player player) {
+    public void execute(ProgramState state) {
 
     }
 

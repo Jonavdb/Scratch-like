@@ -8,14 +8,16 @@ public class DeclareVariable implements Actionable {
     private final String name;
     private final StringProperty variableName;
 
-    public DeclareVariable(String nameAction, String initialVarName) {
+    public DeclareVariable(String nameAction, String variableName) {
         this.name = nameAction;
-        this.variableName = new SimpleStringProperty(initialVarName); // stocke le nom de la variable tapée par l'user
+        this.variableName = new SimpleStringProperty(variableName);
     }
 
     @Override
-    public void execute(Player player) {
-        player.declareVariable(this.variableName.get());
+    public void execute(ProgramState state) {
+        var map = state.getVariableMap();
+        var nameVar = getVariableName();
+        boolean ok = map.declare(nameVar);
     }
 
     public String getVariableName() {return variableName.get();}

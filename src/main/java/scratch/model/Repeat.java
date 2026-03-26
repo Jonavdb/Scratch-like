@@ -15,7 +15,7 @@ public class Repeat implements Actionable {
         this.tick = new SimpleStringProperty(tick);
     }
     @Override
-    public void execute(Player player) {
+    public void execute(ProgramState state) {
 //        int n = Integer.parseInt(tick.get());
 //        for (int i = 0; i < n; ++i){
 //            actions.execute(player);
