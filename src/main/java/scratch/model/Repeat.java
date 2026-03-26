@@ -16,10 +16,10 @@ public class Repeat implements Actionable {
     }
     @Override
     public void execute(Player player) {
-        int n = Integer.parseInt(tick.get());
-        for (int i = 0; i < n; ++i){
-            actions.execute(player);
-        }
+//        int n = Integer.parseInt(tick.get());
+//        for (int i = 0; i < n; ++i){
+//            actions.execute(player);
+//        }
     }
 
     @Override

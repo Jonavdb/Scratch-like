@@ -164,8 +164,8 @@ public class MainViewModel {
     public void executeAction() {
         Actionable next = executor.getNextAction();
         if (next != null){
+            currActionIndex.set(executor.getGlobalIndex());
             playerVm.processAction(next);
-            currActionIndex.set(currActionIndex.get() + 1);
         }
     }
 
@@ -199,6 +199,7 @@ public class MainViewModel {
 
             boolean isPenDown = true;
             boolean hasSeenNonDeclaration = false;  // un mouvement, un stylo, une assignation
+            int numberRepeat = 0;
             ArrayList<String> variables = new ArrayList<>();
 
             for(Actionable action : list) {
@@ -251,6 +252,17 @@ public class MainViewModel {
                     }
                     isPenDown = false;
                 }
+
+                if (action instanceof Repeat) {
+                    numberRepeat++;
+                }
+                if (action instanceof EndRepeat){
+                    numberRepeat--;
+                }
+
+            }
+            if (numberRepeat != 0){
+                return false;
             }
             return true;
         }, chosenActions.getChosenActions(), isPlaying);

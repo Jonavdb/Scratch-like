@@ -14,20 +14,24 @@ public class Execution {
         List<Actionable> list;
         int index;
         int remainingRepeats;
+        int globalIndex;
 
-        Level(List<Actionable> list, int index, int remainingRepeats){
+        Level(List<Actionable> list, int index, int remainingRepeats, int globalIndex){
             this.index = index; // où on se trouve dans la liste de l'étage actuel
             this.list = list; // la liste d'action actuelle
             this.remainingRepeats = remainingRepeats; // le nombre de repeat restant pour la liste actuelle
+            this.globalIndex = globalIndex;
         }
     }
 
     private final Stack<Level> levels = new Stack<>(); //
+    private int globalIndex = 0;
 
     public void init(List<Actionable> listInitial){
         levels.clear(); // on vide entièrement le stack
+        globalIndex = 0;
         List<Actionable> tree = listIntoTree(listInitial); // on transforme la liste plate en arbre et on initialise l'arbre
-        levels.push(new Level(tree, 0, 1)); // On commence au début de l'arbre, à l'index 0 et 1 seule répetition pour la raxine de l'arbre
+        levels.push(new Level(tree, 0, 1, 0)); // On commence au début de l'arbre, à l'index 0 et 1 seule répetition pour la raxine de l'arbre
     }
 
     public Actionable getNextAction() { // Méthode qui va nous permettre de réxupérer l'action suivante
@@ -51,11 +55,18 @@ public class Execution {
             if (current instanceof Repeat) {
                 Repeat repeat = (Repeat) current;
                 int n = Integer.parseInt(repeat.getTick()); // si l'action est un repeat, on récupère son nombre de répétitions
-                levels.push(new Level(repeat.getChildren(), 0, n)); // On rajoute un pile avec les enfants de repeat, en commencant à l'index 0 et en indiquant le nombre de répétitions
+                levels.push(new Level(repeat.getChildren(), 0, n, globalIndex + 1));
             } else {
                 top.index++; // si pas repeat on avance dans l'index
-                return current; // on retourne l'action courante à executer
             }
+            if (top.index >= top.list.size() && top.remainingRepeats > 1) {
+                globalIndex = top.globalIndex;
+            } else {
+                globalIndex++;
+            }
+            System.out.println(globalIndex);
+            System.out.println(current);
+            return current; // on retourne l'action courante à executer
         }
         return null; // si pile vide, on quitte
     }
@@ -77,6 +88,7 @@ public class Execution {
             } else if (action instanceof EndRepeat) {
                 if (stack.size() > 1){
                     stack.pop(); // Si on croise un end repeat, on pop l'étage actuel pour revenir à l'étage supérieur
+                    stack.peek().add(action.copy());
                 }
             } else {
                 stack.peek().add(action.copy()); // sinon, on ajoute simplement l'action à la pile
@@ -85,4 +97,7 @@ public class Execution {
         return tree;
     }
 
+    public int getGlobalIndex() {
+        return globalIndex;
+    }
 }
