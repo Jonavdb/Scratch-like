@@ -17,7 +17,6 @@ import scratch.model.*;
 import scratch.viewmodel.MainViewModel;
 import javafx.scene.control.Slider;
 
-import javax.swing.*;
 import java.io.File;
 
 public class MainView extends VBox {
@@ -124,7 +123,7 @@ public class MainView extends VBox {
     slider.setMaxWidth(Double.MAX_VALUE);
     sceneBox.setSpacing(10);
     sceneBox.setPadding(new Insets(0, 0, 0, 20));
-    VBox.setMargin(slider, new Insets(0,5,0,5));
+    VBox.setMargin(slider, new Insets(0, 5, 0, 5));
     automatic_execute.setToggleGroup(groupOfExecute);
     automatic_execute.setSelected(true);
     step_execute.setToggleGroup(groupOfExecute);
@@ -178,7 +177,7 @@ public class MainView extends VBox {
   private void updateDetailContainer(Actionable chosenAction) {
     detailContentContainer.getChildren().clear();
 
-    if (chosenAction == null) {
+    if(chosenAction == null) {
       detailContentContainer.getChildren().add(new Label("(aucune action sélectionnée)"));
       return;
     }
@@ -186,25 +185,29 @@ public class MainView extends VBox {
     Label errorLabel = new Label("Erreur valeur");
     errorLabel.setTextFill(Color.RED);
 
-    switch (chosenAction) {
+    switch(chosenAction) {
       // Actions à 1 paramètre
       case DeclareVariable dv -> createSingleParamUI("Déclaration de la variable ", dv, dv.getProperty(), errorLabel);
-      case Move move          -> createSingleParamUI("Avancer de ", move, move.getProperty(), errorLabel);
-      case TurnLeft tl        -> createSingleParamUI("Tourner à gauche de ", tl, tl.getProperty(), errorLabel);
-      case TurnRight tr       -> createSingleParamUI("Tourner à droite de ", tr, tr.getProperty(), errorLabel);
-      case Repeat re          -> createSingleParamUI("Répéter ", re, re.getProperty(), errorLabel);
+      case Move move -> createSingleParamUI("Avancer de ", move, move.getProperty(), errorLabel);
+      case TurnLeft tl -> createSingleParamUI("Tourner à gauche de ", tl, tl.getProperty(), errorLabel);
+      case TurnRight tr -> createSingleParamUI("Tourner à droite de ", tr, tr.getProperty(), errorLabel);
+      case Repeat r -> createSingleParamUI("Répéter ", r, r.getProperty(), errorLabel);
+
       // Actions à 2 paramètres
-      case AssignVariable av  -> createDoubleParamUI("Assignation de la variable ", " valeur : ", av, av.getProperty(), av.getParamProperty(), errorLabel);
-      case Increment inc      -> createDoubleParamUI("Incrémentation de la variable ", " de ", inc, inc.getProperty(), inc.getIncrementProperty(), errorLabel);
+      case AssignVariable av ->
+              createDoubleParamUI("Assignation de la variable ", " valeur : ", av, av.getProperty(), av.getParamProperty(), errorLabel);
+      case Increment inc ->
+              createDoubleParamUI("Incrémentation de la variable ", " de ", inc, inc.getProperty(), inc.getIncrementProperty(), errorLabel);
 
       // Actions sans paramètre
-      case Up up              -> createNoParamUI("Lever stylo");
-      case Down down          -> createNoParamUI("Abaisser stylo");
-      case EndRepeat endRe    -> createNoParamUI("Arreter répétition");
+      case Up up -> createNoParamUI("Lever stylo");
+      case Down down -> createNoParamUI("Abaisser stylo");
+      case EndRepeat endRe -> createNoParamUI("Arreter répétition");
 
       default -> detailContentContainer.getChildren().add(new Label("Détail de : " + chosenAction.getProperty()));
     }
   }
+
   // Méthode pour générer des cellules personnalisées (cercle de couleur + texte) dans la colonne de GAUCHE
   private Callback<ListView<Actionable>, ListCell<Actionable>> createPaletteCellFactory() {
     return listView -> new ListCell<>() {
@@ -213,7 +216,7 @@ public class MainView extends VBox {
         super.updateItem(item, empty);
         textProperty().unbind(); // Sécurité
 
-        if (empty || item == null) {
+        if(empty || item == null) {
           setText(null);
           setGraphic(null);
           return;
@@ -246,84 +249,83 @@ public class MainView extends VBox {
         }
 
         // Verifier le type d'action
-          switch (item) {
-            case DeclareVariable declareVariable -> {
-              textProperty().bind(Bindings.createStringBinding(
-                      () -> declareVariable.toString() + " " + declareVariable.getProperty().get(),
-                      declareVariable.getProperty()
-              ));
-            }
-            case AssignVariable assignVariable -> {
-             textProperty().bind(Bindings.createStringBinding(
-                     () -> {
-                       String varName = assignVariable.getProperty().get();
-                       String varValue = assignVariable.getParamProperty().get();
+        switch(item) {
+          case DeclareVariable declareVariable -> {
+            textProperty().bind(Bindings.createStringBinding(
+                    () -> declareVariable.toString() + " " + declareVariable.getProperty().get(),
+                    declareVariable.getProperty()
+            ));
+          }
+          case AssignVariable assignVariable -> {
+            textProperty().bind(Bindings.createStringBinding(
+                    () -> {
+                      String varName = assignVariable.getProperty().get();
+                      String varValue = assignVariable.getParamProperty().get();
 
-                       // Si le nom de la variable est vide (ou null), on n'affiche que "Assignation"
-                       if (varName == null || varName.trim().isEmpty()) {
-                         return assignVariable.toString();
-                       }
+                      // Si le nom de la variable est vide (ou null), on n'affiche que "Assignation"
+                      if(varName == null || varName.trim().isEmpty()) {
+                        return assignVariable.toString();
+                      }
 
-                       // Sinon, on affiche la formule complète "Assignation : nb = 15"
-                       return assignVariable.toString() + " : " + varName + " = " + (varValue != null ? varValue : "");
-                     },
-                     assignVariable.getProperty(),
-                     assignVariable.getParamProperty()
-             ));
-            }
-            case Increment increment -> {
+                      // Sinon, on affiche la formule complète "Assignation : nb = 15"
+                      return assignVariable.toString() + " : " + varName + " = " + (varValue != null ? varValue : "");
+                    },
+                    assignVariable.getProperty(),
+                    assignVariable.getParamProperty()
+            ));
+          }
+          case Increment increment -> {
+            textProperty().bind(Bindings.createStringBinding(
+                    () -> increment.toString() + " " + increment.getProperty().get()
+                            + " de " + increment.getIncrementProperty().get(),
+                    increment.getProperty(),
+                    increment.getIncrementProperty()
+            ));
+          }
+          case Move move -> {
+            textProperty().bind(Bindings.createStringBinding(
+                    () -> move.toString() + " " + move.getProperty().get(),
+                    move.getProperty()
+            ));
+          }
+          case TurnLeft turnLeft -> {
+            textProperty().bind(Bindings.createStringBinding(
+                    () -> turnLeft.toString() + " " + turnLeft.getProperty().get(),
+                    turnLeft.getProperty()
+            ));
+          }
+          case TurnRight turnRight -> {
+            textProperty().bind(Bindings.createStringBinding(
+                    () -> turnRight.toString() + " " + turnRight.getProperty().get(),
+                    turnRight.getProperty()
+            ));
+          }
+          case Repeat repeat -> {
+            textProperty().bind(Bindings.createStringBinding(
+                    () -> repeat.toString() + " " + repeat.getProperty().get(),
+                    repeat.getProperty()
+            ));
+          }
+          case EndRepeat endRepeat -> {
+            setText(endRepeat.toString());
+          }
+          case Up up -> {
+            setText(up.toString());
+          }
+          case Down down -> {
+            setText(down.toString());
+          }
+          default -> {
+            // Si l'action possède une propriété modifiable (ex: un nouveau type de bloc le jour de l'exam)
+            if(item.getProperty() != null) {
               textProperty().bind(Bindings.createStringBinding(
-                      () -> increment.toString() + " " + increment.getProperty().get()
-                              + " de " + increment.getIncrementProperty().get(),
-                      increment.getProperty(),
-                      increment.getIncrementProperty()
+                      () -> item.getProperty() + ""
               ));
-            }
-            case Move move -> {
-             textProperty().bind(Bindings.createStringBinding(
-                     () -> move.toString() + " " + move.getProperty().get(),
-                     move.getProperty()
-             ));
-            }
-            case TurnLeft turnLeft -> {
-              textProperty().bind(Bindings.createStringBinding(
-                      () -> turnLeft.toString() + " " + turnLeft.getProperty().get(),
-                      turnLeft.getProperty()
-              ));
-            }
-            case TurnRight turnRight -> {
-              textProperty().bind(Bindings.createStringBinding(
-                      () -> turnRight.toString() + " " + turnRight.getProperty().get(),
-                      turnRight.getProperty()
-              ));
-            }
-            case Repeat r -> {
-              textProperty().bind(Bindings.createStringBinding(
-                      () -> r.toString() + " " + r.getProperty().get(),
-                      r.getProperty()
-              ));
-            }
-            case EndRepeat er -> {
-              setText(er.toString());
-            }
-            case Up up -> {
-              setText(up.toString());
-            }
-            case Down down -> {
-              setText(down.toString());
-            }
-            default -> {
-              // Si l'action possède une propriété modifiable (ex: un nouveau type de bloc le jour de l'exam)
-              if (item.getProperty() != null) {
-                textProperty().bind(Bindings.createStringBinding(
-                        () -> item.getProperty() + ""
-                ));
-              }
-              else {  // Si c'est une action simple sans paramètre
-                setText(item.toString());
-              }
+            } else {  // Si c'est une action simple sans paramètre
+              setText(item.toString());
             }
           }
+        }
 
         Color color = item.getColor();
         Circle circle = new Circle(5, color);
@@ -354,7 +356,7 @@ public class MainView extends VBox {
     bindButtons();
     bindMenuActions();
     vm.currActionIndexProperty().addListener((obs, oldVal, newVal) -> {
-        chosenActions.getSelectionModel().select(newVal.intValue());
+      chosenActions.getSelectionModel().select(newVal.intValue());
     });
   }
 
@@ -370,7 +372,7 @@ public class MainView extends VBox {
     vm.selectedActionProperty().bind(availableActions.getSelectionModel().selectedItemProperty());
 
     chosenActions.getSelectionModel().selectedIndexProperty().addListener((obs, oldVal, newVal) -> {
-      if (newVal != null && newVal.intValue() >= 0) {
+      if(newVal != null && newVal.intValue() >= 0) {
         vm.setIdChosenAction(newVal.intValue());
         updateDetailContainer(vm.getChosenAction().get(newVal.intValue()));
       } else {
@@ -382,7 +384,7 @@ public class MainView extends VBox {
 
     // Double clic sur la palette
     availableActions.setOnMouseClicked(event -> {
-      if (event.getClickCount() == 2) vm.addAction();
+      if(event.getClickCount() == 2) vm.addAction();
     });
 
     updateDetailContainer(null);
@@ -397,14 +399,14 @@ public class MainView extends VBox {
 
     btnDown.disableProperty().bind(vm.canDown().not());
     btnDown.setOnAction(event -> {
-        vm.downAction();
-        chosenActions.getSelectionModel().select(vm.getIdChosenAction());
+      vm.downAction();
+      chosenActions.getSelectionModel().select(vm.getIdChosenAction());
     });
 
     btnUp.disableProperty().bind(vm.canUp().not());
     btnUp.setOnAction(event -> {
-        vm.upAction();
-        chosenActions.getSelectionModel().select(vm.getIdChosenAction());
+      vm.upAction();
+      chosenActions.getSelectionModel().select(vm.getIdChosenAction());
     });
 
     btnEmptyAll.disableProperty().bind(vm.canRemoveAll().not());
@@ -414,21 +416,21 @@ public class MainView extends VBox {
     btnDuplicate.disableProperty().bind(vm.canDuplicate().not());
 
     btnLoad.setOnAction(event -> {
-        vm.resetCommands();
-        spritePane.getChildren().clear();
-        playerView = new PlayerView(vm.getPlayerViewModel());
-        spritePane.getChildren().add(playerView);
-        chosenActions.getSelectionModel().select(0);
+      vm.resetCommands();
+      spritePane.getChildren().clear();
+      playerView = new PlayerView(vm.getPlayerViewModel());
+      spritePane.getChildren().add(playerView);
+      chosenActions.getSelectionModel().select(0);
     });
     btnLoad.textProperty().bind(vm.getLoadTextButton());
     btnLoad.disableProperty().bind(vm.canLoadProgram().not());
 
     btnExecute.setOnAction(event -> {
-        if (groupOfExecute.getSelectedToggle() == step_execute) {
-            vm.executeAction();
-        } else if (groupOfExecute.getSelectedToggle() == automatic_execute) {
-            vm.startAutoExecute();
-        }
+      if(groupOfExecute.getSelectedToggle() == step_execute) {
+        vm.executeAction();
+      } else if(groupOfExecute.getSelectedToggle() == automatic_execute) {
+        vm.startAutoExecute();
+      }
     });
     btnExecute.disableProperty().bind(vm.canExecuteProgram().not());
     btnExecute.textProperty().bind(vm.getExecuteTextButton());
@@ -448,11 +450,11 @@ public class MainView extends VBox {
 
   // Algo qui gère la zone de déclarations de variables au début du programme //
   /*
-    * Le principe de "la porte fermée" : on lit les actions de haut en bas
-    * tant qu'on lit des "DeclareVariable", c'est ok
-    * dès qu'on lit une Action qui n'est pas "DeclareVariable", on ferme la porte
-    * ça permet d'avoir que des déclarations en haut du programme.
-  */
+   * Le principe de "la porte fermée" : on lit les actions de haut en bas
+   * tant qu'on lit des "DeclareVariable", c'est ok
+   * dès qu'on lit une Action qui n'est pas "DeclareVariable", on ferme la porte
+   * ça permet d'avoir que des déclarations en haut du programme.
+   */
   private boolean isDeclarationZoneValid() {
     boolean isDoorClosed = false;
 
@@ -467,6 +469,7 @@ public class MainView extends VBox {
     }
     return true;
   }
+
   // =========================================================================
   // FILE CHOOSER & DESSIN
   // =========================================================================
@@ -474,7 +477,7 @@ public class MainView extends VBox {
     FileChooser fileChooser = new FileChooser();
     fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Fichier texte", "*.txt"));
     File file = fileChooser.showSaveDialog(this.getScene().getWindow());
-    if (file != null) {
+    if(file != null) {
       vm.saveInFile(file);
     }
   }
@@ -483,7 +486,7 @@ public class MainView extends VBox {
     FileChooser fileChooser = new FileChooser();
     fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Fichier texte", "*.txt"));
     File file = fileChooser.showOpenDialog(this.getScene().getWindow());
-    if (file != null) {
+    if(file != null) {
       vm.loadFile(file);
     }
   }
@@ -495,8 +498,8 @@ public class MainView extends VBox {
     Border cellBorder = new Border(new BorderStroke(Color.LIGHTBLUE, BorderStrokeStyle.SOLID, CornerRadii.EMPTY, new BorderWidths(0.3)));
     grid.setBorder(new Border(new BorderStroke(Color.BLACK, BorderStrokeStyle.SOLID, CornerRadii.EMPTY, new BorderWidths(1.0))));
 
-    for (int x = 0; x < cols; x++) {
-      for (int y = 0; y < rows; y++) {
+    for(int x = 0; x < cols; x++) {
+      for(int y = 0; y < rows; y++) {
         StackPane cell = new StackPane();
         cell.setMinWidth(50);
         cell.setMinHeight(50);
