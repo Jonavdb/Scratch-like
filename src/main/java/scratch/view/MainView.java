@@ -16,7 +16,6 @@ import javafx.util.Callback;
 import scratch.model.*;
 import scratch.viewmodel.MainViewModel;
 import javafx.scene.control.Slider;
-
 import java.io.File;
 
 public class MainView extends VBox {

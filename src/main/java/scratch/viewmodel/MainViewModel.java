@@ -10,8 +10,6 @@ import javafx.animation.Timeline;
 import javafx.util.Duration;
 import javafx.scene.control.ListView;
 import scratch.model.*;
-
-
 import javax.swing.*;
 import java.io.*;
 import java.util.ArrayList;
@@ -60,12 +58,14 @@ public class MainViewModel {
     public void addAction() {
         Actionable actionToAdd = selectedAction.get();
         if(actionToAdd == null) return;
+
+        // on fabrique le clone
         Actionable addItem = actionToAdd.copy();
 
         int targetIndex = idChosenAction.get();
 
         if(targetIndex >= 0) {
-            chosenActions.addAtPosition(targetIndex + 1, actionToAdd);  // on le met après l'élément sélectionné
+            chosenActions.addAtPosition(targetIndex + 1, addItem);  // on le met après l'élément sélectionné
         } else {
             chosenActions.add(addItem); // si rien de sélectionné, on le met à la fin
         }
@@ -79,7 +79,7 @@ public class MainViewModel {
         }
     }
 
-    public void removeAll(){
+    public void removeAll() {
         chosenActions.removeAll();
     }
 
@@ -97,34 +97,34 @@ public class MainViewModel {
         }
     }
 
-    public void copyAction(){
+    public void copyAction() {
         int index = getIdChosenAction();
         Actionable toCopy = chosenActions.get(index);
         Actionable copyItem = toCopy.copy();
         chosenActions.add(copyItem);
     }
 
-    public void saveInFile(File file){
-        if (file == null)
+    public void saveInFile(File file) {
+        if(file == null)
             return;
-        try (PrintWriter writer = new PrintWriter(file)){
-            for (Actionable action : chosenActions.getChosenActions()) {
+        try(PrintWriter writer = new PrintWriter(file)) {
+            for(Actionable action : chosenActions.getChosenActions()) {
                 writer.println(action.toSave());
             }
 
             System.out.println("Sauvegarde réussie !");
-        } catch (FileNotFoundException e) {
+        } catch(FileNotFoundException e) {
             System.err.println("Erreur lors de la sauvegarde" + e.getMessage());
         }
     }
 
-    public void loadFile(File file){
-        if (file == null) return;
+    public void loadFile(File file) {
+        if(file == null) return;
 
-        try (Scanner scan = new Scanner(file)) {
+        try(Scanner scan = new Scanner(file)) {
             chosenActions.removeAll();
 
-            while (scan.hasNextLine()) {
+            while(scan.hasNextLine()) {
                 String line = scan.nextLine();
                 if(line.trim().isEmpty()) return;
 
@@ -136,7 +136,7 @@ public class MainViewModel {
 
                 Actionable newAction = null;
 
-                switch (action) {
+                switch(action) {
                     case "MOVE_FORWARD":
                         newAction = new Move("Avancer de ", textValue);
                         break;
@@ -153,20 +153,20 @@ public class MainViewModel {
                         newAction = new TurnLeft("Tourner à gauche de ", textValue);
                         break;
                 }
-                if (newAction != null) {
+                if(newAction != null) {
                     chosenActions.add(newAction);
                 }
             }
             System.out.println("Chargement réussi !");
 
-        } catch (FileNotFoundException e){
+        } catch(FileNotFoundException e) {
             System.err.println("Fichier introuvable : " + e.getMessage());
         }
     }
 
     public void executeAction() {
         Actionable next = executor.getNextAction();
-        if (next != null){
+        if(next != null) {
             currActionIndex.set(executor.getGlobalIndex());
             next.execute(state);
         }
@@ -188,7 +188,7 @@ public class MainViewModel {
         return idChosenAction.greaterThanOrEqualTo(0);
     }
 
-    public BooleanBinding canDuplicate(){
+    public BooleanBinding canDuplicate() {
         return idChosenAction.greaterThanOrEqualTo(0);
     }
 
@@ -256,22 +256,24 @@ public class MainViewModel {
                     isPenDown = false;
                 }
 
-                if (action instanceof Repeat) {
+                if(action instanceof Repeat) {
                     numberRepeat++;
                 }
-                if (action instanceof EndRepeat){
+                if(action instanceof EndRepeat) {
                     numberRepeat--;
                 }
 
             }
-            if (numberRepeat != 0){
+            if(numberRepeat != 0) {
                 return false;
             }
             return true;
         }, chosenActions.getChosenActions(), isPlaying);
     }
 
-    public BooleanBinding canRemoveAll() { return Bindings.isNotEmpty(chosenActions.getChosenActions()); }
+    public BooleanBinding canRemoveAll() {
+        return Bindings.isNotEmpty(chosenActions.getChosenActions());
+    }
 
     public BooleanBinding canStop() {
         return Bindings.createBooleanBinding(() -> {
@@ -279,14 +281,14 @@ public class MainViewModel {
         }, isPlaying);
     }
 
-    public boolean getIsStop(){
+    public boolean getIsStop() {
         return isStop.get();
     }
 
-    public void stopAutoExecute(){
+    public void stopAutoExecute() {
         isStop.set(true);
         isPlaying.set(false);
-        if (timeline != null)
+        if(timeline != null)
             timeline.stop();
     }
 
@@ -330,11 +332,11 @@ public class MainViewModel {
         currActionIndex.set(idx);
     }
 
-    public boolean getIsPlaying(){
+    public boolean getIsPlaying() {
         return isPlaying.get();
     }
 
-    public void setIsPlaying(boolean value){
+    public void setIsPlaying(boolean value) {
         isPlaying.set(value);
     }
 
@@ -346,7 +348,7 @@ public class MainViewModel {
 
         boolean isValid = Actions.isValueValid(selectedAction, newText);
 
-        if (isValid) {
+        if(isValid) {
             errorProperty.set(false);
             selectedAction.getProperty().set(newText); // On sauvegarde le texte ("90" ou "nb")
         } else {
@@ -365,39 +367,39 @@ public class MainViewModel {
         return playerVm;
     }
 
-    public StringBinding getLoadTextButton(){
+    public StringBinding getLoadTextButton() {
         return Bindings.when(currActionIndex.isEqualTo(0)).then("Charger").otherwise("Reintialiser");
     }
 
-    public StringBinding getExecuteTextButton(){
+    public StringBinding getExecuteTextButton() {
         return Bindings.when(currActionIndex.greaterThan(0)).then("Suivant").otherwise("Executer");
     }
 
-    public void resetCommands(){
+    public void resetCommands() {
         resetPlayerViewModel();
         executor.init(chosenActions.getChosenActions());
         currActionIndex.set(0);
         isLoad.set(true);
     }
 
-    public BooleanBinding canExecuteProgram(){
-        return Bindings.createBooleanBinding(()->
-            executor != null && !chosenActions.getChosenActions().isEmpty() && !executor.isDone() && isLoad.get() && !isPlaying.get(),
+    public BooleanBinding canExecuteProgram() {
+        return Bindings.createBooleanBinding(() ->
+                        executor != null && !chosenActions.getChosenActions().isEmpty() && !executor.isDone() && isLoad.get() && !isPlaying.get(),
                 chosenActions.getChosenActions(), currActionIndex, isLoad, isPlaying
         );
     }
 
-    public void startAutoExecute(){
+    public void startAutoExecute() {
         isPlaying.set(true);
         isStop.set(false);
         timeline = new Timeline();
         KeyFrame keyFrame = new KeyFrame(Duration.seconds(1), event_1 -> {
-            if (!isPlaying.get() || isStop.get()){
+            if(!isPlaying.get() || isStop.get()) {
                 timeline.stop();
                 return;
             }
             Actionable next = executor.getNextAction();
-            if (next != null) {
+            if(next != null) {
                 next.execute(state);
                 currActionIndex.set(currActionIndex.get() + 1);
             } else {
@@ -413,6 +415,4 @@ public class MainViewModel {
         timeline.setRate(1.0 / speed.get());
         timeline.play();
     }
-
-
 }
