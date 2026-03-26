@@ -32,27 +32,12 @@ public class Down implements Actionable {
     }
 
     @Override
-    public String getPrefix() {
-        return "Abaisser le stylo";
-    }
-
-    @Override
-    public String getSuffix() {
-        return "";
-    }
-
-    @Override
     public Color getColor() {
         return Color.GREEN;
     }
 
     @Override
     public String toString() {
-        return name;
-    }
-
-    @Override
-    public String getName() {
         return name;
     }
 }

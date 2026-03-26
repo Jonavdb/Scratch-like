@@ -1,10 +1,8 @@
 package scratch.model;
 
-import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.StringProperty;
 import javafx.scene.paint.Color;
 
-import javax.swing.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -49,22 +47,12 @@ public class ActionBlock implements Actionable {
   }
 
   @Override
-  public String getPrefix() {
-    return "Séquence : " + name;
-  }
-
-  @Override
-  public String getSuffix() {
-    return " (" + childrenActions.size() + " actions)";
-  }
-
-  @Override
   public StringProperty getProperty() {
     return null;
   }
 
   @Override
-  public String getName() {
+  public String toString() {
     return name;
   }
 
