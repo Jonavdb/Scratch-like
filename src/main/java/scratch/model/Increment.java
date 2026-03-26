@@ -22,7 +22,7 @@ public class Increment implements Actionable{
 
     public String getVariableName() {return variableName.get();}
 
-    public void setSetNameVariable(String name) {this.variableName.set(name);}
+    public void setVariableName(String name) {this.variableName.set(name);}
 
     public String getIncrementParam() {return incrementProperty.get();}
 
