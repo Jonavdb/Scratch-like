@@ -9,9 +9,10 @@ import java.util.List;
 public class Repeat implements Actionable {
     private final String name;
     private final ActionBlock actions = new ActionBlock("repeat");
-    private final StringProperty tick = new SimpleStringProperty("50");
-    public Repeat(String name) {
+    private StringProperty tick = new SimpleStringProperty();
+    public Repeat(String name, String tick) {
         this.name = name;
+        this.tick = new SimpleStringProperty(tick);
     }
     @Override
     public void execute(Player player) {
@@ -23,7 +24,7 @@ public class Repeat implements Actionable {
 
     @Override
     public Actionable copy() {
-        return new Repeat(this.name);
+        return new Repeat(this.name, this.tick.get());
     }
 
     public void addChild(Actionable action){

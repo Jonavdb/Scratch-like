@@ -13,7 +13,7 @@ public abstract class Actions {
             new TurnRight("Tourner à droite", "90"),
             new Up("Lever stylo"),
             new Down("Abaisser stylo"),
-            new Repeat("Répéter"),
+            new Repeat("Répéter", "10"),
             new EndRepeat("Arreter la répétition")
     );
 
