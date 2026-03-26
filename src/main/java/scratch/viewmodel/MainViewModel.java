@@ -164,8 +164,8 @@ public class MainViewModel {
     public void executeAction() {
         Actionable next = executor.getNextAction();
         if (next != null){
+            currActionIndex.set(executor.getGlobalIndex());
             playerVm.processAction(next);
-            currActionIndex.set(currActionIndex.get() + 1);
         }
     }
 
