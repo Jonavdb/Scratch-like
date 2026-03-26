@@ -1,7 +1,5 @@
 package scratch.model;
 
-import javafx.beans.property.IntegerProperty;
-import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.scene.paint.Color;
@@ -15,7 +13,7 @@ public abstract class Turn implements Actionable {
     this.angle = new SimpleStringProperty(angle);
   }
 
-  public abstract void execute(Player player);
+  public abstract void execute(ProgramState state);
   public abstract Actionable copy();
 
   public String getAngle(){

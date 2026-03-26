@@ -15,8 +15,10 @@ public class DeclareVariable implements Actionable {
 
 
     @Override
-    public void execute(Player player) {
-        // TODO -> ?
+    public void execute(ProgramState state) {
+        var map = state.getVariableMap();
+        var nameVar = getNameVariable();
+        boolean ok = map.declare(nameVar);
     }
 
     public String getNameVariable() {return nameVariable.get();}

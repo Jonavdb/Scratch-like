@@ -14,19 +14,18 @@ public class Move implements Actionable{
     }
 
     @Override
-    public void execute(Player player) {
+    public void execute(ProgramState state) {
         String distanceText = this.getFirstProperty().get();
         int dist = 0;
+        var player = state.getPlayer();
+        var map = state.getVariableMap();
+        boolean isLiteralValue = map.tryGetLiteral(distanceText).isPresent();
 
-        try {
-            dist = Integer.parseInt(distanceText);
-        } catch (NumberFormatException e) {
-            return;
-        }
+        dist = isLiteralValue ? Integer.parseInt(distanceText) : map.resolveValue(distanceText);
 
-        if(dist <= 0 || dist > 100) return;
+        if(dist <= 0 || dist > 100 ) return;
 
-        double radians = Math.toRadians(player.getAngle()) + Math.PI / 2;
+        double radians = Math.toRadians(state.getPlayer().getAngle()) + Math.PI / 2;
 
         // Trigonométrie pour avancer
         double diffX = dist * Math.cos(radians);  // NouveauX = cosinus(angle) * vitesse

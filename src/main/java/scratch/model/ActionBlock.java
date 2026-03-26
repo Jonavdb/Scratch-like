@@ -30,9 +30,9 @@ public class ActionBlock implements Actionable {
 
   // Méthodes de l'interface
   @Override
-  public void execute(Player player) {
+  public void execute(ProgramState state) {
     for(Actionable action : childrenActions) {
-      action.execute(player);
+      action.execute(state);
     }
   }
 

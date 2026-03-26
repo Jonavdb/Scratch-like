@@ -29,6 +29,7 @@ public class MainViewModel {
     // debug
     private IntegerProperty currActionIndex = new SimpleIntegerProperty(0);
     private PlayerViewModel playerVm = new PlayerViewModel(new Player());
+    private ProgramState state = new ProgramState(new Player(), new VariableMap());
 
     public MainViewModel(ChosenActions chosenActions) {
         this.chosenActions = chosenActions;
@@ -161,7 +162,8 @@ public class MainViewModel {
     public void executeAction() {
         if (currActionIndex.get() < chosenActions.getChosenActions().size()) {
             Actionable action = chosenActions.get(currActionIndex.get());
-            playerVm.processAction(action);
+            //playerVm.processAction(action);
+            action.execute(state);
             currActionIndex.set(currActionIndex.get() + 1);
         }
     }

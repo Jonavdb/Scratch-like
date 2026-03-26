@@ -5,16 +5,15 @@ public class TurnRight extends Turn {
         super(name, angle);
     }
 
-    public void execute(Player player) {
+    public void execute(ProgramState state) {
         String angleText = this.getFirstProperty().get();
         int turnValue = 0;
 
-        try {
-            turnValue = Integer.parseInt(angleText);
-        } catch (NumberFormatException e) {
-            return;
-        }
+        var player = state.getPlayer();
+        var map = state.getVariableMap();
+        boolean isLiteral = map.tryGetLiteral(angleText).isPresent();
 
+        turnValue = isLiteral ? Integer.parseInt(angleText) : map.resolveValue(angleText);
         player.setAngle(player.getAngle() - turnValue);
     }
 
