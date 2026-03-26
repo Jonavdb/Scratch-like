@@ -5,13 +5,13 @@ import javafx.beans.property.StringProperty;
 import javafx.scene.paint.Color;
 
 public class AssignVariable implements Actionable{
-    private final String nameAction;
-    private final StringProperty nameVariable;
+    private final String actionName;
+    private final StringProperty variableName;
     private final StringProperty assignedParam;
 
-    public AssignVariable(String nameAction, String nameVariable, String assignedParam) {
-        this.nameAction = nameAction;
-        this.nameVariable = new SimpleStringProperty(nameVariable);
+    public AssignVariable(String nameAction, String initialVarName, String assignedParam) {
+        this.actionName = nameAction;
+        this.variableName = new SimpleStringProperty(initialVarName);
         this.assignedParam = new SimpleStringProperty(assignedParam);
     }
 
@@ -19,14 +19,14 @@ public class AssignVariable implements Actionable{
     public void execute(ProgramState state) {
         // TODO -> ?
         var map = state.getVariableMap();
-        var nameVar = getNameVariable();
+        var nameVar = getVariableName();
         var value = getAssignedParam();
         boolean ok = map.assign(nameVar, value);
     }
 
-    public String getNameVariable() {return nameVariable.get();}
+    public String getVariableName() {return variableName.get();}
 
-    public void setSetNameVariable(String name) {this.nameVariable.set(name);}
+    public void setSetNameVariable(String name) {this.variableName.set(name);}
 
     public String getAssignedParam() {return assignedParam.get();}
 
@@ -34,8 +34,8 @@ public class AssignVariable implements Actionable{
         assignedParam.set(param);}
 
     @Override
-    public StringProperty getFirstProperty() {
-        return nameVariable;
+    public StringProperty getProperty() {
+        return variableName;
     }
 
     public StringProperty getParamProperty() {
@@ -43,15 +43,17 @@ public class AssignVariable implements Actionable{
     }
 
     @Override
-    public Actionable copy() {return new AssignVariable(this.nameAction, this.getNameVariable(), this.getAssignedParam());}
+    public Actionable copy() {
+        return new AssignVariable(this.actionName, this.getVariableName(), this.getAssignedParam());
+    }
 
     @Override
-    public String toSave() {return "VAR_ASSIGNMENT;" + getNameVariable() + ";" + getAssignedParam();}
+    public String toSave() {return "VAR_ASSIGNMENT;" + getVariableName() + ";" + getAssignedParam();}
 
     @Override
     public Color getColor() {return Color.AQUA.darker();}
 
     @Override
-    public String toString() {return nameAction;}
+    public String toString() {return actionName;}
 
 }

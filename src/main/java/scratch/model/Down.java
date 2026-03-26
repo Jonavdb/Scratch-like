@@ -27,7 +27,7 @@ public class Down implements Actionable {
     }
 
     @Override
-    public StringProperty getFirstProperty() {
+    public StringProperty getProperty() {
         return null;
     }
 

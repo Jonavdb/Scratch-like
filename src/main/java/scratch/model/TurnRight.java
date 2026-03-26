@@ -6,7 +6,7 @@ public class TurnRight extends Turn {
     }
 
     public void execute(ProgramState state) {
-        String angleText = this.getFirstProperty().get();
+        String angleText = this.getProperty().get();
         int turnValue = 0;
 
         var player = state.getPlayer();

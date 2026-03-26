@@ -15,7 +15,7 @@ public class Move implements Actionable{
 
     @Override
     public void execute(ProgramState state) {
-        String distanceText = this.getFirstProperty().get();
+        String distanceText = this.getProperty().get();
         int dist = 0;
         var player = state.getPlayer();
         var map = state.getVariableMap();
@@ -42,7 +42,7 @@ public class Move implements Actionable{
         this.distance.set(distance);
     }
 
-    public StringProperty getFirstProperty() {
+    public StringProperty getProperty() {
         return distance;
     }
 

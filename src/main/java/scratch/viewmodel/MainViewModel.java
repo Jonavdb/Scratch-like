@@ -12,8 +12,12 @@ import javafx.scene.control.ListView;
 import scratch.model.*;
 
 
+import javax.swing.*;
 import java.io.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
+import java.util.Stack;
 
 public class MainViewModel {
     private ChosenActions chosenActions;
@@ -25,10 +29,10 @@ public class MainViewModel {
     private final BooleanProperty isStop = new SimpleBooleanProperty(false);
     private final DoubleProperty speed = new SimpleDoubleProperty(1.0);
     private Timeline timeline;
-
+    private Execution executor = new Execution();
     // debug
     private IntegerProperty currActionIndex = new SimpleIntegerProperty(0);
-    private PlayerViewModel playerVm = new PlayerViewModel(new Player());
+    private PlayerViewModel playerVm;
     private ProgramState state = new ProgramState(new Player(), new VariableMap());
 
     public MainViewModel(ChosenActions chosenActions) {
@@ -38,6 +42,7 @@ public class MainViewModel {
             currActionIndex.set(0);
             isLoad.set(false);
         });
+        playerVm = new PlayerViewModel(state.getPlayer());
     }
 
     public ReadOnlyBooleanProperty errorProperty() {
@@ -160,11 +165,10 @@ public class MainViewModel {
     }
 
     public void executeAction() {
-        if (currActionIndex.get() < chosenActions.getChosenActions().size()) {
-            Actionable action = chosenActions.get(currActionIndex.get());
-            //playerVm.processAction(action);
-            action.execute(state);
-            currActionIndex.set(currActionIndex.get() + 1);
+        Actionable next = executor.getNextAction();
+        if (next != null){
+            currActionIndex.set(executor.getGlobalIndex());
+            next.execute(state);
         }
     }
 
@@ -191,22 +195,77 @@ public class MainViewModel {
     public BooleanBinding canLoadProgram() {
         return Bindings.createBooleanBinding(() -> {
             ObservableList<Actionable> list = chosenActions.getChosenActions();
-            if (list.isEmpty() || isPlaying.get()) {
+
+            if(list.isEmpty() || isPlaying.get()) {
                 return false;
             }
+
             boolean isPenDown = true;
-            for (Actionable action : list) {
-                if (action instanceof Down) {
-                    if (isPenDown) {
+            boolean hasSeenNonDeclaration = false;  // un mouvement, un stylo, une assignation
+            int numberRepeat = 0;
+            ArrayList<String> variables = new ArrayList<>();
+
+            for(Actionable action : list) {
+                /* --- Zone de déclaration de variables --- */
+                if(action instanceof DeclareVariable) {
+                    if(action.getProperty() != null) {
+                        variables.add(action.getProperty().get());  // on ajoute la variable créée dans un array
+                    }
+
+                    if(hasSeenNonDeclaration) {
+                        return false;   // déclaration après une action non-déclaration -> interdit
+                    }
+                } else {
+                    hasSeenNonDeclaration = true;   // on est sur une non-déclaration -> on ferme la porte
+
+                    // Vérification de la PREMIÈRE propriété (valable pour toutes les actions)
+                    if(action.getProperty() != null && action.getProperty().get() != null) {
+                        String param1 = action.getProperty().get();
+
+                        // est-ce que le paramètre est un nom de variable (ex: "nb") et qu'elle n'existe dans pas notre tableau
+                        if(param1.matches("^[a-zA-Z_][a-zA-Z0-9_]*$") && !variables.contains(param1)) {
+                            return false;
+                        }
+                        // si ce n'est pas une variable (ex: c'est le chiffre "50"), on ne fait rien car c'est valide
+                    }
+
+                    // Vérification de la DEUXIÈME propriété (spécifique à Assign et Increment)
+                    if(action instanceof AssignVariable assignVariable) {
+                        String param2 = assignVariable.getParamProperty().get();
+                        if(param2 != null && param2.matches("^[a-zA-Z_][a-zA-Z0-9_]*$") && !variables.contains(param2)) {
+                            return false; // erreur : la variable 2 n'existe pas
+                        }
+                    } else if(action instanceof Increment increment) {
+                        String param2 = increment.getIncrementProperty().get();
+                        if(param2 != null && param2.matches("^[a-zA-Z_][a-zA-Z0-9_]*$") && !variables.contains(param2)) {
+                            return false; // erreur : la variable 2 n'existe pas
+                        }
+                    }
+                }
+
+                /* --- Vérification du stylo --- */
+                if(action instanceof Down) {
+                    if(isPenDown) {
                         return false;
                     }
                     isPenDown = true;
-                } else if (action instanceof Up) {
-                    if (!isPenDown) {
+                } else if(action instanceof Up) {
+                    if(!isPenDown) {
                         return false;
                     }
                     isPenDown = false;
                 }
+
+                if (action instanceof Repeat) {
+                    numberRepeat++;
+                }
+                if (action instanceof EndRepeat){
+                    numberRepeat--;
+                }
+
+            }
+            if (numberRepeat != 0){
+                return false;
             }
             return true;
         }, chosenActions.getChosenActions(), isPlaying);
@@ -280,7 +339,7 @@ public class MainViewModel {
     }
 
     public void validateAndUpdateValue(Actionable selectedAction, String newText) {
-        if(selectedAction == null || selectedAction.getFirstProperty() == null) {
+        if(selectedAction == null || selectedAction.getProperty() == null) {
             errorProperty.set(false);
             return;
         }
@@ -289,10 +348,10 @@ public class MainViewModel {
 
         if (isValid) {
             errorProperty.set(false);
-            selectedAction.getFirstProperty().set(newText); // On sauvegarde le texte ("90" ou "nb")
+            selectedAction.getProperty().set(newText); // On sauvegarde le texte ("90" ou "nb")
         } else {
             errorProperty.set(true);
-            selectedAction.getFirstProperty().set(""); // Reset case vide
+            selectedAction.getProperty().set(""); // Reset case vide
         }
     }
 
@@ -301,7 +360,8 @@ public class MainViewModel {
     }
 
     public PlayerViewModel resetPlayerViewModel() {
-        playerVm = new PlayerViewModel(new Player());
+        state = new ProgramState(new Player(), new VariableMap());
+        playerVm = new PlayerViewModel(state.getPlayer());
         return playerVm;
     }
 
@@ -314,16 +374,16 @@ public class MainViewModel {
     }
 
     public void resetCommands(){
+        resetPlayerViewModel();
+        executor.init(chosenActions.getChosenActions());
         currActionIndex.set(0);
         isLoad.set(true);
-        resetPlayerViewModel();
     }
 
     public BooleanBinding canExecuteProgram(){
         return Bindings.createBooleanBinding(()->
-            !chosenActions.getChosenActions().isEmpty() && currActionIndex.get() < chosenActions.getChosenActions().size() && isLoad.get() && !isPlaying.get(),
-            chosenActions.getChosenActions(),
-            currActionIndex, isLoad, isPlaying
+            executor != null && !chosenActions.getChosenActions().isEmpty() && !executor.isDone() && isLoad.get() && !isPlaying.get(),
+                chosenActions.getChosenActions(), currActionIndex, isLoad, isPlaying
         );
     }
 
@@ -336,8 +396,10 @@ public class MainViewModel {
                 timeline.stop();
                 return;
             }
-            if (currActionIndex.get() < chosenActions.getChosenActions().size()) {
-                executeAction();
+            Actionable next = executor.getNextAction();
+            if (next != null) {
+                next.execute(state);
+                currActionIndex.set(currActionIndex.get() + 1);
             } else {
                 timeline.stop();
                 isPlaying.set(false);
