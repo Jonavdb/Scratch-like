@@ -15,6 +15,8 @@ public class TurnLeft extends Turn {
 
         turnValue = isLiteral ? Integer.parseInt(angleText) : map.resolveValue(angleText);
 
+        if(turnValue < 1 || turnValue > 180) return;
+
         player.setAngle(player.getAngle() + turnValue);
     }
 
