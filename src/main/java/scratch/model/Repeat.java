@@ -23,7 +23,7 @@ public class Repeat implements Actionable {
 
     @Override
     public Actionable copy() {
-        return new Repeat(this.getName());
+        return new Repeat(this.name);
     }
 
     public void addChild(Actionable action){
@@ -41,23 +41,13 @@ public class Repeat implements Actionable {
     }
 
     @Override
-    public String getPrefix() {
-        return "Répeter";
-    }
-
-    @Override
-    public String getSuffix() {
-        return "fois";
-    }
-
-    @Override
-    public String getName() {
-        return "répeter " + tick.getName() ;
+    public String toString() {
+        return "Répeter" + tick.getName() ;
     }
 
     @Override
     public Color getColor() {
-        return Color.TURQUOISE;
+        return Color.AQUA.darker();
     }
 
     public List<Actionable> getChildren(){

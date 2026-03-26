@@ -192,7 +192,7 @@ public class MainView extends VBox {
       case Move move          -> createSingleParamUI("Avancer de ", move, move.getProperty(), errorLabel);
       case TurnLeft tl        -> createSingleParamUI("Tourner à gauche de ", tl, tl.getProperty(), errorLabel);
       case TurnRight tr       -> createSingleParamUI("Tourner à droite de ", tr, tr.getProperty(), errorLabel);
-
+      case Repeat re          -> createSingleParamUI("Répéter ", re, re.getProperty(), errorLabel);
       // Actions à 2 paramètres
       case AssignVariable av  -> createDoubleParamUI("Assignation de la variable ", " valeur : ", av, av.getProperty(), av.getParamProperty(), errorLabel);
       case Increment inc      -> createDoubleParamUI("Incrémentation de la variable ", " de ", inc, inc.getProperty(), inc.getIncrementProperty(), errorLabel);
@@ -200,6 +200,7 @@ public class MainView extends VBox {
       // Actions sans paramètre
       case Up up              -> createNoParamUI("Lever stylo");
       case Down down          -> createNoParamUI("Abaisser stylo");
+      case EndRepeat endRe    -> createNoParamUI("Arreter répétition");
 
       default -> detailContentContainer.getChildren().add(new Label("Détail de : " + chosenAction.getProperty()));
     }
@@ -296,12 +297,15 @@ public class MainView extends VBox {
                       turnRight.getProperty()
               ));
             }
-//            case Repeat r -> {
-//              // TODO : set text based on the type of action
-//            }
-//            case EndRepeat er -> {
-//              // TODO : set text based on the type of action
-//            }
+            case Repeat r -> {
+              textProperty().bind(Bindings.createStringBinding(
+                      () -> r.toString() + " " + r.getProperty().get(),
+                      r.getProperty()
+              ));
+            }
+            case EndRepeat er -> {
+              setText(er.toString());
+            }
             case Up up -> {
               setText(up.toString());
             }

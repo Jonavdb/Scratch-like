@@ -16,7 +16,7 @@ public class EndRepeat implements Actionable {
 
     @Override
     public Actionable copy() {
-        return new EndRepeat(this.getName());
+        return new EndRepeat(this.name);
     }
 
     @Override
@@ -30,22 +30,12 @@ public class EndRepeat implements Actionable {
     }
 
     @Override
-    public String getPrefix() {
-        return "Arreter la répétition";
-    }
-
-    @Override
-    public String getSuffix() {
-        return "";
-    }
-
-    @Override
-    public String getName() {
+    public String toString() {
         return "Arreter la répétition";
     }
 
     @Override
     public Color getColor() {
-        return Color.TURQUOISE;
+        return Color.AQUA.darker();
     }
 }
