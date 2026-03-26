@@ -14,6 +14,11 @@ public class ChosenActions {
                 return new Observable[0];
             }
     );
+    //
+    // trouvez un moyen pour que ça ne pointe pas sur ma liste mais sur mes actions en elles-mêmes et ensuite passer à l'action suivante.
+    // stack d'index donc quand on arrive à un bloc repeat, push pour rentrer dedans, pop pour sortir.
+    // état d'éxécution qui retient des trucs.
+    // multi index et multi list Quand j'arrive à un bloc repeat, je stack la liste et son index et je repars sur la liste du bloc repeat et je set son index personnel à 0.
 
     private final ObservableList<Actionable> unmodifiableChosenActions = FXCollections.unmodifiableObservableList(chosenActions);
 

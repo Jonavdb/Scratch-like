@@ -11,9 +11,12 @@ import javafx.util.Duration;
 import scratch.model.*;
 
 
+import javax.swing.*;
 import java.io.*;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
+import java.util.Stack;
 
 public class MainViewModel {
     private ChosenActions chosenActions;
@@ -25,7 +28,7 @@ public class MainViewModel {
     private final BooleanProperty isStop = new SimpleBooleanProperty(false);
     private final DoubleProperty speed = new SimpleDoubleProperty(1.0);
     private Timeline timeline;
-
+    private Execution executor = new Execution();
     // debug
     private IntegerProperty currActionIndex = new SimpleIntegerProperty(0);
     private PlayerViewModel playerVm = new PlayerViewModel(new Player());
@@ -159,9 +162,9 @@ public class MainViewModel {
     }
 
     public void executeAction() {
-        if (currActionIndex.get() < chosenActions.getChosenActions().size()) {
-            Actionable action = chosenActions.get(currActionIndex.get());
-            playerVm.processAction(action);
+        Actionable next = executor.getNextAction();
+        if (next != null){
+            playerVm.processAction(next);
             currActionIndex.set(currActionIndex.get() + 1);
         }
     }
@@ -355,16 +358,16 @@ public class MainViewModel {
     }
 
     public void resetCommands(){
+        resetPlayerViewModel();
+        executor.init(chosenActions.getChosenActions());
         currActionIndex.set(0);
         isLoad.set(true);
-        resetPlayerViewModel();
     }
 
     public BooleanBinding canExecuteProgram(){
         return Bindings.createBooleanBinding(()->
-            !chosenActions.getChosenActions().isEmpty() && currActionIndex.get() < chosenActions.getChosenActions().size() && isLoad.get() && !isPlaying.get(),
-            chosenActions.getChosenActions(),
-            currActionIndex, isLoad, isPlaying
+            executor != null && !chosenActions.getChosenActions().isEmpty() && !executor.isDone() && isLoad.get() && !isPlaying.get(),
+                chosenActions.getChosenActions(), currActionIndex, isLoad, isPlaying
         );
     }
 
@@ -377,8 +380,10 @@ public class MainViewModel {
                 timeline.stop();
                 return;
             }
-            if (currActionIndex.get() < chosenActions.getChosenActions().size()) {
-                executeAction();
+            Actionable next = executor.getNextAction();
+            if (next != null) {
+                playerVm.processAction(next);
+                currActionIndex.set(currActionIndex.get() + 1);
             } else {
                 timeline.stop();
                 isPlaying.set(false);
