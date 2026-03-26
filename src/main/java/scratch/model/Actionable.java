@@ -7,7 +7,7 @@ public interface Actionable {
     void execute(Player player);
     Actionable copy();
     String toSave();
-    StringProperty getFirstProperty();
+    StringProperty getProperty();
     String toString();
     Color getColor();
 }

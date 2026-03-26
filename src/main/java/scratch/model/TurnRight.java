@@ -6,13 +6,14 @@ public class TurnRight extends Turn {
     }
 
     public void execute(Player player) {
-        String angleText = this.getFirstProperty().get();
+        String angleText = this.getProperty().get();
         int turnValue = 0;
 
         try {
             turnValue = Integer.parseInt(angleText);
         } catch (NumberFormatException e) {
-            return;
+            // c'est PAS un chiffre, donc c'est le nom d'une variale (ex: 'val', 'nb', ...)
+            turnValue = player.getVariableValue(angleText);
         }
 
         player.setAngle(player.getAngle() - turnValue);

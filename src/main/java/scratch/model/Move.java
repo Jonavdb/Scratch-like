@@ -15,13 +15,14 @@ public class Move implements Actionable{
 
     @Override
     public void execute(Player player) {
-        String distanceText = this.getFirstProperty().get();
+        String distanceText = this.getProperty().get();
         int dist = 0;
 
         try {
             dist = Integer.parseInt(distanceText);
         } catch (NumberFormatException e) {
-            return;
+            // c'est PAS un chiffre, donc c'est le nom d'une variale (ex: 'val', 'nb', ...)
+            dist = player.getVariableValue(distanceText);
         }
 
         if(dist <= 0 || dist > 100) return;
@@ -43,7 +44,7 @@ public class Move implements Actionable{
         this.distance.set(distance);
     }
 
-    public StringProperty getFirstProperty() {
+    public StringProperty getProperty() {
         return distance;
     }
 

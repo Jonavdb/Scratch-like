@@ -6,9 +6,9 @@ import javafx.collections.ObservableList;
 public class ChosenActions {
     private ObservableList<Actionable> chosenActions = FXCollections.observableArrayList(
             action -> {
-                if (action != null && action.getFirstProperty() != null) {
+                if (action != null && action.getProperty() != null) {
                     return new Observable[]{
-                            action.getFirstProperty()
+                            action.getProperty()
                     };
                 }
                 return new Observable[0];

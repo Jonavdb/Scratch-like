@@ -30,7 +30,7 @@ public abstract class Turn implements Actionable {
     angle.set(newAngle);
   }
 
-  public StringProperty getFirstProperty() {
+  public StringProperty getProperty() {
     return angle;
   }
 

@@ -2,6 +2,7 @@ package scratch.view;
 
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.StringProperty;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Group;
@@ -16,6 +17,7 @@ import scratch.model.*;
 import scratch.viewmodel.MainViewModel;
 import javafx.scene.control.Slider;
 
+import javax.swing.*;
 import java.io.File;
 
 public class MainView extends VBox {
@@ -48,21 +50,12 @@ public class MainView extends VBox {
   private final Button btnEmptyAll = new Button("Vider tout");
 
   // Action détails (sous le programme)
-
-  // TODO : remove this
-  private final Label labelPrefix = new Label("(aucune action selectionnée)");
-  private final TextField actionParamField = new TextField("");
-  private final Label labelSuffix = new Label();
-  private final Label errorLabel = new Label("Erreur valeur");
-
-  private final HBox detailContent = new HBox(5, labelPrefix, actionParamField, labelSuffix);
-  private final VBox detailContentContainer = new VBox(detailContent, errorLabel);
+  private final VBox detailContentContainer = new VBox(5);
+  private final TitledPane detailPane = new TitledPane("Détail de l'action", detailContentContainer);
 
   // TODO -> declare here a custom container for each action
   //  varDeclareContent, varAssignmentContent, incrementAndDecrementContent, moveContent, turnContent,
   //  repeatContent, endRepeatContent, upContent, downContent
-
-  private final TitledPane detailPane = new TitledPane("Détail de l'action", detailContentContainer);
 
   // Scene (droite)
   private final VBox sceneBox = new VBox();
@@ -92,7 +85,6 @@ public class MainView extends VBox {
   // =========================================================================
   // LAYOUTS
   // =========================================================================
-
   private void configureMenu() {
     fileMenu.getItems().addAll(saveItem, loadItem);
     menuBar.getMenus().add(fileMenu);
@@ -114,15 +106,6 @@ public class MainView extends VBox {
     programBox.setPadding(new Insets(0, 0, 0, 10));
 
     // Détail de l'action
-    actionParamField.setVisible(false);
-    actionParamField.setManaged(false);
-    actionParamField.setPrefWidth(40);
-    detailContent.setAlignment(Pos.CENTER_LEFT);
-
-    errorLabel.setVisible(false);
-    errorLabel.setManaged(false);
-    errorLabel.setTextFill(Color.RED);
-
     programBox.getChildren().addAll(new Text("Programme"), chosenActions, btnContainerProgram, detailPane);
     HBox.setHgrow(programBox, Priority.ALWAYS);
   }
@@ -157,15 +140,102 @@ public class MainView extends VBox {
     VBox.setVgrow(appContainer, Priority.ALWAYS);
   }
 
-  // Méthode pour générer des cellules personnalisées (cercle de couleur + texte)
+  private void createSingleParamUI(String labelText, Actionable action, StringProperty property, Label errorLabel) {
+    Label label = new Label(labelText);
+    TextField textField = new TextField();
+    textField.setPrefWidth(50);
+    textField.textProperty().bindBidirectional(property);
+
+    setupValidationUI(textField, action, errorLabel);
+
+    HBox hbox = new HBox(10, label, textField);
+    hbox.setAlignment(Pos.CENTER_LEFT);
+    detailContentContainer.getChildren().addAll(hbox, errorLabel);
+  }
+
+  private void createDoubleParamUI(String text1, String text2, Actionable action, StringProperty prop1, StringProperty prop2, Label errorLabel) {
+    Label label1 = new Label(text1);
+    Label label2 = new Label(text2);
+    TextField textField = new TextField();
+    TextField textValue = new TextField();
+    textField.setPrefWidth(50);
+    textValue.setPrefWidth(50);
+
+    textField.textProperty().bindBidirectional(prop1);
+    textValue.textProperty().bindBidirectional(prop2);
+
+    setupValidationUI(textValue, action, errorLabel);
+
+    HBox hbox = new HBox(10, label1, textField, label2, textValue);
+    hbox.setAlignment(Pos.CENTER_LEFT);
+    detailContentContainer.getChildren().addAll(hbox, errorLabel);
+  }
+
+  private void createNoParamUI(String labelText) {
+    detailContentContainer.getChildren().add(new Label(labelText));
+  }
+
+  private void updateDetailContainer(Actionable chosenAction) {
+    detailContentContainer.getChildren().clear();
+
+    if (chosenAction == null) {
+      detailContentContainer.getChildren().add(new Label("(aucune action sélectionnée)"));
+      return;
+    }
+
+    Label errorLabel = new Label("Erreur valeur");
+    errorLabel.setTextFill(Color.RED);
+
+    switch (chosenAction) {
+      // Actions à 1 paramètre
+      case DeclareVariable dv -> createSingleParamUI("Déclaration de la variable ", dv, dv.getProperty(), errorLabel);
+      case Move move          -> createSingleParamUI("Avancer de ", move, move.getProperty(), errorLabel);
+      case TurnLeft tl        -> createSingleParamUI("Tourner à gauche de ", tl, tl.getProperty(), errorLabel);
+      case TurnRight tr       -> createSingleParamUI("Tourner à droite de ", tr, tr.getProperty(), errorLabel);
+
+      // Actions à 2 paramètres
+      case AssignVariable av  -> createDoubleParamUI("Assignation de la variable ", " valeur : ", av, av.getProperty(), av.getParamProperty(), errorLabel);
+      case Increment inc      -> createDoubleParamUI("Incrémentation de la variable ", " de ", inc, inc.getProperty(), inc.getIncrementProperty(), errorLabel);
+
+      // Actions sans paramètre
+      case Up up              -> createNoParamUI("Lever stylo");
+      case Down down          -> createNoParamUI("Abaisser stylo");
+
+      default -> detailContentContainer.getChildren().add(new Label("Détail de : " + chosenAction.getProperty()));
+    }
+  }
+  // Méthode pour générer des cellules personnalisées (cercle de couleur + texte) dans la colonne de GAUCHE
+  private Callback<ListView<Actionable>, ListCell<Actionable>> createPaletteCellFactory() {
+    return listView -> new ListCell<>() {
+      @Override
+      protected void updateItem(Actionable item, boolean empty) {
+        super.updateItem(item, empty);
+        textProperty().unbind(); // Sécurité
+
+        if (empty || item == null) {
+          setText(null);
+          setGraphic(null);
+          return;
+        }
+
+        // pour la palette, on affiche JUSTE le nom pur (ex: "Inc/Dec variable")
+        setText(item.toString());
+
+        Color color = item.getColor();
+        Circle circle = new Circle(5, color);
+        setTextFill(color);
+        setGraphic(circle);
+      }
+    };
+  }
+
+  // Méthode pour générer des cellules personnalisées (cercle de couleur + texte) dans la colonne du MILIEU
   private Callback<ListView<Actionable>, ListCell<Actionable>> createActionCellFactory() {
     return actionableListView -> new ListCell<Actionable>() {
       @Override
       protected void updateItem(Actionable item, boolean empty) {
         super.updateItem(item, empty);
-
-        // Coupe l'ancien binding car les cellules sont recyclées
-        textProperty().unbind();
+        textProperty().unbind();  // Coupe l'ancien binding car les cellules sont recyclées
 
         // Pas d'action à afficher
         if(empty || item == null) {
@@ -175,49 +245,81 @@ public class MainView extends VBox {
         }
 
         // Verifier le type d'action
-          /*switch (item) {
-              case DeclareVariable d -> {
-                  // TODO : set text based on the type of action
-              }
-              case AssignVariable a  -> {
-                  // TODO : set text based on the type of action
-              }
-              case IncDecVariable id -> {
-                  // TODO : set text based on the type of action
-              }
-              case Move m            -> {
-                  // TODO : set text based on the type of action
-              }
-              case TurnLeft tl       -> {
-                  // TODO : set text based on the type of action
-              }
-              case TurnRight tr      -> {
-                  // TODO : set text based on the type of action
-              }
-              case Repeat r          -> {
-                  // TODO : set text based on the type of action
-              }
-              case EndRepeat er      -> {
-                  // TODO : set text based on the type of action
-              }
-              case Up u              -> {
-                  // TODO : set text based on the type of action
-              }
-              case Down d            -> {
-                  // TODO : set text based on the type of action
-              }
-          }*/
+          switch (item) {
+            case DeclareVariable declareVariable -> {
+              textProperty().bind(Bindings.createStringBinding(
+                      () -> declareVariable.toString() + " " + declareVariable.getProperty().get(),
+                      declareVariable.getProperty()
+              ));
+            }
+            case AssignVariable assignVariable -> {
+             textProperty().bind(Bindings.createStringBinding(
+                     () -> {
+                       String varName = assignVariable.getProperty().get();
+                       String varValue = assignVariable.getParamProperty().get();
 
-        // TODO : remove
-       /* if(item.getProperty() != null) {
-          // permet de fabriquer un texte à chaque fois que la propriété change
-          textProperty().bind(Bindings.createStringBinding(
-                  () -> item.getName() + " " + item.getProperty().get(),
-                  item.getProperty()
-          ));
-        } else {
-          setText(item.getPrefix());  // Pour les actions sans propriété (stylo)
-        }*/
+                       // Si le nom de la variable est vide (ou null), on n'affiche que "Assignation"
+                       if (varName == null || varName.trim().isEmpty()) {
+                         return assignVariable.toString();
+                       }
+
+                       // Sinon, on affiche la formule complète "Assignation : nb = 15"
+                       return assignVariable.toString() + " : " + varName + " = " + (varValue != null ? varValue : "");
+                     },
+                     assignVariable.getProperty(),
+                     assignVariable.getParamProperty()
+             ));
+            }
+            case Increment increment -> {
+              textProperty().bind(Bindings.createStringBinding(
+                      () -> increment.toString() + " " + increment.getProperty().get()
+                              + " de " + increment.getIncrementProperty().get(),
+                      increment.getProperty(),
+                      increment.getIncrementProperty()
+              ));
+            }
+            case Move move -> {
+             textProperty().bind(Bindings.createStringBinding(
+                     () -> move.toString() + " " + move.getProperty().get(),
+                     move.getProperty()
+             ));
+            }
+            case TurnLeft turnLeft -> {
+              textProperty().bind(Bindings.createStringBinding(
+                      () -> turnLeft.toString() + " " + turnLeft.getProperty().get(),
+                      turnLeft.getProperty()
+              ));
+            }
+            case TurnRight turnRight -> {
+              textProperty().bind(Bindings.createStringBinding(
+                      () -> turnRight.toString() + " " + turnRight.getProperty().get(),
+                      turnRight.getProperty()
+              ));
+            }
+//            case Repeat r -> {
+//              // TODO : set text based on the type of action
+//            }
+//            case EndRepeat er -> {
+//              // TODO : set text based on the type of action
+//            }
+            case Up up -> {
+              setText(up.toString());
+            }
+            case Down down -> {
+              setText(down.toString());
+            }
+            default -> {
+              // Si l'action possède une propriété modifiable (ex: un nouveau type de bloc le jour de l'exam)
+              if (item.getProperty() != null) {
+                textProperty().bind(Bindings.createStringBinding(
+                        () -> item.getProperty() + ""
+                ));
+              }
+              else {  // Si c'est une action simple sans paramètre
+                setText(item.toString());
+              }
+            }
+          }
 
         Color color = item.getColor();
         Circle circle = new Circle(5, color);
@@ -228,17 +330,25 @@ public class MainView extends VBox {
     };
   }
 
-  // =========================================================================
-  // BINDINGS (MVVM)
-  // =========================================================================
+  private void setupValidationUI(TextField textField, Actionable action, Label errorLabel) {
+    boolean isInitialValid = Actions.isValueValid(action, textField.getText());
+    errorLabel.setVisible(!isInitialValid);
+    errorLabel.setManaged(!isInitialValid);
 
+    textField.textProperty().addListener((obs, oldVal, newVal) -> {
+      boolean isValid = Actions.isValueValid(action, newVal);
+      errorLabel.setVisible(!isValid);
+      errorLabel.setManaged(!isValid);
+    });
+  }
+
+  // =========================================================================
+  // BINDINGS (MVVM) && UTILS
+  // =========================================================================
   private void setupBindings() {
     bindLists();
     bindButtons();
-    bindActionDetails();
     bindMenuActions();
-    errorLabel.visibleProperty().bind(vm.errorProperty());
-    errorLabel.managedProperty().bind(vm.errorProperty());
     vm.currActionIndexProperty().addListener((obs, oldVal, newVal) -> {
         chosenActions.getSelectionModel().select(newVal.intValue());
     });
@@ -249,53 +359,20 @@ public class MainView extends VBox {
     availableActions.setItems(vm.getAllAction());
     chosenActions.setItems(vm.getChosenAction());
 
-    availableActions.setCellFactory(createActionCellFactory());
+    availableActions.setCellFactory(createPaletteCellFactory());
     chosenActions.setCellFactory(createActionCellFactory());
 
     // Synchronisation des sélections avec le VM
     vm.selectedActionProperty().bind(availableActions.getSelectionModel().selectedItemProperty());
 
     chosenActions.getSelectionModel().selectedIndexProperty().addListener((obs, oldVal, newVal) -> {
-      if (newVal != null) {
+      if (newVal != null && newVal.intValue() >= 0) {
         vm.setIdChosenAction(newVal.intValue());
-
-        // TODO : 1. retrieve the selected action
-        // TODO : 2. update detail panel based on the action type
-          // TODO : ex: func updateDetailContainer(Actionable chosenAction)
-         /* switch (chosenAction) {
-              case DeclareVariable d -> {
-                  // TODO : setup detail panel
-              }
-              case AssignVariable a  -> {
-                  // TODO : setup detail panel
-              }
-              case IncDecVariable id -> {
-                  // TODO : setup detail panel
-              }
-              case Move m            -> {
-                  // TODO : setup detail panel
-              }
-              case TurnLeft tl       -> {
-                  // TODO : setup detail panel
-              }
-              case TurnRight tr      -> {
-                  // TODO : setup detail panel
-              }
-              case Repeat r          -> {
-                  // TODO : setup detail panel
-              }
-              case EndRepeat er      -> {
-                  // TODO : setup detail panel
-              }
-              case Up u              -> {
-                  // TODO : setup detail panel
-              }
-              case Down d            -> {
-                  // TODO : setup detail panel
-              }
-          }*/
-
-
+        updateDetailContainer(vm.getChosenAction().get(newVal.intValue()));
+      } else {
+        // si la sélection a disparu (index à -1 suite à une suppression par exemple)
+        vm.setIdChosenAction(-1);
+        updateDetailContainer(null); // force le nettoyage de l'interface
       }
     });
 
@@ -303,6 +380,8 @@ public class MainView extends VBox {
     availableActions.setOnMouseClicked(event -> {
       if (event.getClickCount() == 2) vm.addAction();
     });
+
+    updateDetailContainer(null);
   }
 
   private void bindButtons() {
@@ -358,58 +437,35 @@ public class MainView extends VBox {
     slider.managedProperty().bind(btnStop.visibleProperty());
   }
 
-  private void bindActionDetails() {
-    var selectedItemProp = chosenActions.getSelectionModel().selectedItemProperty();
-
-    // Binding du Prefix
-      // TODO : remove
-      /*
-    labelPrefix.textProperty().bind(Bindings.createStringBinding(() -> {
-      Actionable action = selectedItemProp.get();
-      return action != null ? action.getPrefix() : "(aucune action sélectionnée)";
-    }, selectedItemProp));
-
-    // Binding du Suffix
-    labelSuffix.textProperty().bind(Bindings.createStringBinding(() -> {
-      Actionable action = selectedItemProp.get();
-      return action != null ? action.getSuffix() : "";
-    }, selectedItemProp));*/
-
-    // Binding de la visibilité
-    var hasParameterBinding = Bindings.createBooleanBinding(() -> {
-      Actionable action = selectedItemProp.get();
-      return action != null && action.getFirstProperty() != null;
-    }, selectedItemProp);
-
-    actionParamField.visibleProperty().bind(hasParameterBinding);
-    actionParamField.managedProperty().bind(hasParameterBinding);
-
-    // Listener (quand on clique sur une nouvelle action, on met à jour le texte de la case)
-    selectedItemProp.addListener((obs, oldVal, newVal) -> {
-      if (newVal != null && newVal.getFirstProperty() != null) {
-        actionParamField.setText(String.valueOf(newVal.getFirstProperty().get()));
-      } else {
-       actionParamField.clear();
-      }
-    });
-
-    // Listener (quand on tape au clavier, on envoie au ViewModel)
-    actionParamField.textProperty().addListener((obs, oldText, newText) -> {
-      Actionable selectedAction = selectedItemProp.get();
-      var sanitized = newText.strip();
-      vm.validateAndUpdateValue(selectedAction, sanitized);
-    });
-  }
-
   private void bindMenuActions() {
     saveItem.setOnAction(event -> handleSaveFile());
     loadItem.setOnAction(event -> handleLoadFile());
   }
 
+  // Algo qui gère la zone de déclarations de variables au début du programme //
+  /*
+    * Le principe de "la porte fermée" : on lit les actions de haut en bas
+    * tant qu'on lit des "DeclareVariable", c'est ok
+    * dès qu'on lit une Action qui n'est pas "DeclareVariable", on ferme la porte
+    * ça permet d'avoir que des déclarations en haut du programme.
+  */
+  private boolean isDeclarationZoneValid() {
+    boolean isDoorClosed = false;
+
+    for(Actionable action : chosenActions.getItems()) {
+      if(action instanceof DeclareVariable) {
+        if(isDoorClosed) {
+          return false; // si c'est une déclaration mais que la porte est fermée : erreur
+        }
+      } else {
+        isDoorClosed = true;  // ce n'est pas une déclaration du coup on ferme définitivement la porte
+      }
+    }
+    return true;
+  }
   // =========================================================================
   // FILE CHOOSER & DESSIN
   // =========================================================================
-
   private void handleSaveFile() {
     FileChooser fileChooser = new FileChooser();
     fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Fichier texte", "*.txt"));

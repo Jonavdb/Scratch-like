@@ -27,7 +27,7 @@ public class Up implements Actionable{
     }
 
     @Override
-    public StringProperty getFirstProperty() {
+    public StringProperty getProperty() {
         return null;
     }
 
