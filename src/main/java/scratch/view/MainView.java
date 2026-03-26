@@ -52,10 +52,6 @@ public class MainView extends VBox {
   private final VBox detailContentContainer = new VBox(5);
   private final TitledPane detailPane = new TitledPane("Détail de l'action", detailContentContainer);
 
-  // TODO -> declare here a custom container for each action
-  //  varDeclareContent, varAssignmentContent, incrementAndDecrementContent, moveContent, turnContent,
-  //  repeatContent, endRepeatContent, upContent, downContent
-
   // Scene (droite)
   private final VBox sceneBox = new VBox();
   private final Button btnLoad = new Button("Charger");
@@ -139,6 +135,10 @@ public class MainView extends VBox {
     VBox.setVgrow(appContainer, Priority.ALWAYS);
   }
 
+  private void configureIncrementButtons() {
+
+  }
+
   private void createSingleParamUI(String labelText, Actionable action, StringProperty property, Label errorLabel) {
     Label label = new Label(labelText);
     TextField textField = new TextField();
@@ -152,21 +152,64 @@ public class MainView extends VBox {
     detailContentContainer.getChildren().addAll(hbox, errorLabel);
   }
 
-  private void createDoubleParamUI(String text1, String text2, Actionable action, StringProperty prop1, StringProperty prop2, Label errorLabel) {
-    Label label1 = new Label(text1);
-    Label label2 = new Label(text2);
+  // Affichage dynamique des boutons "+" et "-" uniquement si on est en Increment ou Assign
+  public void configureIncrementButtons(Actionable action, StringProperty property, Button btnIncrement, Button btnDecrement) {
+    var isNumericBinding = Bindings.createBooleanBinding(() -> {
+      String val = property.get();
+      if(val == null || val.trim().isEmpty()) return false;
+
+      try {
+        Integer.parseInt(val.trim()); // c'est un chiffre
+        return true;
+      } catch(NumberFormatException e) {
+        return false;   // c'est pas un chiffre
+      }
+    }, property);
+
+    btnIncrement.visibleProperty().bind(isNumericBinding);
+    btnIncrement.managedProperty().bind(isNumericBinding);
+    btnDecrement.visibleProperty().bind(isNumericBinding);
+    btnDecrement.managedProperty().bind(isNumericBinding);
+
+    btnIncrement.setOnAction(e -> {
+      int current = Integer.parseInt(property.get().trim());
+      property.set(String.valueOf(current + 1));
+    });
+
+    btnDecrement.setOnAction(e -> {
+      int current = Integer.parseInt(property.get().trim());
+      property.set(String.valueOf(current - 1));
+    });
+  }
+
+  private void createDoubleParamUI(String paramName, String paramValue, Actionable action,
+                                   StringProperty propName, StringProperty propValue,
+                                   Label errorLabel) {
+    Label label = new Label(paramName);
+    Label labelValue = new Label(paramValue);
     TextField textField = new TextField();
     TextField textValue = new TextField();
-    textField.setPrefWidth(50);
-    textValue.setPrefWidth(50);
+    textField.setPrefWidth(40);
+    textValue.setPrefWidth(40);
 
-    textField.textProperty().bindBidirectional(prop1);
-    textValue.textProperty().bindBidirectional(prop2);
+    textField.textProperty().bindBidirectional(propName);
+    textValue.textProperty().bindBidirectional(propValue);
 
-    setupValidationUI(textValue, action, errorLabel);
+//    TODO : vérifier que on ne puisse icrémenter/décrémenter QUE sur des variables existantes
+    setupValidationUI(textField, action, errorLabel);
 
-    HBox hbox = new HBox(10, label1, textField, label2, textValue);
+    HBox hbox = new HBox(10, label, textField, labelValue, textValue);
     hbox.setAlignment(Pos.CENTER_LEFT);
+
+    // Affichage dynamique des boutons "+" et "-" uniquement si on est en Increment ou Assign
+    if(action instanceof Increment || action instanceof AssignVariable) {
+      Button btnIncrement = new Button("+");
+      Button btnDecrement = new Button("-");
+
+      configureIncrementButtons(action, propValue, btnIncrement, btnDecrement);
+      hbox.getChildren().addAll(btnIncrement, btnDecrement);
+    }
+
     detailContentContainer.getChildren().addAll(hbox, errorLabel);
   }
 
