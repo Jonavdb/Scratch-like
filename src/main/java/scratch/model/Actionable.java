@@ -4,7 +4,7 @@ import javafx.beans.property.StringProperty;
 import javafx.scene.paint.Color;
 
 public interface Actionable {
-    void execute(Player player);
+    void execute(ProgramState state);
     Actionable copy();
     String toSave();
     StringProperty getProperty();

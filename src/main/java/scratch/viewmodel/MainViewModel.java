@@ -8,6 +8,7 @@ import javafx.collections.ObservableList;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.util.Duration;
+import javafx.scene.control.ListView;
 import scratch.model.*;
 
 
@@ -31,7 +32,8 @@ public class MainViewModel {
     private Execution executor = new Execution();
     // debug
     private IntegerProperty currActionIndex = new SimpleIntegerProperty(0);
-    private PlayerViewModel playerVm = new PlayerViewModel(new Player());
+    private PlayerViewModel playerVm;
+    private ProgramState state = new ProgramState(new Player(), new VariableMap());
 
     public MainViewModel(ChosenActions chosenActions) {
         this.chosenActions = chosenActions;
@@ -40,6 +42,7 @@ public class MainViewModel {
             currActionIndex.set(0);
             isLoad.set(false);
         });
+        playerVm = new PlayerViewModel(state.getPlayer());
     }
 
     public ReadOnlyBooleanProperty errorProperty() {
@@ -165,7 +168,7 @@ public class MainViewModel {
         Actionable next = executor.getNextAction();
         if (next != null){
             currActionIndex.set(executor.getGlobalIndex());
-            playerVm.processAction(next);
+            next.execute(state);
         }
     }
 
@@ -357,7 +360,8 @@ public class MainViewModel {
     }
 
     public PlayerViewModel resetPlayerViewModel() {
-        playerVm = new PlayerViewModel(new Player());
+        state = new ProgramState(new Player(), new VariableMap());
+        playerVm = new PlayerViewModel(state.getPlayer());
         return playerVm;
     }
 
@@ -394,7 +398,7 @@ public class MainViewModel {
             }
             Actionable next = executor.getNextAction();
             if (next != null) {
-                playerVm.processAction(next);
+                next.execute(state);
                 currActionIndex.set(currActionIndex.get() + 1);
             } else {
                 timeline.stop();

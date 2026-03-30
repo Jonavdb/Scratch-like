@@ -16,8 +16,12 @@ public class AssignVariable implements Actionable{
     }
 
     @Override
-    public void execute(Player player) {
+    public void execute(ProgramState state) {
         // TODO -> ?
+        var map = state.getVariableMap();
+        var nameVar = getVariableName();
+        var value = getAssignedParam();
+        boolean ok = map.assign(nameVar, value);
     }
 
     public String getVariableName() {return variableName.get();}
