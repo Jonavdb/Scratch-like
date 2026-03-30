@@ -33,7 +33,7 @@ public class Repeat implements Actionable {
 
     @Override
     public String toSave() {
-        return "";
+        return "REPEAT;" + tick;
     }
 
     @Override

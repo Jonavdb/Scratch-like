@@ -48,7 +48,7 @@ public class Move implements Actionable{
 
     @Override
     public Actionable copy() {
-        return new Move(this.name, this.getDistance());
+        return new Move(this.name, this.distance.get());
     }
 
     @Override

@@ -8,16 +8,12 @@ import javafx.collections.ObservableList;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.util.Duration;
-import javafx.scene.control.ListView;
 import scratch.model.*;
 
 
-import javax.swing.*;
 import java.io.*;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Scanner;
-import java.util.Stack;
 
 public class MainViewModel {
     private ChosenActions chosenActions;
@@ -132,13 +128,13 @@ public class MainViewModel {
                 String action = parts[0];
 
                 // On récupère la valeur en TEXTE (s'il y en a une)
-                String textValue = (parts.length > 1) ? parts[1] : "";
-
+                String textValueOrName = (parts.length > 1) ? parts[1] : "";
+                String valueVariable = (parts.length > 2) ? parts[2] : "";
                 Actionable newAction = null;
 
                 switch (action) {
                     case "MOVE_FORWARD":
-                        newAction = new Move("Avancer de ", textValue);
+                        newAction = new Move("Avancer de", textValueOrName);
                         break;
                     case "PEN_UP":
                         newAction = new Up("Lever stylo");
@@ -147,10 +143,25 @@ public class MainViewModel {
                         newAction = new Down("Abaisser stylo");
                         break;
                     case "TURN_RIGHT":
-                        newAction = new TurnRight("Tourner à droite de ", textValue);
+                        newAction = new TurnRight("Tourner à droite de", textValueOrName);
                         break;
                     case "TURN_LEFT":
-                        newAction = new TurnLeft("Tourner à gauche de ", textValue);
+                        newAction = new TurnLeft("Tourner à gauche de", textValueOrName);
+                        break;
+                    case "VAR_DECLARATION":
+                        newAction = new DeclareVariable("Déclaration variable", textValueOrName);
+                        break;
+                    case "VAR_ASSIGNMENT" :
+                        newAction = new AssignVariable("Assignation", textValueOrName, valueVariable);
+                        break;
+                    case "INCREMENT_VARIABLE" :
+                        newAction = new Increment("Inc/Dec variable", textValueOrName, valueVariable);
+                        break;
+                    case "REPEAT" :
+                        newAction = new Repeat("Répeter", textValueOrName);
+                        break;
+                    case "END_REPEAT" :
+                        newAction = new EndRepeat("Arrêter la répétition");
                         break;
                 }
                 if (newAction != null) {
