@@ -386,7 +386,7 @@ public class MainViewModel {
 
     public void resetCommands(){
         resetPlayerViewModel();
-        executor.init(chosenActions.getChosenActions());
+        executor.init(chosenActions.getChosenActions(), state.getVariableMap());
         currActionIndex.set(0);
         isLoad.set(true);
     }
