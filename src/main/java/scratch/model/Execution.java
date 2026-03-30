@@ -75,8 +75,6 @@ public class Execution {
             } else {
                 globalIndex++;
             }
-            System.out.println(globalIndex);
-            System.out.println(current);
             return current; // on retourne l'action courante à executer
         }
         return null; // si pile vide, on quitte

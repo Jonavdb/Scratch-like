@@ -409,8 +409,8 @@ public class MainViewModel {
             }
             Actionable next = executor.getNextAction();
             if (next != null) {
+                currActionIndex.set(executor.getGlobalIndex());
                 next.execute(state);
-                currActionIndex.set(currActionIndex.get() + 1);
             } else {
                 timeline.stop();
                 isPlaying.set(false);
