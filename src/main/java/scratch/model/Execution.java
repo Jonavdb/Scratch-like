@@ -1,5 +1,8 @@
 package scratch.model;
 
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
@@ -27,11 +30,13 @@ public class Execution {
     private final Stack<Level> levels = new Stack<>(); //
     private int globalIndex = 0;
     private VariableMap memory;
+    private final BooleanProperty isDone = new SimpleBooleanProperty(false);
 
     public void init(List<Actionable> listInitial, VariableMap memory){
         this.memory = memory;
         levels.clear(); // on vide entièrement le stack
         globalIndex = 0;
+        isDone.set(false);
         List<Actionable> tree = listIntoTree(listInitial); // on transforme la liste plate en arbre et on initialise l'arbre
         levels.push(new Level(tree, 0, 1, 0)); // On commence au début de l'arbre, à l'index 0 et 1 seule répetition pour la raxine de l'arbre
     }
@@ -77,11 +82,16 @@ public class Execution {
             }
             return current; // on retourne l'action courante à executer
         }
+        isDone.set(true);
         return null; // si pile vide, on quitte
     }
 
+    public BooleanProperty isDoneProperty(){
+        return isDone;
+    }
+
     public boolean isDone(){
-        return levels.isEmpty(); // La pile est vide cad que tout le programme a été joué
+        return isDone.get(); // La pile est vide cad que tout le programme a été joué
     }
 
 
