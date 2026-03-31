@@ -44,7 +44,7 @@ public class VariableMap {
         // sinon ce n'est pas une valeur littérale, c'est obligatoirement une variable qui a été entrée paramètre,
         // dans ce cas là, on tente de récupérer la valeur de la variable dans la map, si elle existe. sinon rien n'est fait.
         Integer parsedParameter = tryGetLiteral(param)
-                .orElseGet(() -> resolveValue(param));
+                .orElseGet(() -> getValue(param));
 
         // arrive quand le paramètre n'est pas une valeur littérale, et qu'il n'existe pas dans la map
         if(parsedParameter == null)
@@ -72,7 +72,7 @@ public class VariableMap {
         // si ce n'est pas une valeur littérale, c'est obligatoirement une variable qui a été entrée paramètre,
         // dans ce cas là, on tente de récupérer la valeur de la variable dans la map, si elle existe. sinon rien n'est fait.
         Integer parsedParameter = tryGetLiteral(param)
-                .orElseGet(() -> resolveValue(param));
+                .orElseGet(() -> getValue(param));
 
         // arrive quand le paramètre n'est pas une valeur littérale, qu'il  n'existe pas dans la map
         if(parsedParameter == null)
@@ -93,7 +93,7 @@ public class VariableMap {
         }
     }
 
-    public Integer resolveValue(String param) {
+    public Integer getValue(String param) {
         return map.get(param);
     }
 }

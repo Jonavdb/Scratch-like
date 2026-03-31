@@ -13,7 +13,7 @@ public class TurnLeft extends Turn {
         var map = state.getVariableMap();
         boolean isLiteral = map.tryGetLiteral(angleText).isPresent();
 
-        turnValue = isLiteral ? Integer.parseInt(angleText) : map.resolveValue(angleText);
+        turnValue = isLiteral ? Integer.parseInt(angleText) : map.getValue(angleText);
 
         if(turnValue < 1 || turnValue > 180) return;
 
