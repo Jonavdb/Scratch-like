@@ -25,7 +25,7 @@ public class TurnLeft extends Turn {
 
     @Override
     public Actionable copy() {
-        return new TurnLeft(this.toString(), this.getAngle());
+        return new TurnLeft(this.toString(), this.getProperty().get());
     }
 
     @Override

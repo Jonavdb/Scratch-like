@@ -286,8 +286,29 @@ public class MainView extends VBox {
         if(empty || item == null) {
           setText(null);
           setGraphic(null);
+          setPadding(new javafx.geometry.Insets(3,5,3,5));
           return;
         }
+
+        int gap = 0;
+        int currentIndex = getIndex();
+        if (currentIndex >= 0 && getListView() != null) {
+            var allItems = getListView().getItems();
+            for (int i = 0; i < currentIndex; i++) { // on boucle sur toutes les actions avant l'action courante
+                Actionable pastItem = allItems.get(i);
+                if (pastItem instanceof Repeat){
+                    gap++;
+                } else if (pastItem instanceof EndRepeat) {
+                    gap--;
+                }
+            }
+        }
+        if (item instanceof EndRepeat) {
+            gap--;
+        }
+
+        double leftPadding = 5 + (gap * 20);
+        setPadding(new javafx.geometry.Insets(3,5,3,leftPadding));
 
         // Verifier le type d'action
         switch(item) {
