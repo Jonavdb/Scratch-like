@@ -8,14 +8,11 @@ import javafx.collections.ObservableList;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.util.Duration;
-import javafx.scene.control.ListView;
 import scratch.model.*;
-import javax.swing.*;
+
 import java.io.*;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Scanner;
-import java.util.Stack;
 
 public class MainViewModel {
     private ChosenActions chosenActions;
@@ -24,6 +21,7 @@ public class MainViewModel {
     private IntegerProperty idChosenAction = new SimpleIntegerProperty(-1); // -1 pour quand il y ait premier el, il soit à 0
     private BooleanProperty isLoad = new SimpleBooleanProperty(false);
     private BooleanProperty isPlaying = new SimpleBooleanProperty(false);
+    private StringProperty errorRuntimeMessage = new SimpleStringProperty();
     private final BooleanProperty errorProperty = new SimpleBooleanProperty(false);
     private final BooleanProperty isStop = new SimpleBooleanProperty(false);
     private final DoubleProperty speed = new SimpleDoubleProperty(1.0);
@@ -46,6 +44,10 @@ public class MainViewModel {
 
     public ReadOnlyBooleanProperty errorProperty() {
         return errorProperty;
+    }
+
+    public StringProperty errorRuntimeMessageProperty() {
+        return errorRuntimeMessage;
     }
 
     public ObservableList<Actionable> getAllAction() {
@@ -156,16 +158,16 @@ public class MainViewModel {
                     case "VAR_DECLARATION":
                         newAction = new DeclareVariable("Déclaration variable", textValueOrName);
                         break;
-                    case "VAR_ASSIGNMENT" :
+                    case "VAR_ASSIGNMENT":
                         newAction = new AssignVariable("Assignation", textValueOrName, valueVariable);
                         break;
-                    case "INCREMENT_VARIABLE" :
+                    case "INCREMENT_VARIABLE":
                         newAction = new Increment("Inc/Dec variable", textValueOrName, valueVariable);
                         break;
-                    case "REPEAT" :
+                    case "REPEAT":
                         newAction = new Repeat("Répeter", textValueOrName);
                         break;
-                    case "END_REPEAT" :
+                    case "END_REPEAT":
                         newAction = new EndRepeat("Arrêter la répétition");
                         break;
                 }
@@ -184,12 +186,12 @@ public class MainViewModel {
         try {
             Actionable next = executor.getNextAction();
             if(next != null) {
-                currActionIndex.set(executor.getGlobalIndex());
+                setCurrentActionIndex(executor.getGlobalIndex());
                 next.execute(state);
             }
         } catch(RuntimeException e) {
             setIsPlaying(false);
-            setCurrentActionIndex(getIdChosenAction());
+            setCurrentActionIndex(currActionIndex.get());
         }
     }
 
@@ -345,6 +347,7 @@ public class MainViewModel {
     }
 
     public void setIdChosenAction(int idChosenAction) {
+        errorRuntimeMessage.set("");    // on efface les erreurs des actions précédentes
         this.idChosenAction.set(idChosenAction);
     }
 
@@ -414,18 +417,31 @@ public class MainViewModel {
     }
 
     public void startAutoExecute() {
+        errorRuntimeMessage.set("");    // on nettoie les vieilles erreurs avant de relancer
+
         isPlaying.set(true);
         isStop.set(false);
         timeline = new Timeline();
+
         KeyFrame keyFrame = new KeyFrame(Duration.seconds(1), event_1 -> {
             if(!isPlaying.get() || isStop.get()) {
                 timeline.stop();
                 return;
             }
+
             Actionable next = executor.getNextAction();
-            if (next != null) {
-                currActionIndex.set(executor.getGlobalIndex());
-                next.execute(state);
+            if(next != null) {
+                setCurrentActionIndex(executor.getGlobalIndex());
+
+                try {
+                    next.execute(state);
+                } catch(RuntimeException e) {
+                    timeline.stop();
+                    isPlaying.set(false);
+                    isStop.set(true);
+                    setCurrentActionIndex(currActionIndex.get());
+                    errorRuntimeMessage.set(e.getMessage());
+                }
             } else {
                 timeline.stop();
                 isPlaying.set(false);

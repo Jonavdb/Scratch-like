@@ -48,6 +48,7 @@ public class MainView extends VBox {
   private final Button btnEmptyAll = new Button("Vider tout");
 
   // Action détails (sous le programme)
+  private final Label runtimeErrorLabel = new Label();
   private final VBox detailContentContainer = new VBox(5);
   private final TitledPane detailPane = new TitledPane("Détail de l'action", detailContentContainer);
 
@@ -100,6 +101,12 @@ public class MainView extends VBox {
     programBox.setPadding(new Insets(0, 0, 0, 10));
 
     // Détail de l'action
+    runtimeErrorLabel.setTextFill(Color.RED);
+    runtimeErrorLabel.setStyle("-fx-font-size: 16px;");
+
+    VBox detailWrapper = new VBox(10, detailContentContainer, runtimeErrorLabel);
+    detailPane.setContent(detailWrapper);
+
     programBox.getChildren().addAll(new Text("Programme"), chosenActions, btnContainerProgram, detailPane);
     HBox.setHgrow(programBox, Priority.ALWAYS);
   }
@@ -417,9 +424,19 @@ public class MainView extends VBox {
     bindLists();
     bindButtons();
     bindMenuActions();
+
     vm.currActionIndexProperty().addListener((obs, oldVal, newVal) -> {
       chosenActions.getSelectionModel().select(newVal.intValue());
     });
+
+    runtimeErrorLabel.textProperty().bind(vm.errorRuntimeMessageProperty());
+    var hasRuntimeError = Bindings.createBooleanBinding(
+            () -> vm.errorRuntimeMessageProperty().get() != null && !vm.errorRuntimeMessageProperty().get().isEmpty(),
+            vm.errorRuntimeMessageProperty()
+    );
+
+    runtimeErrorLabel.visibleProperty().bind(hasRuntimeError);
+    runtimeErrorLabel.managedProperty().bind(hasRuntimeError);
   }
 
   private void bindLists() {
