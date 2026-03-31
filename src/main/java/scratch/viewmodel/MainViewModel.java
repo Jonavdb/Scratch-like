@@ -403,8 +403,8 @@ public class MainViewModel {
 
     public BooleanBinding canExecuteProgram() {
         return Bindings.createBooleanBinding(() ->
-                        executor != null && !chosenActions.getChosenActions().isEmpty() && !executor.isDone() && isLoad.get() && !isPlaying.get(),
-                chosenActions.getChosenActions(), currActionIndex, isLoad, isPlaying
+                        executor != null && !chosenActions.getChosenActions().isEmpty() && !executor.isDoneProperty().get() && isLoad.get() && !isPlaying.get(),
+                chosenActions.getChosenActions(), currActionIndex, isLoad, isPlaying, executor.isDoneProperty()
         );
     }
 
