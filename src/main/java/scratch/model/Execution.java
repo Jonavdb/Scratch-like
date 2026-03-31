@@ -26,8 +26,10 @@ public class Execution {
 
     private final Stack<Level> levels = new Stack<>(); //
     private int globalIndex = 0;
+    private VariableMap memory;
 
-    public void init(List<Actionable> listInitial){
+    public void init(List<Actionable> listInitial, VariableMap memory){
+        this.memory = memory;
         levels.clear(); // on vide entièrement le stack
         globalIndex = 0;
         List<Actionable> tree = listIntoTree(listInitial); // on transforme la liste plate en arbre et on initialise l'arbre
@@ -50,15 +52,26 @@ public class Execution {
                 }
                 continue;
             }
+
             Actionable current = top.list.get(top.index); // on récupère l'action courante de l'étage actuel
 
             if (current instanceof Repeat) {
                 Repeat repeat = (Repeat) current;
-                int n = Integer.parseInt(repeat.getTick()); // si l'action est un repeat, on récupère son nombre de répétitions
+                String tickText = repeat.getTick();
+                int n = 0;
+                if (memory != null) {
+                    boolean isLiteral = memory.tryGetLiteral(tickText).isPresent();
+                    try {
+                        n = isLiteral ? Integer.parseInt(tickText) : memory.getValue(tickText);
+                    } catch (Exception e) {
+                        n = 0;
+                    }
+                }
                 levels.push(new Level(repeat.getChildren(), 0, n, globalIndex + 1));
             } else {
                 top.index++; // si pas repeat on avance dans l'index
             }
+
             if (top.index >= top.list.size() && top.remainingRepeats > 1) {
                 globalIndex = top.globalIndex;
             } else {
@@ -72,7 +85,6 @@ public class Execution {
     public boolean isDone(){
         return levels.isEmpty(); // La pile est vide cad que tout le programme a été joué
     }
-
 
     private List<Actionable> listIntoTree(List<Actionable> basicList){ // méthode pour transformer une liste plate en arbre
         List<Actionable> tree = new ArrayList<>(); // on déclare une nouvelle liste
