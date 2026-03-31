@@ -19,6 +19,7 @@ import java.util.Stack;
 
 public class MainViewModel {
     private ChosenActions chosenActions;
+    private String regexValidation = "^[a-zA-Z_][a-zA-Z0-9_]*$"; // Valide noms variables (lettre/_ + lettres/chiffres/_*) : variable1, _var OK | 1var, ma-var KO
     private ObjectProperty<Actionable> selectedAction = new SimpleObjectProperty<>();
     private IntegerProperty idChosenAction = new SimpleIntegerProperty(-1); // -1 pour quand il y ait premier el, il soit à 0
     private BooleanProperty isLoad = new SimpleBooleanProperty(false);
@@ -209,7 +210,11 @@ public class MainViewModel {
                 /* --- Zone de déclaration de variables --- */
                 if(action instanceof DeclareVariable) {
                     if(action.getProperty() != null) {
-                        variables.add(action.getProperty().get());  // on ajoute la variable créée dans un array
+                        if(action.getProperty().get().matches(regexValidation)) {
+                            variables.add(action.getProperty().get());  // on ajoute la variable créée dans un array
+                        } else {
+                            return false;
+                        }
                     }
 
                     if(hasSeenNonDeclaration) {
@@ -223,21 +228,20 @@ public class MainViewModel {
                         String param1 = action.getProperty().get();
 
                         // est-ce que le paramètre est un nom de variable (ex: "nb") et qu'elle n'existe dans pas notre tableau
-                        if(param1.matches("^[a-zA-Z_][a-zA-Z0-9_]*$") && !variables.contains(param1)) {
+                        if(param1.matches(regexValidation) && !variables.contains(param1)) {
                             return false;
                         }
-                        // si ce n'est pas une variable (ex: c'est le chiffre "50"), on ne fait rien car c'est valide
                     }
 
                     // Vérification de la DEUXIÈME propriété (spécifique à Assign et Increment)
                     if(action instanceof AssignVariable assignVariable) {
                         String param2 = assignVariable.getParamProperty().get();
-                        if(param2 != null && param2.matches("^[a-zA-Z_][a-zA-Z0-9_]*$") && !variables.contains(param2)) {
+                        if(param2 != null && param2.matches(regexValidation) && !variables.contains(param2)) {
                             return false; // erreur : la variable 2 n'existe pas
                         }
                     } else if(action instanceof Increment increment) {
                         String param2 = increment.getIncrementProperty().get();
-                        if(param2 != null && param2.matches("^[a-zA-Z_][a-zA-Z0-9_]*$") && !variables.contains(param2)) {
+                        if(param2 != null && param2.matches(regexValidation) && !variables.contains(param2)) {
                             return false; // erreur : la variable 2 n'existe pas
                         }
                     }

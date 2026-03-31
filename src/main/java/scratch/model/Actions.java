@@ -44,8 +44,6 @@ public abstract class Actions {
                 return value > 0 && value <= 100;
             } else if (action instanceof TurnLeft || action instanceof TurnRight) {
                 return value >= 1 && value <= 180;
-            } else if (action instanceof AssignVariable || action instanceof Increment) {
-                return true; // pas de bornes spécifiques pour l'instant
             }
             return true; // Lever ou Abaisser stylo
 
