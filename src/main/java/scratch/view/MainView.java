@@ -16,7 +16,6 @@ import javafx.util.Callback;
 import scratch.model.*;
 import scratch.viewmodel.MainViewModel;
 import javafx.scene.control.Slider;
-
 import java.io.File;
 
 public class MainView extends VBox {
@@ -195,7 +194,6 @@ public class MainView extends VBox {
     textField.textProperty().bindBidirectional(propName);
     textValue.textProperty().bindBidirectional(propValue);
 
-//    TODO : vérifier que on ne puisse icrémenter/décrémenter QUE sur des variables existantes
     setupValidationUI(textField, action, errorLabel);
 
     HBox hbox = new HBox(10, label, textField, labelValue, textValue);
