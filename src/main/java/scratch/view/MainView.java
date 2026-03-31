@@ -58,8 +58,8 @@ public class MainView extends VBox {
   private final Button btnStop = new Button("Arreter");
   private final Slider slider = new Slider(0.01, 5, 0.01);
   private final ToggleGroup groupOfExecute = new ToggleGroup();
-  private final RadioButton automatic_execute = new RadioButton("Exécution automatique");
-  private final RadioButton step_execute = new RadioButton("Exécution manuelle");
+  private final RadioButton automaticExecute = new RadioButton("Exécution automatique");
+  private final RadioButton stepExecute = new RadioButton("Exécution manuelle");
 
   public MainView(MainViewModel vm) {
     this.vm = vm;
@@ -119,10 +119,10 @@ public class MainView extends VBox {
     sceneBox.setSpacing(10);
     sceneBox.setPadding(new Insets(0, 0, 0, 20));
     VBox.setMargin(slider, new Insets(0, 5, 0, 5));
-    automatic_execute.setToggleGroup(groupOfExecute);
-    automatic_execute.setSelected(true);
-    step_execute.setToggleGroup(groupOfExecute);
-    HBox btnExecuteContainerScene = new HBox(10, automatic_execute, step_execute);
+    automaticExecute.setToggleGroup(groupOfExecute);
+    automaticExecute.setSelected(true);
+    stepExecute.setToggleGroup(groupOfExecute);
+    HBox btnExecuteContainerScene = new HBox(10, automaticExecute, stepExecute);
     btnExecuteContainerScene.setAlignment(Pos.CENTER);
     sceneBox.getChildren().addAll(new Text("Scene"), board, btnExecuteContainerScene, btnContainerScene, slider);
   }
@@ -467,9 +467,9 @@ public class MainView extends VBox {
     btnLoad.disableProperty().bind(vm.canLoadProgram().not());
 
     btnExecute.setOnAction(event -> {
-      if(groupOfExecute.getSelectedToggle() == step_execute) {
+      if(groupOfExecute.getSelectedToggle() == stepExecute) {
         vm.executeAction();
-      } else if(groupOfExecute.getSelectedToggle() == automatic_execute) {
+      } else if(groupOfExecute.getSelectedToggle() == automaticExecute) {
         vm.startAutoExecute();
       }
     });
@@ -477,7 +477,7 @@ public class MainView extends VBox {
     btnExecute.textProperty().bind(vm.getExecuteTextButton());
     btnStop.setOnAction(event -> vm.stopAutoExecute());
     btnStop.disableProperty().bind(vm.canStop().not());
-    btnStop.visibleProperty().bind(groupOfExecute.selectedToggleProperty().isEqualTo(automatic_execute));
+    btnStop.visibleProperty().bind(groupOfExecute.selectedToggleProperty().isEqualTo(automaticExecute));
     btnStop.managedProperty().bind(btnStop.visibleProperty());
     slider.valueProperty().bindBidirectional(vm.speedProperty());
     slider.visibleProperty().bind(btnStop.visibleProperty());

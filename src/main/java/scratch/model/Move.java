@@ -23,7 +23,9 @@ public class Move implements Actionable{
 
         dist = isLiteralValue ? Integer.parseInt(distanceText) : map.getValue(distanceText);
 
-        if(dist <= 0 || dist > 100 ) return;
+        if(dist <= 0 || dist > 100 ) {
+            throw new RuntimeException("Runtime Error");
+        }
 
         double radians = Math.toRadians(state.getPlayer().getAngle()) + Math.PI / 2;
 

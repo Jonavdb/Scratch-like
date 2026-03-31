@@ -166,10 +166,14 @@ public class MainViewModel {
     }
 
     public void executeAction() {
-        Actionable next = executor.getNextAction();
-        if(next != null) {
-            currActionIndex.set(executor.getGlobalIndex());
-            next.execute(state);
+        try {
+            Actionable next = executor.getNextAction();
+            if(next != null) {
+                currActionIndex.set(executor.getGlobalIndex());
+                next.execute(state);
+            }
+        } catch(RuntimeException e) {
+            throw new RuntimeException(e);
         }
     }
 
