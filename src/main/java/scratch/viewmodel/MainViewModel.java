@@ -173,7 +173,8 @@ public class MainViewModel {
                 next.execute(state);
             }
         } catch(RuntimeException e) {
-            throw new RuntimeException(e);
+            setIsPlaying(false);
+            setCurrentActionIndex(getIdChosenAction());
         }
     }
 
