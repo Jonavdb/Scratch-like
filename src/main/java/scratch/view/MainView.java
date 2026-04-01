@@ -267,6 +267,8 @@ public class MainView extends VBox {
         if(empty || item == null) {
           setText(null);
           setGraphic(null);
+          setStyle(null);
+          styleProperty().unbind();
           return;
         }
 
@@ -287,6 +289,8 @@ public class MainView extends VBox {
       @Override
       protected void updateItem(Actionable item, boolean empty) {
         super.updateItem(item, empty);
+        styleProperty().unbind();
+        setStyle(null);
         textProperty().unbind();  // Coupe l'ancien binding car les cellules sont recyclées
 
         // Pas d'action à afficher
@@ -524,6 +528,7 @@ public class MainView extends VBox {
       }
     });
     btnExecute.disableProperty().bind(vm.canExecuteProgram().not());
+    btnExecute.disableProperty().bind(vm.errorActionIndexProperty().isNotEqualTo(-1));
     btnExecute.textProperty().bind(vm.getExecuteTextButton());
     btnStop.setOnAction(event -> vm.stopAutoExecute());
     btnStop.disableProperty().bind(vm.canStop().not());

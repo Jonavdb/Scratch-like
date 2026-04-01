@@ -51,6 +51,10 @@ public class MainViewModel {
         return errorActionIndex;
     }
 
+    public int getErrorActionIndex() {
+        return errorActionIndex.get();
+    }
+
     public void setErrorRuntimeMessage(String errorRuntimeMessage) {
         this.errorRuntimeMessage.set(errorRuntimeMessage);
     }
@@ -134,6 +138,12 @@ public class MainViewModel {
         if(file == null) return;
 
         try(Scanner scan = new Scanner(file)) {
+            setIsPlaying(false);
+            setIsStop(false);
+            setErrorActionIndex(-1);
+            setErrorRuntimeMessage("");
+            currActionIndex.set(0);
+            isLoad.set(false);
             chosenActions.removeAll();
 
             while(scan.hasNextLine()) {
@@ -192,15 +202,27 @@ public class MainViewModel {
     }
 
     public void executeAction() {
-        try {
-            Actionable next = executor.getNextAction();
-            if(next != null) {
-                setCurrentActionIndex(executor.getGlobalIndex());
+        if(isStop.get() || getErrorActionIndex() != -1) return;
+
+        Actionable next = executor.getNextAction();
+        if(next != null) {
+            setCurrentActionIndex(executor.getCurrentExecutingIndex());
+
+            try {
                 next.execute(state);
+            } catch(RuntimeException e){
+                setIsPlaying(false);
+                setIsStop(true);
+                setCurrentActionIndex(currActionIndex.get());
+                setErrorActionIndex(executor.getCurrentExecutingIndex());
+                setErrorRuntimeMessage(e.getMessage());
             }
-        } catch(RuntimeException e) {
+        } else {
             setIsPlaying(false);
-            setCurrentActionIndex(currActionIndex.get());
+
+            // on nettoie les vieilles erreurs avant de relancer
+            setErrorActionIndex(-1);
+            setErrorRuntimeMessage("");
         }
     }
 
@@ -321,10 +343,9 @@ public class MainViewModel {
     }
 
     public void stopAutoExecute() {
-        isStop.set(true);
-        isPlaying.set(false);
-        if(timeline != null)
-            timeline.stop();
+        setIsStop(true);
+        setIsStop(false);
+        if(timeline != null) timeline.stop();
     }
 
     public double getSpeed() {
@@ -376,6 +397,10 @@ public class MainViewModel {
         isPlaying.set(value);
     }
 
+    public void setIsStop(boolean value) {
+        isStop.set(value);
+    }
+
     public void validateAndUpdateValue(Actionable selectedAction, String newText) {
         if(selectedAction == null || selectedAction.getProperty() == null) {
             errorProperty.set(false);
@@ -416,6 +441,9 @@ public class MainViewModel {
         executor.init(chosenActions.getChosenActions(), state.getVariableMap());
         currActionIndex.set(0);
         isLoad.set(true);
+        setIsStop(false);
+        setErrorActionIndex(-1);
+        setErrorRuntimeMessage("");
     }
 
     public BooleanBinding canExecuteProgram() {
@@ -426,11 +454,12 @@ public class MainViewModel {
     }
 
     public void startAutoExecute() {
-        setErrorActionIndex(-1);    // on nettoie les vieilles erreurs avant de relancer
-        setErrorRuntimeMessage(""); // on nettoie les vieilles erreurs avant de relancer
+        // on nettoie les vieilles erreurs avant de relancer
+        setErrorActionIndex(-1);
+        setErrorRuntimeMessage("");
+        setIsPlaying(true);
+        setIsStop(false);
 
-        isPlaying.set(true);
-        isStop.set(false);
         timeline = new Timeline();
 
         KeyFrame keyFrame = new KeyFrame(Duration.seconds(1), event_1 -> {
@@ -447,15 +476,15 @@ public class MainViewModel {
                     next.execute(state);
                 } catch(RuntimeException e) {
                     timeline.stop();
-                    isPlaying.set(false);
-                    isStop.set(true);
+                    setIsPlaying(false);
+                    setIsStop(true);
                     setCurrentActionIndex(currActionIndex.get());
                     setErrorActionIndex(executor.getCurrentExecutingIndex());
                     setErrorRuntimeMessage(e.getMessage());
                 }
             } else {
                 timeline.stop();
-                isPlaying.set(false);
+                setIsPlaying(false);
             }
         });
         timeline.getKeyFrames().add(keyFrame);
