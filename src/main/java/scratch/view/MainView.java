@@ -297,6 +297,7 @@ public class MainView extends VBox {
           return;
         }
 
+        // Indentation pour les boucles Repeat
         int gap = 0;
         int currentIndex = getIndex();
         if (currentIndex >= 0 && getListView() != null) {
@@ -310,12 +311,23 @@ public class MainView extends VBox {
                 }
             }
         }
+
         if (item instanceof EndRepeat) {
             gap--;
         }
 
         double leftPadding = 5 + (gap * 20);
         setPadding(new javafx.geometry.Insets(3,5,3,leftPadding));
+
+        // Dessine un cadre rouge si le programme plante (runtime error)
+        styleProperty().bind(Bindings.createStringBinding(() -> {
+          // si la cellule courante a planté
+          if(currentIndex == vm.errorActionIndexProperty().get()) {
+            return "-fx-border-color: red;";
+          } else {
+            return ""; // on retire le css
+          }
+        }, vm.errorActionIndexProperty()));
 
         // Verifier le type d'action
         switch(item) {
@@ -429,10 +441,10 @@ public class MainView extends VBox {
       chosenActions.getSelectionModel().select(newVal.intValue());
     });
 
-    runtimeErrorLabel.textProperty().bind(vm.errorRuntimeMessageProperty());
+    runtimeErrorLabel.textProperty().bind(vm.getErrorRuntimeMessageProperty());
     var hasRuntimeError = Bindings.createBooleanBinding(
-            () -> vm.errorRuntimeMessageProperty().get() != null && !vm.errorRuntimeMessageProperty().get().isEmpty(),
-            vm.errorRuntimeMessageProperty()
+            () -> vm.getErrorRuntimeMessageProperty().get() != null && !vm.getErrorRuntimeMessageProperty().get().isEmpty(),
+            vm.getErrorRuntimeMessageProperty()
     );
 
     runtimeErrorLabel.visibleProperty().bind(hasRuntimeError);

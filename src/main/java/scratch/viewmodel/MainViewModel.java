@@ -22,6 +22,7 @@ public class MainViewModel {
     private BooleanProperty isLoad = new SimpleBooleanProperty(false);
     private BooleanProperty isPlaying = new SimpleBooleanProperty(false);
     private StringProperty errorRuntimeMessage = new SimpleStringProperty();
+    private IntegerProperty errorActionIndex = new SimpleIntegerProperty(-1);
     private final BooleanProperty errorProperty = new SimpleBooleanProperty(false);
     private final BooleanProperty isStop = new SimpleBooleanProperty(false);
     private final DoubleProperty speed = new SimpleDoubleProperty(1.0);
@@ -42,12 +43,20 @@ public class MainViewModel {
         playerVm = new PlayerViewModel(state.getPlayer());
     }
 
-    public ReadOnlyBooleanProperty errorProperty() {
-        return errorProperty;
+    public StringProperty getErrorRuntimeMessageProperty() {
+        return errorRuntimeMessage;
     }
 
-    public StringProperty errorRuntimeMessageProperty() {
-        return errorRuntimeMessage;
+    public IntegerProperty errorActionIndexProperty() {
+        return errorActionIndex;
+    }
+
+    public void setErrorRuntimeMessage(String errorRuntimeMessage) {
+        this.errorRuntimeMessage.set(errorRuntimeMessage);
+    }
+
+    public void setErrorActionIndex(int errorActionIndex) {
+        this.errorActionIndex.set(errorActionIndex);
     }
 
     public ObservableList<Actionable> getAllAction() {
@@ -417,7 +426,8 @@ public class MainViewModel {
     }
 
     public void startAutoExecute() {
-        errorRuntimeMessage.set("");    // on nettoie les vieilles erreurs avant de relancer
+        setErrorActionIndex(-1);    // on nettoie les vieilles erreurs avant de relancer
+        setErrorRuntimeMessage(""); // on nettoie les vieilles erreurs avant de relancer
 
         isPlaying.set(true);
         isStop.set(false);
@@ -431,7 +441,7 @@ public class MainViewModel {
 
             Actionable next = executor.getNextAction();
             if(next != null) {
-                setCurrentActionIndex(executor.getGlobalIndex());
+                setCurrentActionIndex(executor.getCurrentExecutingIndex());
 
                 try {
                     next.execute(state);
@@ -440,7 +450,8 @@ public class MainViewModel {
                     isPlaying.set(false);
                     isStop.set(true);
                     setCurrentActionIndex(currActionIndex.get());
-                    errorRuntimeMessage.set(e.getMessage());
+                    setErrorActionIndex(executor.getCurrentExecutingIndex());
+                    setErrorRuntimeMessage(e.getMessage());
                 }
             } else {
                 timeline.stop();

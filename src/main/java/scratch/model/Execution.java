@@ -4,12 +4,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
 
+// Explication globale : Cette classe va nous permettre de parcourir les différentes parties de notre arbre d'actions. Une fois qu'on a rencontré un repeat, on descend d'un niveau et chaque niveau est composé
+// d'un index, d'une liste d'actions et du nombre de répétitions de ce niveau (initialisé à 1 pour le niveau principal). Le stack est donc une composition de plusieurs niveaux contenent des sous-niveaux à chaque
+// repeat rencontrés. Une fois un sous-niveau fini, on le "supprime" des niveaux et on reprend au niveau "précédent" en avançant l'index de 1.
+
+
 public class Execution {
-
-    // Explication globale : Cette classe va nous permettre de parcourir les différentes parties de notre arbre d'actions. Une fois qu'on a rencontré un repeat, on descend d'un niveau et chaque niveau est composé
-    // d'un index, d'une liste d'actions et du nombre de répétitions de ce niveau (initialisé à 1 pour le niveau principal). Le stack est donc une composition de plusieurs niveaux contenent des sous-niveaux à chaque
-    // repeat rencontrés. Une fois un sous-niveau fini, on le "supprime" des niveaux et on reprend au niveau "précédent" en avançant l'index de 1.
-
     private static class Level {
         List<Actionable> list;
         int index;
@@ -24,9 +24,10 @@ public class Execution {
         }
     }
 
+    private VariableMap memory;
     private final Stack<Level> levels = new Stack<>(); //
     private int globalIndex = 0;
-    private VariableMap memory;
+    private int currentExecutingIndex = 0;
 
     public void init(List<Actionable> listInitial, VariableMap memory){
         this.memory = memory;
@@ -34,6 +35,10 @@ public class Execution {
         globalIndex = 0;
         List<Actionable> tree = listIntoTree(listInitial); // on transforme la liste plate en arbre et on initialise l'arbre
         levels.push(new Level(tree, 0, 1, 0)); // On commence au début de l'arbre, à l'index 0 et 1 seule répetition pour la raxine de l'arbre
+    }
+
+    public int getCurrentExecutingIndex() {
+        return currentExecutingIndex;
     }
 
     public Actionable getNextAction() { // Méthode qui va nous permettre de réxupérer l'action suivante
@@ -54,6 +59,8 @@ public class Execution {
             }
 
             Actionable current = top.list.get(top.index); // on récupère l'action courante de l'étage actuel
+
+            this.currentExecutingIndex = globalIndex; // uniquement UI : on capture l'index avant qu'il soit modifié
 
             if (current instanceof Repeat) {
                 Repeat repeat = (Repeat) current;
