@@ -21,9 +21,11 @@ public class Move implements Actionable{
         var map = state.getVariableMap();
         boolean isLiteralValue = map.tryGetLiteral(distanceText).isPresent();
 
-        dist = isLiteralValue ? Integer.parseInt(distanceText) : map.resolveValue(distanceText);
+        dist = isLiteralValue ? Integer.parseInt(distanceText) : map.getValue(distanceText);
 
-        if(dist <= 0 || dist > 100 ) return;
+        if(dist <= 0 || dist > 100 ) {
+            throw new RuntimeException("Erreur : Impossible d'avancer de " + dist + " (limite : 1 à 100).");
+        }
 
         double radians = Math.toRadians(state.getPlayer().getAngle()) + Math.PI / 2;
 

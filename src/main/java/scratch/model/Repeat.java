@@ -9,7 +9,8 @@ import java.util.List;
 public class Repeat implements Actionable {
     private final String name;
     private final ActionBlock actions = new ActionBlock("repeat");
-    private StringProperty tick;
+    private final StringProperty tick;
+
     public Repeat(String name, String tick) {
         this.name = name;
         this.tick = new SimpleStringProperty(tick);
@@ -27,9 +28,9 @@ public class Repeat implements Actionable {
         return new Repeat(this.name, this.getProperty().get());
     }
 
-    public void addChild(Actionable action){
+    /*public void addChild(Actionable action){
         actions.addAction(action);
-    }
+    }*/
 
     @Override
     public String toSave() {
@@ -59,7 +60,7 @@ public class Repeat implements Actionable {
         return tick.get();
     }
 
-    public StringProperty tickProperty() {
+    /*public StringProperty tickProperty() {
         return tick;
-    }
+    }*/
 }
