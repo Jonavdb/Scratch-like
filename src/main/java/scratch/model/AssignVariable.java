@@ -17,10 +17,10 @@ public class AssignVariable implements Actionable{
 
     @Override
     public void execute(ProgramState state) {
-        VariableMap variableStorage = state.getVariableMap();
+        VariableMap map = state.getVariableMap();
         String identifier = getVariableName();
         String value = getAssignedParam();
-        boolean isDeclaredSuccessfully = variableStorage.assign(identifier, value);
+        boolean isDeclaredSuccessfully = map.assign(identifier, value);
     }
 
     public String getVariableName() {return variableName.get();}
