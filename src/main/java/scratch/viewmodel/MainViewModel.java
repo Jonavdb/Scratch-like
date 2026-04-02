@@ -195,6 +195,9 @@ public class MainViewModel {
 
             for(Actionable action : list) {
                 /* --- Zone de déclaration de variables --- */
+                if (action.getProperty().get().isEmpty() || action.getProperty() == null){
+                    return false;
+                }
                 if(action instanceof DeclareVariable) {
                     if(action.getProperty() != null) {
                         if(action.getProperty().get().matches(regexValidation)) {
