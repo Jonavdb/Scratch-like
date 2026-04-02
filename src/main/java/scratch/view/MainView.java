@@ -320,6 +320,9 @@ public class MainView extends VBox {
             gap--;
         }
 
+        if (gap < 0){
+            gap = 0;
+        }
         double leftPadding = 5 + (gap * 20);
         setPadding(new javafx.geometry.Insets(3,5,3,leftPadding));
 
