@@ -90,7 +90,6 @@ public class ChosenActions {
         if(file == null) return;
 
         try(Scanner scan = new Scanner(file)) {
-            chosenActions.removeAll();
             while(scan.hasNextLine()) {
                 String line = scan.nextLine();
                 if(line.trim().isEmpty()) return;
