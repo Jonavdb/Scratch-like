@@ -121,84 +121,18 @@ public class MainViewModel {
     }
 
     public void saveInFile(File file) {
-        if(file == null)
-            return;
-        try(PrintWriter writer = new PrintWriter(file)) {
-            for(Actionable action : chosenActions.getChosenActions()) {
-                writer.println(action.toSave());
-            }
-
-            System.out.println("Sauvegarde réussie !");
-        } catch(FileNotFoundException e) {
-            System.err.println("Erreur lors de la sauvegarde" + e.getMessage());
-        }
+        chosenActions.saveInFile(file);
     }
 
     public void loadFile(File file) {
         if(file == null) return;
-
-        try(Scanner scan = new Scanner(file)) {
-            setIsPlaying(false);
-            setIsStop(false);
-            setErrorActionIndex(-1);
-            setErrorRuntimeMessage("");
-            currActionIndex.set(0);
-            isLoad.set(false);
-            chosenActions.removeAll();
-
-            while(scan.hasNextLine()) {
-                String line = scan.nextLine();
-                if(line.trim().isEmpty()) return;
-
-                String[] parts = line.split(";");
-                String action = parts[0];
-
-                // On récupère la valeur en TEXTE (s'il y en a une)
-                String textValueOrName = (parts.length > 1) ? parts[1] : "";
-                String valueVariable = (parts.length > 2) ? parts[2] : "";
-                Actionable newAction = null;
-
-                switch(action) {
-                    case "MOVE_FORWARD":
-                        newAction = new Move("Avancer de", textValueOrName);
-                        break;
-                    case "PEN_UP":
-                        newAction = new Up("Lever stylo");
-                        break;
-                    case "PEN_DOWN":
-                        newAction = new Down("Abaisser stylo");
-                        break;
-                    case "TURN_RIGHT":
-                        newAction = new TurnRight("Tourner à droite de", textValueOrName);
-                        break;
-                    case "TURN_LEFT":
-                        newAction = new TurnLeft("Tourner à gauche de", textValueOrName);
-                        break;
-                    case "VAR_DECLARATION":
-                        newAction = new DeclareVariable("Déclaration variable", textValueOrName);
-                        break;
-                    case "VAR_ASSIGNMENT":
-                        newAction = new AssignVariable("Assignation", textValueOrName, valueVariable);
-                        break;
-                    case "INCREMENT_VARIABLE":
-                        newAction = new Increment("Inc/Dec variable", textValueOrName, valueVariable);
-                        break;
-                    case "REPEAT":
-                        newAction = new Repeat("Répeter", textValueOrName);
-                        break;
-                    case "END_REPEAT":
-                        newAction = new EndRepeat("Arrêter la répétition");
-                        break;
-                }
-                if(newAction != null) {
-                    chosenActions.add(newAction);
-                }
-            }
-            System.out.println("Chargement réussi !");
-
-        } catch(FileNotFoundException e) {
-            System.err.println("Fichier introuvable : " + e.getMessage());
-        }
+        setIsPlaying(false);
+        setIsStop(false);
+        setErrorActionIndex(-1);
+        setErrorRuntimeMessage("");
+        currActionIndex.set(0);
+        isLoad.set(false);
+        chosenActions.loadFile(file);
     }
 
     public void executeAction() {
@@ -261,6 +195,9 @@ public class MainViewModel {
 
             for(Actionable action : list) {
                 /* --- Zone de déclaration de variables --- */
+                if (action.getProperty().get().isEmpty() || action.getProperty() == null){
+                    return false;
+                }
                 if(action instanceof DeclareVariable) {
                     if(action.getProperty() != null) {
                         if(action.getProperty().get().matches(regexValidation)) {
