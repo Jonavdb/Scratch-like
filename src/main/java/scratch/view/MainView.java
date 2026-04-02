@@ -37,9 +37,7 @@ public class MainView extends VBox {
   private final MenuItem loadItem = new MenuItem("Load");
 
   // Palette d'actions (gauche)
-  private final VBox paletteBox = new VBox();
-  private final ListView<Actionable> availableActions = new ListView<>();
-  private final Button btnAdd = new Button("Ajouter au programme");
+  private final ActionPaletteView actionPalette = new ActionPaletteView();
 
   // Programme (centre)
   private final VBox programBox = new VBox();
@@ -70,7 +68,6 @@ public class MainView extends VBox {
 
     // Mise en place de l'UI
     configureMenu();
-    configurePalette();
     configureProgram();
     configureScene();
     configureLayoutGlobal();
@@ -86,13 +83,6 @@ public class MainView extends VBox {
   private void configureMenu() {
     fileMenu.getItems().addAll(saveItem, loadItem);
     menuBar.getMenus().add(fileMenu);
-  }
-
-  private void configurePalette() {
-    paletteBox.setSpacing(10);
-    paletteBox.setPadding(new Insets(0, 10, 0, 0));
-    paletteBox.getChildren().addAll(new Text("Palette d'actions"), availableActions, btnAdd);
-    HBox.setHgrow(paletteBox, Priority.ALWAYS);
   }
 
   private void configureProgram() {
@@ -139,7 +129,7 @@ public class MainView extends VBox {
 
   private void configureLayoutGlobal() {
     appContainer.setPadding(new Insets(5, 20, 10, 20));
-    appContainer.getChildren().addAll(paletteBox, programBox, sceneBox);
+    appContainer.getChildren().addAll(actionPalette, programBox, sceneBox);
     this.setSpacing(20);
     VBox.setVgrow(appContainer, Priority.ALWAYS);
   }
@@ -367,14 +357,14 @@ public class MainView extends VBox {
 
   private void bindLists() {
     // Remplissage
-    availableActions.setItems(vm.getAllAction());
+    actionPalette.getAvailableActions().setItems(vm.getAllAction());
     chosenActions.setItems(vm.getChosenAction());
 
-    availableActions.setCellFactory(createPaletteCellFactory());
+    actionPalette.getAvailableActions().setCellFactory(createPaletteCellFactory());
     chosenActions.setCellFactory(createActionCellFactory());
 
     // Synchronisation des sélections avec le VM
-    vm.selectedActionProperty().bind(availableActions.getSelectionModel().selectedItemProperty());
+    vm.selectedActionProperty().bind(actionPalette.getAvailableActions().getSelectionModel().selectedItemProperty());
 
     chosenActions.getSelectionModel().selectedIndexProperty().addListener((obs, oldVal, newVal) -> {
       if(newVal != null && newVal.intValue() >= 0) {
@@ -388,7 +378,7 @@ public class MainView extends VBox {
     });
 
     // Double clic sur la palette
-    availableActions.setOnMouseClicked(event -> {
+    actionPalette.getAvailableActions().setOnMouseClicked(event -> {
       if(event.getClickCount() == 2) vm.addAction();
     });
 
@@ -396,8 +386,8 @@ public class MainView extends VBox {
   }
 
   private void bindButtons() {
-    btnAdd.disableProperty().bind(vm.canAdd().not());
-    btnAdd.setOnAction(event -> vm.addAction());
+    actionPalette.getBtnAdd().disableProperty().bind(vm.canAdd().not());
+    actionPalette.getBtnAdd().setOnAction(event -> vm.addAction());
 
     btnDelete.disableProperty().bind(vm.canRemove().not());
     btnDelete.setOnAction(event -> vm.removeAction());
