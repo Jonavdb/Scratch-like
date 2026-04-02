@@ -102,41 +102,8 @@ public class ChosenActions {
 
                 // On récupère la valeur en TEXTE (s'il y en a une)
                 String textValueOrName = (parts.length > 1) ? parts[1] : "";
-                String valueVariable = (parts.length > 2) ? parts[2] : "";
-                Actionable newAction = null;
+                Actionable newAction = getActionable(parts, action, textValueOrName);
 
-                switch(action) {
-                    case "MOVE_FORWARD":
-                        newAction = new Move("Avancer de", textValueOrName);
-                        break;
-                    case "PEN_UP":
-                        newAction = new Up("Lever stylo");
-                        break;
-                    case "PEN_DOWN":
-                        newAction = new Down("Abaisser stylo");
-                        break;
-                    case "TURN_RIGHT":
-                        newAction = new TurnRight("Tourner à droite de", textValueOrName);
-                        break;
-                    case "TURN_LEFT":
-                        newAction = new TurnLeft("Tourner à gauche de", textValueOrName);
-                        break;
-                    case "VAR_DECLARATION":
-                        newAction = new DeclareVariable("Déclaration variable", textValueOrName);
-                        break;
-                    case "VAR_ASSIGNMENT":
-                        newAction = new AssignVariable("Assignation", textValueOrName, valueVariable);
-                        break;
-                    case "INCREMENT_VARIABLE":
-                        newAction = new Increment("Inc/Dec variable", textValueOrName, valueVariable);
-                        break;
-                    case "REPEAT":
-                        newAction = new Repeat("Répeter", textValueOrName);
-                        break;
-                    case "END_REPEAT":
-                        newAction = new EndRepeat("Arrêter la répétition");
-                        break;
-                }
                 if(newAction != null) {
                     chosenActions.add(newAction);
                 }
@@ -146,6 +113,23 @@ public class ChosenActions {
         } catch(FileNotFoundException e) {
             System.err.println("Fichier introuvable : " + e.getMessage());
         }
+    }
+
+    private static Actionable getActionable(String[] parts, String action, String textValueOrName) {
+        String valueVariable = (parts.length > 2) ? parts[2] : "";
+        return switch (action) {
+            case "MOVE_FORWARD" -> new Move("Avancer de", textValueOrName);
+            case "PEN_UP" -> new Up("Lever stylo");
+            case "PEN_DOWN" -> new Down("Abaisser stylo");
+            case "TURN_RIGHT" -> new TurnRight("Tourner à droite de", textValueOrName);
+            case "TURN_LEFT" -> new TurnLeft("Tourner à gauche de", textValueOrName);
+            case "VAR_DECLARATION" -> new DeclareVariable("Déclaration variable", textValueOrName);
+            case "VAR_ASSIGNMENT" -> new AssignVariable("Assignation", textValueOrName, valueVariable);
+            case "INCREMENT_VARIABLE" -> new Increment("Inc/Dec variable", textValueOrName, valueVariable);
+            case "REPEAT" -> new Repeat("Répeter", textValueOrName);
+            case "END_REPEAT" -> new EndRepeat("Arrêter la répétition");
+            default -> null;
+        };
     }
 
     public boolean validateForLoad() {
@@ -211,9 +195,9 @@ public class ChosenActions {
                 }
 
             }
-            if (numberRepeat != 0) {
-                return false;
-            }
+        }
+        if (numberRepeat != 0) {
+            return false;
         }
         return true;
     }
