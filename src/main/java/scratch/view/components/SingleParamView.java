@@ -22,6 +22,8 @@ public class SingleParamView extends VBox {
 
     HBox hbox = new HBox(10, label, textField);
     hbox.setAlignment(Pos.CENTER_LEFT);
+
+    this.getChildren().addAll(hbox, errorLabel);
   }
 
   private void setupValidationUI(TextField textField, Actionable action, Label errorLabel) {

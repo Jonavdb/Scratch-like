@@ -42,6 +42,8 @@ public class DoubleParamView extends VBox {
       configureIncrementButtons(action, propValue, btnIncrement, btnDecrement);
       hbox.getChildren().addAll(btnIncrement, btnDecrement);
     }
+
+    this.getChildren().addAll(hbox, errorLabel);
   }
 
   private void setupDoubleValidationUI(TextField nameField, TextField valueField, Actionable action, Label errorLabel) {

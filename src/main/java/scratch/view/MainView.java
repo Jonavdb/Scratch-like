@@ -40,18 +40,7 @@ public class MainView extends VBox {
   private final ActionPaletteView actionPalette = new ActionPaletteView();
 
   // Programme (centre)
-  private final VBox programBox = new VBox();
-  private final ListView<Actionable> chosenActions = new ListView<>();
-  private final Button btnUp = new Button("Monter");
-  private final Button btnDown = new Button("Descendre");
-  private final Button btnDuplicate = new Button("Dupliquer");
-  private final Button btnDelete = new Button("Supprimer");
-  private final Button btnEmptyAll = new Button("Vider tout");
-
-  // Action détails (sous le programme)
-  private final Label runtimeErrorLabel = new Label();
-  private final VBox detailContentContainer = new VBox(5);
-  private final TitledPane detailPane = new TitledPane("Détail de l'action", detailContentContainer);
+  private final ProgramView programView = new ProgramView();
 
   // Scene (droite)
   private final VBox sceneBox = new VBox();
@@ -68,7 +57,6 @@ public class MainView extends VBox {
 
     // Mise en place de l'UI
     configureMenu();
-    configureProgram();
     configureScene();
     configureLayoutGlobal();
     this.getChildren().addAll(menuBar, appContainer);
@@ -83,25 +71,6 @@ public class MainView extends VBox {
   private void configureMenu() {
     fileMenu.getItems().addAll(saveItem, loadItem);
     menuBar.getMenus().add(fileMenu);
-  }
-
-  private void configureProgram() {
-    HBox btnContainerProgram = new HBox(10, btnUp, btnDown, btnDuplicate, btnDelete, btnEmptyAll);
-    btnContainerProgram.setPadding(new Insets(10, 0, 10, 0));
-
-    // Programme
-    programBox.setSpacing(10);
-    programBox.setPadding(new Insets(0, 0, 0, 10));
-
-    // Détail de l'action
-    runtimeErrorLabel.setTextFill(Color.RED);
-    runtimeErrorLabel.setStyle("-fx-font-size: 16px;");
-
-    VBox detailWrapper = new VBox(10, detailContentContainer, runtimeErrorLabel);
-    detailPane.setContent(detailWrapper);
-
-    programBox.getChildren().addAll(new Text("Programme"), chosenActions, btnContainerProgram, detailPane);
-    HBox.setHgrow(programBox, Priority.ALWAYS);
   }
 
   private void configureScene() {
@@ -129,23 +98,23 @@ public class MainView extends VBox {
 
   private void configureLayoutGlobal() {
     appContainer.setPadding(new Insets(5, 20, 10, 20));
-    appContainer.getChildren().addAll(actionPalette, programBox, sceneBox);
+    appContainer.getChildren().addAll(actionPalette, programView, sceneBox);
     this.setSpacing(20);
     VBox.setVgrow(appContainer, Priority.ALWAYS);
   }
 
   private void updateDetailContainer(Actionable chosenAction) {
-    detailContentContainer.getChildren().clear();
+    programView.getDetailContentContainer().getChildren().clear();
 
     if(chosenAction == null) {
-      detailContentContainer.getChildren().add(new Label("(aucune action sélectionnée)"));
+      programView.getDetailContentContainer().getChildren().add(new Label("(aucune action sélectionnée)"));
       return;
     }
 
     Label errorLabel = new Label("Erreur valeur");
     errorLabel.setTextFill(Color.RED);
 
-    switch(chosenAction) {
+    javafx.scene.Node viewToAdd = switch(chosenAction) {
       // Actions à 1 paramètre
       case DeclareVariable dv -> new SingleParamView("Déclaration de la variable ", dv, dv.getProperty(), errorLabel);
       case Move move -> new SingleParamView("Avancer de ", move, move.getProperty(), errorLabel);
@@ -164,8 +133,10 @@ public class MainView extends VBox {
       case Down down -> new NoParamView("Abaisser stylo");
       case EndRepeat endRe -> new NoParamView("Arreter répétition");
 
-      default -> detailContentContainer.getChildren().add(new Label("Détail de : " + chosenAction.getProperty()));
-    }
+      default -> new Label("Détail de : " + chosenAction.getProperty());
+    };
+
+    programView.getDetailContentContainer().getChildren().add(viewToAdd);
   }
 
   // Méthode pour générer des cellules personnalisées (cercle de couleur + texte) dans la colonne de GAUCHE
@@ -342,31 +313,31 @@ public class MainView extends VBox {
     bindMenuActions();
 
     vm.currActionIndexProperty().addListener((obs, oldVal, newVal) -> {
-      chosenActions.getSelectionModel().select(newVal.intValue());
+      programView.getChosenActions().getSelectionModel().select(newVal.intValue());
     });
 
-    runtimeErrorLabel.textProperty().bind(vm.getErrorRuntimeMessageProperty());
+    programView.getRuntimeErrorLabel().textProperty().bind(vm.getErrorRuntimeMessageProperty());
     var hasRuntimeError = Bindings.createBooleanBinding(
             () -> vm.getErrorRuntimeMessageProperty().get() != null && !vm.getErrorRuntimeMessageProperty().get().isEmpty(),
             vm.getErrorRuntimeMessageProperty()
     );
 
-    runtimeErrorLabel.visibleProperty().bind(hasRuntimeError);
-    runtimeErrorLabel.managedProperty().bind(hasRuntimeError);
+    programView.getRuntimeErrorLabel().visibleProperty().bind(hasRuntimeError);
+    programView.getRuntimeErrorLabel().managedProperty().bind(hasRuntimeError);
   }
 
   private void bindLists() {
     // Remplissage
     actionPalette.getAvailableActions().setItems(vm.getAllAction());
-    chosenActions.setItems(vm.getChosenAction());
+    programView.getChosenActions().setItems(vm.getChosenAction());
 
     actionPalette.getAvailableActions().setCellFactory(createPaletteCellFactory());
-    chosenActions.setCellFactory(createActionCellFactory());
+    programView.getChosenActions().setCellFactory(createActionCellFactory());
 
     // Synchronisation des sélections avec le VM
     vm.selectedActionProperty().bind(actionPalette.getAvailableActions().getSelectionModel().selectedItemProperty());
 
-    chosenActions.getSelectionModel().selectedIndexProperty().addListener((obs, oldVal, newVal) -> {
+    programView.getChosenActions().getSelectionModel().selectedIndexProperty().addListener((obs, oldVal, newVal) -> {
       if(newVal != null && newVal.intValue() >= 0) {
         vm.setIdChosenAction(newVal.intValue());
         updateDetailContainer(vm.getChosenAction().get(newVal.intValue()));
@@ -389,33 +360,33 @@ public class MainView extends VBox {
     actionPalette.getBtnAdd().disableProperty().bind(vm.canAdd().not());
     actionPalette.getBtnAdd().setOnAction(event -> vm.addAction());
 
-    btnDelete.disableProperty().bind(vm.canRemove().not());
-    btnDelete.setOnAction(event -> vm.removeAction());
+    programView.getBtnDelete().disableProperty().bind(vm.canRemove().not());
+    programView.getBtnDelete().setOnAction(event -> vm.removeAction());
 
-    btnDown.disableProperty().bind(vm.canDown().not());
-    btnDown.setOnAction(event -> {
+    programView.getBtnDown().disableProperty().bind(vm.canDown().not());
+    programView.getBtnDown().setOnAction(event -> {
       vm.downAction();
-      chosenActions.getSelectionModel().select(vm.getIdChosenAction());
+      programView.getChosenActions().getSelectionModel().select(vm.getIdChosenAction());
     });
 
-    btnUp.disableProperty().bind(vm.canUp().not());
-    btnUp.setOnAction(event -> {
+    programView.getBtnUp().disableProperty().bind(vm.canUp().not());
+    programView.getBtnUp().setOnAction(event -> {
       vm.upAction();
-      chosenActions.getSelectionModel().select(vm.getIdChosenAction());
+      programView.getChosenActions().getSelectionModel().select(vm.getIdChosenAction());
     });
 
-    btnEmptyAll.disableProperty().bind(vm.canRemoveAll().not());
-    btnEmptyAll.setOnAction(event -> vm.removeAll());
+    programView.getBtnEmptyAll().disableProperty().bind(vm.canRemoveAll().not());
+    programView.getBtnEmptyAll().setOnAction(event -> vm.removeAll());
 
-    btnDuplicate.setOnAction(event -> vm.copyAction());
-    btnDuplicate.disableProperty().bind(vm.canDuplicate().not());
+    programView.getBtnDuplicate().setOnAction(event -> vm.copyAction());
+    programView.getBtnDuplicate().disableProperty().bind(vm.canDuplicate().not());
 
     btnLoad.setOnAction(event -> {
       vm.resetCommands();
       spritePane.getChildren().clear();
       playerView = new PlayerView(vm.getPlayerViewModel());
       spritePane.getChildren().add(playerView);
-      chosenActions.getSelectionModel().select(0);
+      programView.getChosenActions().getSelectionModel().select(0);
     });
     btnLoad.textProperty().bind(vm.getLoadTextButton());
     btnLoad.disableProperty().bind(vm.canLoadProgram().not());
@@ -453,7 +424,7 @@ public class MainView extends VBox {
   private boolean isDeclarationZoneValid() {
     boolean isDoorClosed = false;
 
-    for(Actionable action : chosenActions.getItems()) {
+    for(Actionable action : programView.getChosenActions().getItems()) {
       if(action instanceof DeclareVariable) {
         if(isDoorClosed) {
           return false; // si c'est une déclaration mais que la porte est fermée : erreur

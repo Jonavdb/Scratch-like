@@ -20,6 +20,7 @@ public class ActionPaletteView extends VBox {
     HBox.setHgrow(this, Priority.ALWAYS);
   }
 
+  // Getters
   public ListView<Actionable> getAvailableActions() {
     return availableActions;
   }
