@@ -3,6 +3,11 @@ import javafx.beans.Observable;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
+import java.util.Scanner;
+
 public class ChosenActions {
     private ObservableList<Actionable> chosenActions = FXCollections.observableArrayList(
             action -> {
@@ -66,4 +71,79 @@ public class ChosenActions {
     public Actionable get(int index) {
         return chosenActions.get(index);
     }
+
+    public void saveInFile(File file) {
+        if(file == null)
+            return;
+        try(PrintWriter writer = new PrintWriter(file)) {
+            for(Actionable action : unmodifiableChosenActions) {
+                writer.println(action.toSave());
+            }
+
+            System.out.println("Sauvegarde réussie !");
+        } catch(FileNotFoundException e) {
+            System.err.println("Erreur lors de la sauvegarde" + e.getMessage());
+        }
+    }
+
+    public void loadFile(File file) {
+        if(file == null) return;
+
+        try(Scanner scan = new Scanner(file)) {
+            chosenActions.removeAll();
+            while(scan.hasNextLine()) {
+                String line = scan.nextLine();
+                if(line.trim().isEmpty()) return;
+
+                String[] parts = line.split(";");
+                String action = parts[0];
+
+                // On récupère la valeur en TEXTE (s'il y en a une)
+                String textValueOrName = (parts.length > 1) ? parts[1] : "";
+                String valueVariable = (parts.length > 2) ? parts[2] : "";
+                Actionable newAction = null;
+
+                switch(action) {
+                    case "MOVE_FORWARD":
+                        newAction = new Move("Avancer de", textValueOrName);
+                        break;
+                    case "PEN_UP":
+                        newAction = new Up("Lever stylo");
+                        break;
+                    case "PEN_DOWN":
+                        newAction = new Down("Abaisser stylo");
+                        break;
+                    case "TURN_RIGHT":
+                        newAction = new TurnRight("Tourner à droite de", textValueOrName);
+                        break;
+                    case "TURN_LEFT":
+                        newAction = new TurnLeft("Tourner à gauche de", textValueOrName);
+                        break;
+                    case "VAR_DECLARATION":
+                        newAction = new DeclareVariable("Déclaration variable", textValueOrName);
+                        break;
+                    case "VAR_ASSIGNMENT":
+                        newAction = new AssignVariable("Assignation", textValueOrName, valueVariable);
+                        break;
+                    case "INCREMENT_VARIABLE":
+                        newAction = new Increment("Inc/Dec variable", textValueOrName, valueVariable);
+                        break;
+                    case "REPEAT":
+                        newAction = new Repeat("Répeter", textValueOrName);
+                        break;
+                    case "END_REPEAT":
+                        newAction = new EndRepeat("Arrêter la répétition");
+                        break;
+                }
+                if(newAction != null) {
+                    chosenActions.add(newAction);
+                }
+            }
+            System.out.println("Chargement réussi !");
+
+        } catch(FileNotFoundException e) {
+            System.err.println("Fichier introuvable : " + e.getMessage());
+        }
+    }
+
 }

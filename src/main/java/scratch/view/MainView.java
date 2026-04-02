@@ -527,8 +527,7 @@ public class MainView extends VBox {
         vm.startAutoExecute();
       }
     });
-    btnExecute.disableProperty().bind(vm.canExecuteProgram().not());
-    btnExecute.disableProperty().bind(vm.errorActionIndexProperty().isNotEqualTo(-1));
+    btnExecute.disableProperty().bind(vm.canExecuteProgram().not().or(vm.errorActionIndexProperty().isNotEqualTo(-1)));
     btnExecute.textProperty().bind(vm.getExecuteTextButton());
     btnStop.setOnAction(event -> vm.stopAutoExecute());
     btnStop.disableProperty().bind(vm.canStop().not());
