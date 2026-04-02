@@ -1,11 +1,14 @@
 package scratch.model;
+import javafx.beans.InvalidationListener;
 import javafx.beans.Observable;
 import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.Scanner;
 
 public class ChosenActions {
@@ -145,4 +148,73 @@ public class ChosenActions {
         }
     }
 
+    public boolean validateForLoad() {
+        boolean isPenDown = true;
+        int numberRepeat = 0;
+        String regexValidation = "^[a-zA-Z_][a-zA-Z0-9_]*$"; // Valide noms variables (lettre/_ + lettres/chiffres/_*) : variable1, _var OK | 1var, ma-var KO
+        boolean hasSeenNonDeclaration = false;  // un mouvement, un stylo, une assignation
+        ArrayList<String> variables = new ArrayList<>();
+
+        for (Actionable action : chosenActions) {
+            if (action instanceof DeclareVariable) {
+                if (action.getProperty() != null) {
+                    if (action.getProperty().get().matches(regexValidation)) {
+                        variables.add(action.getProperty().get());  // on ajoute la variable créée dans un array
+                    } else {
+                        return false;
+                    }
+                }
+
+                if (hasSeenNonDeclaration) {
+                    return false;   // déclaration après une action non-déclaration -> interdit
+                }
+            } else {
+                hasSeenNonDeclaration = true;   // on est sur une non-déclaration -> on ferme la porte
+
+                // Vérification de la PREMIÈRE propriété (valable pour toutes les actions)
+                if (action.getProperty() != null && action.getProperty().get() != null) {
+                    String param1 = action.getProperty().get();
+
+                    // est-ce que le paramètre est un nom de variable (ex: "nb") et qu'elle n'existe dans pas notre tableau
+                    if (param1.matches(regexValidation) && !variables.contains(param1)) {
+                        return false;
+                    }
+                }
+
+                // Vérification de la DEUXIÈME propriété (spécifique à Assign et Increment)
+                if (action instanceof AssignVariable || action instanceof Increment) {
+                    if (action.getProperty().get().isEmpty() || action.getProperty() == null) {
+                        return false;
+                    }
+                    String param2 = action instanceof AssignVariable ? ((AssignVariable) action).getParamProperty().get() : ((Increment) action).getIncrementParam();
+
+                    if (param2 != null && param2.matches(regexValidation) && !variables.contains(param2)) {
+                        return false; // erreur : la variable 2 n'existe pas
+                    }
+                }
+                if (action instanceof Down) {
+                    if (isPenDown) {
+                        return false;
+                    }
+                    isPenDown = true;
+                } else if (action instanceof Up) {
+                    if (!isPenDown) {
+                        return false;
+                    }
+                    isPenDown = false;
+                }
+                if (action instanceof Repeat) {
+                    numberRepeat++;
+                }
+                if (action instanceof EndRepeat) {
+                    numberRepeat--;
+                }
+
+            }
+            if (numberRepeat != 0) {
+                return false;
+            }
+        }
+        return true;
+    }
 }

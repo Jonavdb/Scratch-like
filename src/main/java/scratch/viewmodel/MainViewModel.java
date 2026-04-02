@@ -12,18 +12,15 @@ import scratch.model.*;
 
 import java.io.*;
 import java.util.ArrayList;
-import java.util.Scanner;
 
 public class MainViewModel {
     private ChosenActions chosenActions;
-    private String regexValidation = "^[a-zA-Z_][a-zA-Z0-9_]*$"; // Valide noms variables (lettre/_ + lettres/chiffres/_*) : variable1, _var OK | 1var, ma-var KO
     private ObjectProperty<Actionable> selectedAction = new SimpleObjectProperty<>();
     private IntegerProperty idChosenAction = new SimpleIntegerProperty(-1); // -1 pour quand il y ait premier el, il soit à 0
     private BooleanProperty isLoad = new SimpleBooleanProperty(false);
     private BooleanProperty isPlaying = new SimpleBooleanProperty(false);
     private StringProperty errorRuntimeMessage = new SimpleStringProperty();
     private IntegerProperty errorActionIndex = new SimpleIntegerProperty(-1);
-    private final BooleanProperty errorProperty = new SimpleBooleanProperty(false);
     private final BooleanProperty isStop = new SimpleBooleanProperty(false);
     private final DoubleProperty speed = new SimpleDoubleProperty(1.0);
     private Timeline timeline;
@@ -183,84 +180,12 @@ public class MainViewModel {
 
     public BooleanBinding canLoadProgram() {
         return Bindings.createBooleanBinding(() -> {
-            ObservableList<Actionable> list = chosenActions.getChosenActions();
-
-            if(list.isEmpty() || isPlaying.get()) {
-                return false;
-            }
-
-            boolean isPenDown = true;
-            boolean hasSeenNonDeclaration = false;  // un mouvement, un stylo, une assignation
-            int numberRepeat = 0;
-            ArrayList<String> variables = new ArrayList<>();
-
-            for(Actionable action : list) {
-                /* --- Zone de déclaration de variables --- */
-                if(action instanceof DeclareVariable) {
-                    if(action.getProperty() != null) {
-                        if(action.getProperty().get().matches(regexValidation)) {
-                            variables.add(action.getProperty().get());  // on ajoute la variable créée dans un array
-                        } else {
-                            return false;
-                        }
-                    }
-
-                    if(hasSeenNonDeclaration) {
-                        return false;   // déclaration après une action non-déclaration -> interdit
-                    }
-                } else {
-                    hasSeenNonDeclaration = true;   // on est sur une non-déclaration -> on ferme la porte
-
-                    // Vérification de la PREMIÈRE propriété (valable pour toutes les actions)
-                    if(action.getProperty() != null && action.getProperty().get() != null) {
-                        String param1 = action.getProperty().get();
-
-                        // est-ce que le paramètre est un nom de variable (ex: "nb") et qu'elle n'existe dans pas notre tableau
-                        if(param1.matches(regexValidation) && !variables.contains(param1)) {
-                            return false;
-                        }
-                    }
-
-                    // Vérification de la DEUXIÈME propriété (spécifique à Assign et Increment)
-                    if(action instanceof AssignVariable|| action instanceof Increment) {
-                        if (action.getProperty().get().isEmpty() || action.getProperty() == null){
-                            return false;
-                        }
-                        String param2 = action instanceof AssignVariable ? ((AssignVariable) action).getParamProperty().get() : ((Increment) action).getIncrementParam();
-
-                        if(param2 != null && param2.matches(regexValidation) && !variables.contains(param2)) {
-                            return false; // erreur : la variable 2 n'existe pas
-                        }
-                    }
-                }
-
-                /* --- Vérification du stylo --- */
-                if(action instanceof Down) {
-                    if(isPenDown) {
-                        return false;
-                    }
-                    isPenDown = true;
-                } else if(action instanceof Up) {
-                    if(!isPenDown) {
-                        return false;
-                    }
-                    isPenDown = false;
-                }
-
-                if(action instanceof Repeat) {
-                    numberRepeat++;
-                }
-                if(action instanceof EndRepeat) {
-                    numberRepeat--;
-                }
-
-            }
-            if(numberRepeat != 0) {
-                return false;
-            }
-            return true;
+            return !chosenActions.getChosenActions().isEmpty()
+                    && !isPlaying.get()
+                    && chosenActions.validateForLoad();
         }, chosenActions.getChosenActions(), isPlaying);
     }
+
 
     public BooleanBinding canRemoveAll() {
         return Bindings.isNotEmpty(chosenActions.getChosenActions());
@@ -272,26 +197,14 @@ public class MainViewModel {
         }, isPlaying);
     }
 
-    public boolean getIsStop() {
-        return isStop.get();
-    }
-
     public void stopAutoExecute() {
         setIsStop(true);
         setIsStop(false);
         if(timeline != null) timeline.stop();
     }
 
-    public double getSpeed() {
-        return speed.get();
-    }
-
     public DoubleProperty speedProperty() {
         return speed;
-    }
-
-    public Actionable getSelectedAction() {
-        return selectedAction.get();
     }
 
     public ObjectProperty<Actionable> selectedActionProperty() {
@@ -300,10 +213,6 @@ public class MainViewModel {
 
     public int getIdChosenAction() {
         return idChosenAction.get();
-    }
-
-    public IntegerProperty idChosenActionProperty() {
-        return idChosenAction;
     }
 
     public IntegerProperty currActionIndexProperty() {
@@ -315,16 +224,8 @@ public class MainViewModel {
         this.idChosenAction.set(idChosenAction);
     }
 
-    public int getCurrentActionIndex() {
-        return currActionIndex.get();
-    }
-
     public void setCurrentActionIndex(int idx) {
         currActionIndex.set(idx);
-    }
-
-    public boolean getIsPlaying() {
-        return isPlaying.get();
     }
 
     public void setIsPlaying(boolean value) {
@@ -335,31 +236,13 @@ public class MainViewModel {
         isStop.set(value);
     }
 
-    public void validateAndUpdateValue(Actionable selectedAction, String newText) {
-        if(selectedAction == null || selectedAction.getProperty() == null) {
-            errorProperty.set(false);
-            return;
-        }
-
-        boolean isValid = Actions.isValueValid(selectedAction, newText);
-
-        if(isValid) {
-            errorProperty.set(false);
-            selectedAction.getProperty().set(newText); // On sauvegarde le texte ("90" ou "nb")
-        } else {
-            errorProperty.set(true);
-            selectedAction.getProperty().set(""); // Reset case vide
-        }
-    }
-
     public PlayerViewModel getPlayerViewModel() {
         return playerVm;
     }
 
-    public PlayerViewModel resetPlayerViewModel() {
+    public void resetPlayerViewModel() {
         state = new ProgramState(new Player(), new VariableMap());
         playerVm = new PlayerViewModel(state.getPlayer());
-        return playerVm;
     }
 
     public StringBinding getLoadTextButton() {
