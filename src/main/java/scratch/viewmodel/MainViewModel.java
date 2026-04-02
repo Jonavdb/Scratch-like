@@ -132,6 +132,7 @@ public class MainViewModel {
         setErrorRuntimeMessage("");
         currActionIndex.set(0);
         isLoad.set(false);
+        chosenActions.removeAll();
         chosenActions.loadFile(file);
     }
 
@@ -195,9 +196,6 @@ public class MainViewModel {
 
             for(Actionable action : list) {
                 /* --- Zone de déclaration de variables --- */
-                if (action.getProperty().get().isEmpty() || action.getProperty() == null){
-                    return false;
-                }
                 if(action instanceof DeclareVariable) {
                     if(action.getProperty() != null) {
                         if(action.getProperty().get().matches(regexValidation)) {
@@ -224,13 +222,12 @@ public class MainViewModel {
                     }
 
                     // Vérification de la DEUXIÈME propriété (spécifique à Assign et Increment)
-                    if(action instanceof AssignVariable assignVariable) {
-                        String param2 = assignVariable.getParamProperty().get();
-                        if(param2 != null && param2.matches(regexValidation) && !variables.contains(param2)) {
-                            return false; // erreur : la variable 2 n'existe pas
+                    if(action instanceof AssignVariable|| action instanceof Increment) {
+                        if (action.getProperty().get().isEmpty() || action.getProperty() == null){
+                            return false;
                         }
-                    } else if(action instanceof Increment increment) {
-                        String param2 = increment.getIncrementProperty().get();
+                        String param2 = action instanceof AssignVariable ? ((AssignVariable) action).getParamProperty().get() : ((Increment) action).getIncrementParam();
+
                         if(param2 != null && param2.matches(regexValidation) && !variables.contains(param2)) {
                             return false; // erreur : la variable 2 n'existe pas
                         }
