@@ -14,6 +14,9 @@ import javafx.scene.control.*;
 import javafx.stage.FileChooser;
 import javafx.util.Callback;
 import scratch.model.*;
+import scratch.view.components.DoubleParamView;
+import scratch.view.components.NoParamView;
+import scratch.view.components.SingleParamView;
 import scratch.viewmodel.MainViewModel;
 import javafx.scene.control.Slider;
 import java.io.File;
@@ -141,87 +144,6 @@ public class MainView extends VBox {
     VBox.setVgrow(appContainer, Priority.ALWAYS);
   }
 
-  private void configureIncrementButtons() {
-
-  }
-
-  private void createSingleParamUI(String labelText, Actionable action, StringProperty property, Label errorLabel) {
-    Label label = new Label(labelText);
-    TextField textField = new TextField();
-    textField.setPrefWidth(50);
-    textField.textProperty().bindBidirectional(property);
-
-    setupValidationUI(textField, action, errorLabel);
-
-    HBox hbox = new HBox(10, label, textField);
-    hbox.setAlignment(Pos.CENTER_LEFT);
-    detailContentContainer.getChildren().addAll(hbox, errorLabel);
-  }
-
-  // Affichage dynamique des boutons "+" et "-" uniquement si on est en Increment ou Assign
-  public void configureIncrementButtons(Actionable action, StringProperty property, Button btnIncrement, Button btnDecrement) {
-    var isNumericBinding = Bindings.createBooleanBinding(() -> {
-      String val = property.get();
-      if(val == null || val.trim().isEmpty()) return false;
-
-      try {
-        Integer.parseInt(val.trim()); // c'est un chiffre
-        return true;
-      } catch(NumberFormatException e) {
-        return false;   // c'est pas un chiffre
-      }
-    }, property);
-
-    btnIncrement.visibleProperty().bind(isNumericBinding);
-    btnIncrement.managedProperty().bind(isNumericBinding);
-    btnDecrement.visibleProperty().bind(isNumericBinding);
-    btnDecrement.managedProperty().bind(isNumericBinding);
-
-    btnIncrement.setOnAction(e -> {
-      int current = Integer.parseInt(property.get().trim());
-      property.set(String.valueOf(current + 1));
-    });
-
-    btnDecrement.setOnAction(e -> {
-      int current = Integer.parseInt(property.get().trim());
-      property.set(String.valueOf(current - 1));
-    });
-  }
-
-  private void createDoubleParamUI(String paramName, String paramValue, Actionable action,
-                                   StringProperty propName, StringProperty propValue,
-                                   Label errorLabel) {
-    Label label = new Label(paramName);
-    Label labelValue = new Label(paramValue);
-    TextField textField = new TextField();
-    TextField textValue = new TextField();
-    textField.setPrefWidth(40);
-    textValue.setPrefWidth(40);
-
-    textField.textProperty().bindBidirectional(propName);
-    textValue.textProperty().bindBidirectional(propValue);
-
-    setupValidationUI(textField, action, errorLabel);
-
-    HBox hbox = new HBox(10, label, textField, labelValue, textValue);
-    hbox.setAlignment(Pos.CENTER_LEFT);
-
-    // Affichage dynamique des boutons "+" et "-" uniquement si on est en Increment ou Assign
-    if(action instanceof Increment || action instanceof AssignVariable) {
-      Button btnIncrement = new Button("+");
-      Button btnDecrement = new Button("-");
-
-      configureIncrementButtons(action, propValue, btnIncrement, btnDecrement);
-      hbox.getChildren().addAll(btnIncrement, btnDecrement);
-    }
-
-    detailContentContainer.getChildren().addAll(hbox, errorLabel);
-  }
-
-  private void createNoParamUI(String labelText) {
-    detailContentContainer.getChildren().add(new Label(labelText));
-  }
-
   private void updateDetailContainer(Actionable chosenAction) {
     detailContentContainer.getChildren().clear();
 
@@ -235,22 +157,22 @@ public class MainView extends VBox {
 
     switch(chosenAction) {
       // Actions à 1 paramètre
-      case DeclareVariable dv -> createSingleParamUI("Déclaration de la variable ", dv, dv.getProperty(), errorLabel);
-      case Move move -> createSingleParamUI("Avancer de ", move, move.getProperty(), errorLabel);
-      case TurnLeft tl -> createSingleParamUI("Tourner à gauche de ", tl, tl.getProperty(), errorLabel);
-      case TurnRight tr -> createSingleParamUI("Tourner à droite de ", tr, tr.getProperty(), errorLabel);
-      case Repeat r -> createSingleParamUI("Répéter ", r, r.getProperty(), errorLabel);
+      case DeclareVariable dv -> new SingleParamView("Déclaration de la variable ", dv, dv.getProperty(), errorLabel);
+      case Move move -> new SingleParamView("Avancer de ", move, move.getProperty(), errorLabel);
+      case TurnLeft tl -> new SingleParamView("Tourner à gauche de ", tl, tl.getProperty(), errorLabel);
+      case TurnRight tr -> new SingleParamView("Tourner à droite de ", tr, tr.getProperty(), errorLabel);
+      case Repeat r -> new SingleParamView("Répéter ", r, r.getProperty(), errorLabel);
 
       // Actions à 2 paramètres
       case AssignVariable av ->
-              createDoubleParamUI("Assignation de la variable ", " valeur : ", av, av.getProperty(), av.getParamProperty(), errorLabel);
+              new DoubleParamView("Assignation de la variable ", " valeur : ", av, av.getProperty(), av.getParamProperty(), errorLabel);
       case Increment inc ->
-              createDoubleParamUI("Incrémentation de la variable ", " de ", inc, inc.getProperty(), inc.getIncrementProperty(), errorLabel);
+              new DoubleParamView("Incrémentation de la variable ", " de ", inc, inc.getProperty(), inc.getIncrementProperty(), errorLabel);
 
       // Actions sans paramètre
-      case Up up -> createNoParamUI("Lever stylo");
-      case Down down -> createNoParamUI("Abaisser stylo");
-      case EndRepeat endRe -> createNoParamUI("Arreter répétition");
+      case Up up -> new NoParamView("Lever stylo");
+      case Down down -> new NoParamView("Abaisser stylo");
+      case EndRepeat endRe -> new NoParamView("Arreter répétition");
 
       default -> detailContentContainer.getChildren().add(new Label("Détail de : " + chosenAction.getProperty()));
     }
@@ -419,18 +341,6 @@ public class MainView extends VBox {
         setGraphic(circle);
       }
     };
-  }
-
-  private void setupValidationUI(TextField textField, Actionable action, Label errorLabel) {
-    boolean isInitialValid = Actions.isValueValid(action, textField.getText());
-    errorLabel.setVisible(!isInitialValid);
-    errorLabel.setManaged(!isInitialValid);
-
-    textField.textProperty().addListener((obs, oldVal, newVal) -> {
-      boolean isValid = Actions.isValueValid(action, newVal);
-      errorLabel.setVisible(!isValid);
-      errorLabel.setManaged(!isValid);
-    });
   }
 
   // =========================================================================

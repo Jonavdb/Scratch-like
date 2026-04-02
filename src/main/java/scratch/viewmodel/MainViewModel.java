@@ -9,7 +9,6 @@ import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.util.Duration;
 import scratch.model.*;
-
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Scanner;
@@ -333,23 +332,6 @@ public class MainViewModel {
 
     public void setIsStop(boolean value) {
         isStop.set(value);
-    }
-
-    public void validateAndUpdateValue(Actionable selectedAction, String newText) {
-        if(selectedAction == null || selectedAction.getProperty() == null) {
-            errorProperty.set(false);
-            return;
-        }
-
-        boolean isValid = Actions.isValueValid(selectedAction, newText);
-
-        if(isValid) {
-            errorProperty.set(false);
-            selectedAction.getProperty().set(newText); // On sauvegarde le texte ("90" ou "nb")
-        } else {
-            errorProperty.set(true);
-            selectedAction.getProperty().set(""); // Reset case vide
-        }
     }
 
     public PlayerViewModel getPlayerViewModel() {
