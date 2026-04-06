@@ -13,6 +13,7 @@ import scratch.model.*;
 
 import java.io.*;
 import java.util.ArrayList;
+import java.util.Locale;
 import java.util.Scanner;
 
 public class MainViewModel {
@@ -31,6 +32,7 @@ public class MainViewModel {
     private PlayerViewModel playerVm;
     private MapViewModel mapVm;
     private ProgramState state = new ProgramState(new Player(), new VariableMap());
+    private final StringBinding playerDataBinding;
 
     public MainViewModel(ChosenActions chosenActions) {
         this.chosenActions = chosenActions;
@@ -41,6 +43,19 @@ public class MainViewModel {
         });
         playerVm = new PlayerViewModel(state.getPlayer());
         mapVm = new MapViewModel(state.getVariableMap());
+        playerDataBinding = Bindings.createStringBinding(() -> {
+            // valeurs
+            var pos = state.getPlayer().positionProperty().get();
+            double rawAngle = state.getPlayer().angleProperty().get();
+            double angle = (rawAngle % 360 + 360) % 360;
+
+            // on met des valeurs par defaut si pos est null
+            double x = pos.getX() - 250;
+            double y = 250 - pos.getY();
+
+            // formattage du texte à afficher
+            return String.format(Locale.US,"Tortue : x = %.1f, y = %.1f, direction = %.1f °", x, y, angle);
+        }, state.getPlayer().positionProperty(), state.getPlayer().angleProperty());
     }
 
     public ReadOnlyBooleanProperty errorProperty() {
@@ -316,6 +331,7 @@ public class MainViewModel {
         return currActionIndex;
     }
 
+
     public void setIdChosenAction(int idChosenAction) {
         this.idChosenAction.set(idChosenAction);
     }
@@ -328,6 +344,9 @@ public class MainViewModel {
         currActionIndex.set(idx);
     }
 
+    public StringBinding getPlayerDataBinding() {
+        return playerDataBinding;
+    }
     public boolean getIsPlaying(){
         return isPlaying.get();
     }

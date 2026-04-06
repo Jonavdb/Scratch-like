@@ -128,28 +128,37 @@ public class MainView extends VBox {
     HBox btnExecuteContainerScene = new HBox(10, automatic_execute, step_execute);
     btnExecuteContainerScene.setAlignment(Pos.CENTER);
 
-
-    // TODO : raw code for table view
+    // Texte affichant les données du joueur
+    Text textPlayerData = new Text("");
+    textPlayerData.textProperty().bind(vm.getPlayerDataBinding());
+    // Vue du tableau de variables
     TableView<MapViewModel.VariableRow> tableView = new TableView<>();
-
     TableColumn<MapViewModel.VariableRow, String> nameColumn = new TableColumn<>("Nom");
     nameColumn.setCellValueFactory(cellData ->
             cellData.getValue().getNameProperty());
-
     TableColumn<MapViewModel.VariableRow, String> valueColumn = new TableColumn<>("Valeur");
     valueColumn.setCellValueFactory(cellData ->
             cellData.getValue().getValueProperty());
-
     tableView.getColumns().addAll(List.of(nameColumn, valueColumn));
     tableView.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_ALL_COLUMNS);
-
     tableView.setItems(vm.getMapViewModel().getEntries());
     System.out.println("in view : " + vm.getMapViewModel().getEntries().hashCode());
-
+    tableView.setPrefHeight(100);
     BorderPane root = new BorderPane();
+    root.setTop(new Text("Variables"));
     root.setCenter(tableView);
-
-    sceneBox.getChildren().addAll(new Text("Scene"), board, root, btnExecuteContainerScene, btnContainerScene, slider);
+    BorderPane.setMargin(root.getTop(), new Insets(0, 0, 5, 0));
+    // Conteneur (texte affichant les données du joueur + tableau des variables)
+    VBox dataTrackContainer = new VBox(5, textPlayerData,root);
+    dataTrackContainer.setBorder(new Border(new BorderStroke(
+              Color.LIGHTGRAY,            // Color
+              BorderStrokeStyle.SOLID,    // Style
+              new CornerRadii(0),         // Rounded corners
+              new BorderWidths(1)         // Thickness
+    )));
+    // un peu de padding pour un meilleur visuel
+    dataTrackContainer.setPadding(new Insets(7));
+    sceneBox.getChildren().addAll(new Text("Scene"), board, dataTrackContainer, btnExecuteContainerScene, btnContainerScene, slider);
   }
 
   private void configureLayoutGlobal() {
@@ -425,6 +434,7 @@ public class MainView extends VBox {
     vm.currActionIndexProperty().addListener((obs, oldVal, newVal) -> {
       chosenActions.getSelectionModel().select(newVal.intValue());
     });
+    // HERE
   }
 
   private void bindLists() {

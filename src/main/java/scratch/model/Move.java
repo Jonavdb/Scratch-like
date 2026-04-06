@@ -31,6 +31,8 @@ public class Move implements Actionable{
         double diffX = dist * Math.cos(radians);  // NouveauX = cosinus(angle) * vitesse
         double diffY = dist * Math.sin(radians);  // NouveauY = sinus(angle) * vitesse
 
+        System.out.println("new x: "+ (player.getX() + diffX));
+        System.out.println("new y: " + (player.getY() - diffY));
         player.setPosition(new CustomPoint2D(player.getX() + diffX, player.getY() - diffY));
     }
 

@@ -12,7 +12,9 @@ public class Player {
     private final BooleanProperty penDown = new SimpleBooleanProperty(true);
 
     public void setPosition(CustomPoint2D value){
-        position.setValue(value);
+        System.out.println("Setting x to: " + value.getX());
+        System.out.println("Setting y to: " + value.getY());
+        position.set(value);
     }
 
     public ObjectProperty<CustomPoint2D> positionProperty(){
@@ -32,6 +34,7 @@ public class Player {
     }
 
     public void setAngle(double value){
+        System.out.println("Setting angle to: " + value);
         angle.set(value);
     }
 
