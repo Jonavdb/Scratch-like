@@ -1,11 +1,11 @@
 package scratch.model;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+
+import java.util.*;
 
 public class VariableMap {
     private final Map<String, Integer> map = new HashMap<>();
+    private final List<VariableMapListener<String, Integer>> listeners = new ArrayList<>();
 
     public VariableMap() {}
 
@@ -24,6 +24,15 @@ public class VariableMap {
 
         // on ajoute la variable à la map, valeur par défaut 0
         map.put(variable, 0);
+
+        // on notifie chaque listener
+        for (var listener : listeners) {
+            // on crée l'objet qui contient les infos de la déclaration de variable
+            MapChangeObject change = new MapChangeObject(variable, 0, MapActionType.DECLARE);
+
+            // on déclenche la réponse du listener au changement
+            listener.onUpdate(change);
+        }
         return true;
     }
 
@@ -52,6 +61,15 @@ public class VariableMap {
 
         // on assigne la valeur récupérée à la variable
         map.put(variable, parsedParameter);
+
+        // on notifie chaque listener
+        for (var listener : listeners) {
+            // on crée l'objet qui contient les infos de la déclaration de variable
+            MapChangeObject change = new MapChangeObject(variable, parsedParameter, MapActionType.ASSIGN);
+
+            // on déclenche la réponse du listener au changement
+            listener.onUpdate(change);
+        }
         return true;
     }
 
@@ -82,6 +100,15 @@ public class VariableMap {
         Integer currValue = map.get(variable);
         currValue += parsedParameter;
         map.put(variable, currValue);
+
+        // on notifie chaque listener
+        for (var listener : listeners) {
+            // on crée l'objet qui contient les infos de la déclaration de variable
+            MapChangeObject change = new MapChangeObject(variable, currValue, MapActionType.INCREMENT);
+
+            // on déclenche la réponse du listener au changement
+            listener.onUpdate(change);
+        }
         return true;
     }
 
@@ -96,4 +123,13 @@ public class VariableMap {
     public Integer resolveValue(String param) {
         return map.get(param);
     }
+
+    public void addListener(VariableMapListener<String, Integer> listener) {
+        listeners.add(listener);
+    }
+
+    public void reset() {
+        map.clear();
+    }
+
 }

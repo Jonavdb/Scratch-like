@@ -8,16 +8,12 @@ import javafx.collections.ObservableList;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.util.Duration;
-import javafx.scene.control.ListView;
 import scratch.model.*;
 
 
-import javax.swing.*;
 import java.io.*;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Scanner;
-import java.util.Stack;
 
 public class MainViewModel {
     private ChosenActions chosenActions;
@@ -33,6 +29,7 @@ public class MainViewModel {
     // debug
     private IntegerProperty currActionIndex = new SimpleIntegerProperty(0);
     private PlayerViewModel playerVm;
+    private MapViewModel mapVm;
     private ProgramState state = new ProgramState(new Player(), new VariableMap());
 
     public MainViewModel(ChosenActions chosenActions) {
@@ -43,6 +40,7 @@ public class MainViewModel {
             isLoad.set(false);
         });
         playerVm = new PlayerViewModel(state.getPlayer());
+        mapVm = new MapViewModel(state.getVariableMap());
     }
 
     public ReadOnlyBooleanProperty errorProperty() {
@@ -358,11 +356,11 @@ public class MainViewModel {
     public PlayerViewModel getPlayerViewModel() {
         return playerVm;
     }
+    public MapViewModel getMapViewModel() {return mapVm;}
 
-    public PlayerViewModel resetPlayerViewModel() {
-        state = new ProgramState(new Player(), new VariableMap());
-        playerVm = new PlayerViewModel(state.getPlayer());
-        return playerVm;
+    public void resetProgramState() {
+        state.reset(); // reset the models data
+        mapVm.getEntries().clear(); // clear map display
     }
 
     public StringBinding getLoadTextButton(){
@@ -374,7 +372,7 @@ public class MainViewModel {
     }
 
     public void resetCommands(){
-        resetPlayerViewModel();
+        resetProgramState();
         executor.init(chosenActions.getChosenActions());
         currActionIndex.set(0);
         isLoad.set(true);

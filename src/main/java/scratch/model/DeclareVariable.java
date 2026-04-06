@@ -17,7 +17,7 @@ public class DeclareVariable implements Actionable {
     public void execute(ProgramState state) {
         var map = state.getVariableMap();
         var nameVar = getVariableName();
-        boolean ok = map.declare(nameVar);
+        boolean checkDeclaration = map.declare(nameVar);
     }
 
     public String getVariableName() {return variableName.get();}

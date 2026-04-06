@@ -10,7 +10,6 @@ public class Player {
     private final DoubleProperty angle = new SimpleDoubleProperty(0);
     private final DoubleProperty size = new SimpleDoubleProperty(15);
     private final BooleanProperty penDown = new SimpleBooleanProperty(true);
-    private Map<String, Integer> variables = new HashMap<>();
 
     public void setPosition(CustomPoint2D value){
         position.setValue(value);
@@ -18,10 +17,6 @@ public class Player {
 
     public ObjectProperty<CustomPoint2D> positionProperty(){
         return position;
-    }
-
-    public int getVariableValue(String name) {
-        return variables.getOrDefault(name, 0);
     }
 
     public double getX() {
@@ -60,11 +55,8 @@ public class Player {
         return penDown;
     }
 
-    public void declareVariable(String name) {
-        variables.put(name, 0);
-    }
-
     public void resetVariables() {
-        variables.clear();
+        position.set(new CustomPoint2D(250, 250)); // on reinitialise la position du joueur au milieu de la grille
+        angle.set(0); // on réinitialise l'angle du joueur (pointe vers le haut = 90°)
     }
 }

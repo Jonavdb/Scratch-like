@@ -4,7 +4,6 @@ import javafx.beans.InvalidationListener;
 import javafx.beans.property.*;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import scratch.model.Actionable;
 import scratch.model.Player;
 import scratch.model.CustomPoint2D;
 

@@ -17,11 +17,10 @@ public class Increment implements Actionable{
 
     @Override
     public void execute(ProgramState state) {
-        // TODO -> ?
         var map = state.getVariableMap();
         var nameVariable = getVariableName();
         var incrementParam = getIncrementParam();
-        boolean ok = map.increment(nameVariable, incrementParam);
+        boolean checkIncrement = map.increment(nameVariable, incrementParam);
     }
 
     public String getVariableName() {return variableName.get();}

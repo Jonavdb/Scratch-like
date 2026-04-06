@@ -16,8 +16,10 @@ import javafx.util.Callback;
 import scratch.model.*;
 import scratch.viewmodel.MainViewModel;
 import javafx.scene.control.Slider;
+import scratch.viewmodel.MapViewModel;
 
 import java.io.File;
+import java.util.List;
 
 public class MainView extends VBox {
   private final MainViewModel vm;
@@ -125,7 +127,29 @@ public class MainView extends VBox {
     step_execute.setToggleGroup(groupOfExecute);
     HBox btnExecuteContainerScene = new HBox(10, automatic_execute, step_execute);
     btnExecuteContainerScene.setAlignment(Pos.CENTER);
-    sceneBox.getChildren().addAll(new Text("Scene"), board, btnExecuteContainerScene, btnContainerScene, slider);
+
+
+    // TODO : raw code for table view
+    TableView<MapViewModel.VariableRow> tableView = new TableView<>();
+
+    TableColumn<MapViewModel.VariableRow, String> nameColumn = new TableColumn<>("Nom");
+    nameColumn.setCellValueFactory(cellData ->
+            cellData.getValue().getNameProperty());
+
+    TableColumn<MapViewModel.VariableRow, String> valueColumn = new TableColumn<>("Valeur");
+    valueColumn.setCellValueFactory(cellData ->
+            cellData.getValue().getValueProperty());
+
+    tableView.getColumns().addAll(List.of(nameColumn, valueColumn));
+    tableView.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_ALL_COLUMNS);
+
+    tableView.setItems(vm.getMapViewModel().getEntries());
+    System.out.println("in view : " + vm.getMapViewModel().getEntries().hashCode());
+
+    BorderPane root = new BorderPane();
+    root.setCenter(tableView);
+
+    sceneBox.getChildren().addAll(new Text("Scene"), board, root, btnExecuteContainerScene, btnContainerScene, slider);
   }
 
   private void configureLayoutGlobal() {
