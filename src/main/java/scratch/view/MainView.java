@@ -18,14 +18,11 @@ import scratch.view.components.DoubleParamView;
 import scratch.view.components.NoParamView;
 import scratch.view.components.SingleParamView;
 import scratch.viewmodel.MainViewModel;
-import javafx.scene.control.Slider;
 import java.io.File;
 
 public class MainView extends VBox {
   private final MainViewModel vm;
-  private IntegerProperty currentBoundProperty = null;
   private PlayerView playerView;
-  private Pane spritePane = new Pane();
 
   // Conteneur Principal
   private final HBox appContainer = new HBox();
@@ -43,21 +40,13 @@ public class MainView extends VBox {
   private final ProgramView programView = new ProgramView();
 
   // Scene (droite)
-  private final VBox sceneBox = new VBox();
-  private final Button btnLoad = new Button("Charger");
-  private final Button btnExecute = new Button("Exécuter");
-  private final Button btnStop = new Button("Arreter");
-  private final Slider slider = new Slider(0.01, 5, 0.01);
-  private final ToggleGroup groupOfExecute = new ToggleGroup();
-  private final RadioButton automaticExecute = new RadioButton("Exécution automatique");
-  private final RadioButton stepExecute = new RadioButton("Exécution manuelle");
+  private final SceneView sceneView = new SceneView();
 
   public MainView(MainViewModel vm) {
     this.vm = vm;
 
     // Mise en place de l'UI
     configureMenu();
-    configureScene();
     configureLayoutGlobal();
     this.getChildren().addAll(menuBar, appContainer);
 
@@ -73,32 +62,9 @@ public class MainView extends VBox {
     menuBar.getMenus().add(fileMenu);
   }
 
-  private void configureScene() {
-    GridPane gridPane = createGrid(10, 10);
-    spritePane = createSpritePane();
-    Group board = new Group(gridPane, spritePane);
-
-    HBox btnContainerScene = new HBox(10, btnLoad, btnExecute, btnStop);
-    btnContainerScene.setAlignment(Pos.CENTER);
-    slider.setShowTickLabels(true);
-    slider.setShowTickMarks(true);
-    slider.setMajorTickUnit(1);
-    slider.setBlockIncrement(0.1f);
-    slider.setMaxWidth(Double.MAX_VALUE);
-    sceneBox.setSpacing(10);
-    sceneBox.setPadding(new Insets(0, 0, 0, 20));
-    VBox.setMargin(slider, new Insets(0, 5, 0, 5));
-    automaticExecute.setToggleGroup(groupOfExecute);
-    automaticExecute.setSelected(true);
-    stepExecute.setToggleGroup(groupOfExecute);
-    HBox btnExecuteContainerScene = new HBox(10, automaticExecute, stepExecute);
-    btnExecuteContainerScene.setAlignment(Pos.CENTER);
-    sceneBox.getChildren().addAll(new Text("Scene"), board, btnExecuteContainerScene, btnContainerScene, slider);
-  }
-
   private void configureLayoutGlobal() {
     appContainer.setPadding(new Insets(5, 20, 10, 20));
-    appContainer.getChildren().addAll(actionPalette, programView, sceneBox);
+    appContainer.getChildren().addAll(actionPalette, programView, sceneView);
     this.setSpacing(20);
     VBox.setVgrow(appContainer, Priority.ALWAYS);
   }
@@ -357,6 +323,9 @@ public class MainView extends VBox {
   }
 
   private void bindButtons() {
+    // On passe par sceneView pour récupérer le SliderView affiché à l'écran
+    SliderView controls = sceneView.getSliderView();
+
     actionPalette.getBtnAdd().disableProperty().bind(vm.canAdd().not());
     actionPalette.getBtnAdd().setOnAction(event -> vm.addAction());
 
@@ -381,32 +350,34 @@ public class MainView extends VBox {
     programView.getBtnDuplicate().setOnAction(event -> vm.copyAction());
     programView.getBtnDuplicate().disableProperty().bind(vm.canDuplicate().not());
 
-    btnLoad.setOnAction(event -> {
+    controls.getBtnLoad().setOnAction(event -> {
       vm.resetCommands();
-      spritePane.getChildren().clear();
+      sceneView.getSpritePane().getChildren().clear();
       playerView = new PlayerView(vm.getPlayerViewModel());
-      spritePane.getChildren().add(playerView);
+      sceneView.getSpritePane().getChildren().add(playerView);
       programView.getChosenActions().getSelectionModel().select(0);
     });
-    btnLoad.textProperty().bind(vm.getLoadTextButton());
-    btnLoad.disableProperty().bind(vm.canLoadProgram().not());
+    controls.getBtnLoad().textProperty().bind(vm.getLoadTextButton());
+    controls.getBtnLoad().disableProperty().bind(vm.canLoadProgram().not());
 
-    btnExecute.setOnAction(event -> {
-      if(groupOfExecute.getSelectedToggle() == stepExecute) {
+    controls.getBtnExecute().setOnAction(event -> {
+      if(controls.getGroupOfExecute().getSelectedToggle() == controls.getStepExecute()) {
         vm.executeAction();
-      } else if(groupOfExecute.getSelectedToggle() == automaticExecute) {
+      } else if(controls.getGroupOfExecute().getSelectedToggle() == controls.getAutomaticExecute()) {
         vm.startAutoExecute();
       }
     });
-    btnExecute.disableProperty().bind(vm.canExecuteProgram().not().or(vm.errorActionIndexProperty().isNotEqualTo(-1)));
-    btnExecute.textProperty().bind(vm.getExecuteTextButton());
-    btnStop.setOnAction(event -> vm.stopAutoExecute());
-    btnStop.disableProperty().bind(vm.canStop().not());
-    btnStop.visibleProperty().bind(groupOfExecute.selectedToggleProperty().isEqualTo(automaticExecute));
-    btnStop.managedProperty().bind(btnStop.visibleProperty());
-    slider.valueProperty().bindBidirectional(vm.speedProperty());
-    slider.visibleProperty().bind(btnStop.visibleProperty());
-    slider.managedProperty().bind(btnStop.visibleProperty());
+    controls.getBtnExecute().disableProperty().bind(vm.canExecuteProgram().not().or(vm.errorActionIndexProperty().isNotEqualTo(-1)));
+    controls.getBtnExecute().textProperty().bind(vm.getExecuteTextButton());
+
+    controls.getBtnStop().setOnAction(event -> vm.stopAutoExecute());
+    controls.getBtnStop().disableProperty().bind(vm.canStop().not());
+    controls.getBtnStop().visibleProperty().bind(controls.getGroupOfExecute().selectedToggleProperty().isEqualTo(controls.getAutomaticExecute()));
+    controls.getBtnStop().managedProperty().bind(controls.getBtnStop().visibleProperty());
+
+    controls.getSlider().valueProperty().bindBidirectional(vm.speedProperty());
+    controls.getSlider().visibleProperty().bind(controls.getBtnStop().visibleProperty());
+    controls.getSlider().managedProperty().bind(controls.getBtnStop().visibleProperty());
   }
 
   private void bindMenuActions() {
@@ -455,36 +426,5 @@ public class MainView extends VBox {
     if(file != null) {
       vm.loadFile(file);
     }
-  }
-
-  private GridPane createGrid(int rows, int cols) {
-    GridPane grid = new GridPane();
-    grid.setMinSize(500, 500);
-
-    Border cellBorder = new Border(new BorderStroke(Color.LIGHTBLUE, BorderStrokeStyle.SOLID, CornerRadii.EMPTY, new BorderWidths(0.3)));
-    grid.setBorder(new Border(new BorderStroke(Color.BLACK, BorderStrokeStyle.SOLID, CornerRadii.EMPTY, new BorderWidths(1.0))));
-
-    for(int x = 0; x < cols; x++) {
-      for(int y = 0; y < rows; y++) {
-        StackPane cell = new StackPane();
-        cell.setMinWidth(50);
-        cell.setMinHeight(50);
-        cell.setBorder(cellBorder);
-        grid.add(cell, x, y);
-      }
-    }
-    return grid;
-  }
-
-  private Pane createSpritePane() {
-
-    spritePane.setMinSize(500, 500);
-
-    // Instance de la vue du joueur
-    this.playerView = new PlayerView(vm.getPlayerViewModel());
-
-    // Ajout de la vue du joueur au visuel de la grille
-    spritePane.getChildren().add(playerView);
-    return spritePane;
   }
 }
