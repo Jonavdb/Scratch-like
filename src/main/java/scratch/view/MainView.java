@@ -16,7 +16,7 @@ import javafx.util.Callback;
 import scratch.model.*;
 import scratch.viewmodel.MainViewModel;
 import javafx.scene.control.Slider;
-import scratch.viewmodel.MapViewModel;
+import scratch.viewmodel.TrackerViewModel;
 
 import java.io.File;
 import java.util.List;
@@ -25,6 +25,7 @@ public class MainView extends VBox {
   private final MainViewModel vm;
   private IntegerProperty currentBoundProperty = null;
   private PlayerView playerView;
+  private TrackerView trackerView;
   private Pane spritePane = new Pane();
 
   // Conteneur Principal
@@ -128,37 +129,8 @@ public class MainView extends VBox {
     HBox btnExecuteContainerScene = new HBox(10, automatic_execute, step_execute);
     btnExecuteContainerScene.setAlignment(Pos.CENTER);
 
-    // Texte affichant les données du joueur
-    Text textPlayerData = new Text("");
-    textPlayerData.textProperty().bind(vm.getPlayerDataBinding());
-    // Vue du tableau de variables
-    TableView<MapViewModel.VariableRow> tableView = new TableView<>();
-    TableColumn<MapViewModel.VariableRow, String> nameColumn = new TableColumn<>("Nom");
-    nameColumn.setCellValueFactory(cellData ->
-            cellData.getValue().getNameProperty());
-    TableColumn<MapViewModel.VariableRow, String> valueColumn = new TableColumn<>("Valeur");
-    valueColumn.setCellValueFactory(cellData ->
-            cellData.getValue().getValueProperty());
-    tableView.getColumns().addAll(List.of(nameColumn, valueColumn));
-    tableView.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_ALL_COLUMNS);
-    tableView.setItems(vm.getMapViewModel().getEntries());
-    System.out.println("in view : " + vm.getMapViewModel().getEntries().hashCode());
-    tableView.setPrefHeight(100);
-    BorderPane root = new BorderPane();
-    root.setTop(new Text("Variables"));
-    root.setCenter(tableView);
-    BorderPane.setMargin(root.getTop(), new Insets(0, 0, 5, 0));
-    // Conteneur (texte affichant les données du joueur + tableau des variables)
-    VBox dataTrackContainer = new VBox(5, textPlayerData,root);
-    dataTrackContainer.setBorder(new Border(new BorderStroke(
-              Color.LIGHTGRAY,            // Color
-              BorderStrokeStyle.SOLID,    // Style
-              new CornerRadii(0),         // Rounded corners
-              new BorderWidths(1)         // Thickness
-    )));
-    // un peu de padding pour un meilleur visuel
-    dataTrackContainer.setPadding(new Insets(7));
-    sceneBox.getChildren().addAll(new Text("Scene"), board, dataTrackContainer, btnExecuteContainerScene, btnContainerScene, slider);
+    trackerView = new TrackerView(vm.getTrackerViewModel());
+    sceneBox.getChildren().addAll(new Text("Scene"), board, trackerView, btnExecuteContainerScene, btnContainerScene, slider);
   }
 
   private void configureLayoutGlobal() {

@@ -13,7 +13,6 @@ import scratch.model.*;
 
 import java.io.*;
 import java.util.ArrayList;
-import java.util.Locale;
 import java.util.Scanner;
 
 public class MainViewModel {
@@ -30,9 +29,8 @@ public class MainViewModel {
     // debug
     private IntegerProperty currActionIndex = new SimpleIntegerProperty(0);
     private PlayerViewModel playerVm;
-    private MapViewModel mapVm;
+    private TrackerViewModel trackerVm;
     private ProgramState state = new ProgramState(new Player(), new VariableMap());
-    private final StringBinding playerDataBinding;
 
     public MainViewModel(ChosenActions chosenActions) {
         this.chosenActions = chosenActions;
@@ -42,20 +40,7 @@ public class MainViewModel {
             isLoad.set(false);
         });
         playerVm = new PlayerViewModel(state.getPlayer());
-        mapVm = new MapViewModel(state.getVariableMap());
-        playerDataBinding = Bindings.createStringBinding(() -> {
-            // valeurs
-            var pos = state.getPlayer().positionProperty().get();
-            double rawAngle = state.getPlayer().angleProperty().get();
-            double angle = (rawAngle % 360 + 360) % 360;
-
-            // on met des valeurs par defaut si pos est null
-            double x = pos.getX() - 250;
-            double y = 250 - pos.getY();
-
-            // formattage du texte à afficher
-            return String.format(Locale.US,"Tortue : x = %.1f, y = %.1f, direction = %.1f °", x, y, angle);
-        }, state.getPlayer().positionProperty(), state.getPlayer().angleProperty());
+        trackerVm = new TrackerViewModel(state.getVariableMap(), state.getPlayer());
     }
 
     public ReadOnlyBooleanProperty errorProperty() {
@@ -344,9 +329,6 @@ public class MainViewModel {
         currActionIndex.set(idx);
     }
 
-    public StringBinding getPlayerDataBinding() {
-        return playerDataBinding;
-    }
     public boolean getIsPlaying(){
         return isPlaying.get();
     }
@@ -375,11 +357,11 @@ public class MainViewModel {
     public PlayerViewModel getPlayerViewModel() {
         return playerVm;
     }
-    public MapViewModel getMapViewModel() {return mapVm;}
+    public TrackerViewModel getTrackerViewModel() {return trackerVm;}
 
     public void resetProgramState() {
         state.reset(); // reset the models data
-        mapVm.getEntries().clear(); // clear map display
+        trackerVm.getEntries().clear(); // clear map display
     }
 
     public StringBinding getLoadTextButton(){

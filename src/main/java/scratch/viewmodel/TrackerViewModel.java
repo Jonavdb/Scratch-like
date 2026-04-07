@@ -1,15 +1,16 @@
 package scratch.viewmodel;
 
+import javafx.beans.binding.Bindings;
+import javafx.beans.binding.StringBinding;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import scratch.model.MapActionType;
-import scratch.model.MapChangeObject;
-import scratch.model.VariableMap;
-import scratch.model.VariableMapListener;
+import scratch.model.*;
 
-public class MapViewModel implements VariableMapListener<String, Integer> {
+import java.util.Locale;
+
+public class TrackerViewModel implements VariableMapListener<String, Integer> {
 
     public static class VariableRow {
         private final StringProperty nameProperty;
@@ -31,9 +32,23 @@ public class MapViewModel implements VariableMapListener<String, Integer> {
     }
 
     private final ObservableList<VariableRow> rows = FXCollections.observableArrayList();
+    private final StringBinding playerDataBinding;
 
-    public MapViewModel(VariableMap map) {
+    public TrackerViewModel(VariableMap map, Player player) {
         map.addListener(this);
+        playerDataBinding = Bindings.createStringBinding(() -> {
+            // valeurs
+            var pos = player.positionProperty().get();
+            double rawAngle = player.angleProperty().get();
+            double angle = (rawAngle % 360 + 360) % 360;
+
+            // on met des valeurs par defaut si pos est null
+            double x = pos.getX() - 250;
+            double y = 250 - pos.getY();
+
+            // formattage du texte à afficher
+            return String.format(Locale.US,"Tortue : x = %.1f, y = %.1f, direction = %.1f °", x, y, angle);
+        }, player.positionProperty(), player.angleProperty());
     }
 
     // fonction met à jour les données d'affichage de la liste des entrées de la TableView
@@ -76,4 +91,8 @@ public class MapViewModel implements VariableMapListener<String, Integer> {
     }
 
     public ObservableList<VariableRow> getEntries() {return rows;}
+
+    public StringBinding getPlayerDataBinding() {
+        return playerDataBinding;
+    }
 }
