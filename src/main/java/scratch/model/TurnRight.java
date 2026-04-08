@@ -13,16 +13,18 @@ public class TurnRight extends Turn {
         var map = state.getVariableMap();
         boolean isLiteral = map.tryGetLiteral(angleText).isPresent();
 
-        turnValue = isLiteral ? Integer.parseInt(angleText) : map.resolveValue(angleText);
+        turnValue = isLiteral ? Integer.parseInt(angleText) : map.getValue(angleText);
 
-        if(turnValue < 1 || turnValue > 180) return;
+        if(turnValue < 1 || turnValue > 180) {
+            throw new RuntimeException("Erreur : Impossible de tourner de " + turnValue + " (limite : 1 à 180).");
+        }
 
         player.setAngle(player.getAngle() - turnValue);
     }
 
     @Override
     public Actionable copy() {
-        return new TurnRight(this.toString(), this.getAngle());
+        return new TurnRight(this.toString(), this.getProperty().get());
     }
 
     @Override

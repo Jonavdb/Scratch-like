@@ -23,7 +23,7 @@ public class Down implements Actionable {
 
     @Override
     public String toSave() {
-        return "PEN_DOWN;0";
+        return "PEN_DOWN;";
     }
 
     @Override

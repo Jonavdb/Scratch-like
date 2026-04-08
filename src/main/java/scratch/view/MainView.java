@@ -52,6 +52,7 @@ public class MainView extends VBox {
   private final Button btnEmptyAll = new Button("Vider tout");
 
   // Action détails (sous le programme)
+  private final Label runtimeErrorLabel = new Label();
   private final VBox detailContentContainer = new VBox(5);
   private final TitledPane detailPane = new TitledPane("Détail de l'action", detailContentContainer);
 
@@ -62,8 +63,8 @@ public class MainView extends VBox {
   private final Button btnStop = new Button("Arreter");
   private final Slider slider = new Slider(0.01, 5, 0.01);
   private final ToggleGroup groupOfExecute = new ToggleGroup();
-  private final RadioButton automatic_execute = new RadioButton("Exécution automatique");
-  private final RadioButton step_execute = new RadioButton("Exécution manuelle");
+  private final RadioButton automaticExecute = new RadioButton("Exécution automatique");
+  private final RadioButton stepExecute = new RadioButton("Exécution manuelle");
 
   public MainView(MainViewModel vm) {
     this.vm = vm;
@@ -104,6 +105,12 @@ public class MainView extends VBox {
     programBox.setPadding(new Insets(0, 0, 0, 10));
 
     // Détail de l'action
+    runtimeErrorLabel.setTextFill(Color.RED);
+    runtimeErrorLabel.setStyle("-fx-font-size: 16px;");
+
+    VBox detailWrapper = new VBox(10, detailContentContainer, runtimeErrorLabel);
+    detailPane.setContent(detailWrapper);
+
     programBox.getChildren().addAll(new Text("Programme"), chosenActions, btnContainerProgram, detailPane);
     HBox.setHgrow(programBox, Priority.ALWAYS);
   }
@@ -123,10 +130,10 @@ public class MainView extends VBox {
     sceneBox.setSpacing(10);
     sceneBox.setPadding(new Insets(0, 0, 0, 20));
     VBox.setMargin(slider, new Insets(0, 5, 0, 5));
-    automatic_execute.setToggleGroup(groupOfExecute);
-    automatic_execute.setSelected(true);
-    step_execute.setToggleGroup(groupOfExecute);
-    HBox btnExecuteContainerScene = new HBox(10, automatic_execute, step_execute);
+    automaticExecute.setToggleGroup(groupOfExecute);
+    automaticExecute.setSelected(true);
+    stepExecute.setToggleGroup(groupOfExecute);
+    HBox btnExecuteContainerScene = new HBox(10, automaticExecute, stepExecute);
     btnExecuteContainerScene.setAlignment(Pos.CENTER);
 
     trackerView = new TrackerView(vm.getTrackerViewModel());
@@ -200,7 +207,6 @@ public class MainView extends VBox {
     textField.textProperty().bindBidirectional(propName);
     textValue.textProperty().bindBidirectional(propValue);
 
-//    TODO : vérifier que on ne puisse icrémenter/décrémenter QUE sur des variables existantes
     setupValidationUI(textField, action, errorLabel);
 
     HBox hbox = new HBox(10, label, textField, labelValue, textValue);
@@ -267,6 +273,8 @@ public class MainView extends VBox {
         if(empty || item == null) {
           setText(null);
           setGraphic(null);
+          setStyle(null);
+          styleProperty().unbind();
           return;
         }
 
@@ -287,14 +295,52 @@ public class MainView extends VBox {
       @Override
       protected void updateItem(Actionable item, boolean empty) {
         super.updateItem(item, empty);
+        styleProperty().unbind();
+        setStyle(null);
         textProperty().unbind();  // Coupe l'ancien binding car les cellules sont recyclées
 
         // Pas d'action à afficher
         if(empty || item == null) {
           setText(null);
           setGraphic(null);
+          setPadding(new javafx.geometry.Insets(3,5,3,5));
           return;
         }
+
+        // Indentation pour les boucles Repeat
+        int gap = 0;
+        int currentIndex = getIndex();
+        if (currentIndex >= 0 && getListView() != null) {
+            var allItems = getListView().getItems();
+            for (int i = 0; i < currentIndex; i++) { // on boucle sur toutes les actions avant l'action courante
+                Actionable pastItem = allItems.get(i);
+                if (pastItem instanceof Repeat){
+                    gap++;
+                } else if (pastItem instanceof EndRepeat) {
+                    gap--;
+                }
+            }
+        }
+
+        if (item instanceof EndRepeat) {
+            gap--;
+        }
+
+        if (gap < 0){
+            gap = 0;
+        }
+        double leftPadding = 5 + (gap * 20);
+        setPadding(new javafx.geometry.Insets(3,5,3,leftPadding));
+
+        // Dessine un cadre rouge si le programme plante (runtime error)
+        styleProperty().bind(Bindings.createStringBinding(() -> {
+          // si la cellule courante a planté
+          if(currentIndex == vm.errorActionIndexProperty().get()) {
+            return "-fx-border-color: red;";
+          } else {
+            return ""; // on retire le css
+          }
+        }, vm.errorActionIndexProperty()));
 
         // Verifier le type d'action
         switch(item) {
@@ -403,10 +449,19 @@ public class MainView extends VBox {
     bindLists();
     bindButtons();
     bindMenuActions();
+
     vm.currActionIndexProperty().addListener((obs, oldVal, newVal) -> {
       chosenActions.getSelectionModel().select(newVal.intValue());
     });
-    // HERE
+
+    runtimeErrorLabel.textProperty().bind(vm.getErrorRuntimeMessageProperty());
+    var hasRuntimeError = Bindings.createBooleanBinding(
+            () -> vm.getErrorRuntimeMessageProperty().get() != null && !vm.getErrorRuntimeMessageProperty().get().isEmpty(),
+            vm.getErrorRuntimeMessageProperty()
+    );
+
+    runtimeErrorLabel.visibleProperty().bind(hasRuntimeError);
+    runtimeErrorLabel.managedProperty().bind(hasRuntimeError);
   }
 
   private void bindLists() {
@@ -475,17 +530,17 @@ public class MainView extends VBox {
     btnLoad.disableProperty().bind(vm.canLoadProgram().not());
 
     btnExecute.setOnAction(event -> {
-      if(groupOfExecute.getSelectedToggle() == step_execute) {
+      if(groupOfExecute.getSelectedToggle() == stepExecute) {
         vm.executeAction();
-      } else if(groupOfExecute.getSelectedToggle() == automatic_execute) {
+      } else if(groupOfExecute.getSelectedToggle() == automaticExecute) {
         vm.startAutoExecute();
       }
     });
-    btnExecute.disableProperty().bind(vm.canExecuteProgram().not());
+    btnExecute.disableProperty().bind(vm.canExecuteProgram().not().or(vm.errorActionIndexProperty().isNotEqualTo(-1)));
     btnExecute.textProperty().bind(vm.getExecuteTextButton());
     btnStop.setOnAction(event -> vm.stopAutoExecute());
     btnStop.disableProperty().bind(vm.canStop().not());
-    btnStop.visibleProperty().bind(groupOfExecute.selectedToggleProperty().isEqualTo(automatic_execute));
+    btnStop.visibleProperty().bind(groupOfExecute.selectedToggleProperty().isEqualTo(automaticExecute));
     btnStop.managedProperty().bind(btnStop.visibleProperty());
     slider.valueProperty().bindBidirectional(vm.speedProperty());
     slider.visibleProperty().bind(btnStop.visibleProperty());
