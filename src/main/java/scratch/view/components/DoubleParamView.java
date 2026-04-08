@@ -1,6 +1,7 @@
 package scratch.view.components;
 
 import javafx.beans.binding.Bindings;
+import javafx.beans.binding.BooleanBinding;
 import javafx.beans.property.StringProperty;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
@@ -25,6 +26,8 @@ public class DoubleParamView extends VBox {
     TextField textValue = new TextField();
     textField.setPrefWidth(40);
     textValue.setPrefWidth(40);
+    textField.setAlignment(Pos.BASELINE_CENTER);
+    textValue.setAlignment(Pos.BASELINE_CENTER);
 
     textField.textProperty().bindBidirectional(propName);
     textValue.textProperty().bindBidirectional(propValue);
@@ -62,22 +65,29 @@ public class DoubleParamView extends VBox {
   }
 
   private void configureIncrementButtons(Actionable action, StringProperty propValue, Button btnIncrement, Button btnDecrement) {
-    btnIncrement.setOnAction(e -> {
+      BooleanBinding isNumber = Bindings.createBooleanBinding(() ->
+              propValue.get().matches("^[a-zA-Z_][a-zA-Z0-9_]*$"), propValue
+      );
+      btnIncrement.setOnAction(e -> {
       try {
         int val = Integer.parseInt(propValue.get());
         propValue.set(String.valueOf(val + 1));
       } catch (NumberFormatException ex) {
         propValue.set("1");
       }
-    });
+      });
+      btnIncrement.visibleProperty().bind(isNumber.not());
+      btnIncrement.managedProperty().bind(isNumber.not());
 
-    btnDecrement.setOnAction(e -> {
-      try {
-        int val = Integer.parseInt(propValue.get());
-        propValue.set(String.valueOf(val - 1));
-      } catch (NumberFormatException ex) {
-        propValue.set("0");
-      }
-    });
-  }
+      btnDecrement.setOnAction(e -> {
+        try {
+          int val = Integer.parseInt(propValue.get());
+          propValue.set(String.valueOf(val - 1));
+        } catch (NumberFormatException ex) {
+          propValue.set("0");
+        }
+      });
+      btnDecrement.visibleProperty().bind(isNumber.not());
+      btnIncrement.managedProperty().bind(isNumber.not());
+    }
 }

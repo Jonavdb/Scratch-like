@@ -1,6 +1,7 @@
 package scratch.view.components;
 
 import javafx.beans.binding.Bindings;
+import javafx.beans.binding.BooleanBinding;
 import javafx.beans.property.StringProperty;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
@@ -18,6 +19,7 @@ public class SingleParamView extends VBox {
     Label suffixLabel = new Label(suffix);
     TextField textField = new TextField();
     textField.setPrefWidth(50);
+    textField.setAlignment(Pos.BASELINE_CENTER);
     textField.setText(property.get());
 
 
@@ -26,7 +28,7 @@ public class SingleParamView extends VBox {
     HBox hbox = new HBox(10, label, textField);
     hbox.setAlignment(Pos.CENTER_LEFT);
 
-    if(action instanceof Repeat) {
+    if(!(action instanceof DeclareVariable)) {
         Button btnIncrement = new Button("+");
         Button btnDecrement = new Button("-");
 
@@ -63,6 +65,11 @@ public class SingleParamView extends VBox {
   }
 
     private void configureIncrementButtons(Actionable action, StringProperty propValue, Button btnIncrement, Button btnDecrement) {
+
+        BooleanBinding isNumber = Bindings.createBooleanBinding(() ->
+            propValue.get().matches("^[a-zA-Z_][a-zA-Z0-9_]*$"), propValue
+        );
+
         btnIncrement.setOnAction(e -> {
             try {
                 int val = Integer.parseInt(propValue.get());
@@ -71,6 +78,8 @@ public class SingleParamView extends VBox {
                 propValue.set("1");
             }
         });
+        btnIncrement.visibleProperty().bind(isNumber.not());
+        btnIncrement.managedProperty().bind(isNumber.not());
         btnDecrement.disableProperty().bind(Bindings.createBooleanBinding(() -> {
             try {
                 int val = Integer.parseInt(propValue.get());
@@ -88,5 +97,7 @@ public class SingleParamView extends VBox {
                 propValue.set("0");
             }
         });
+        btnDecrement.managedProperty().bind(isNumber.not());
+        btnDecrement.visibleProperty().bind(isNumber.not());
     }
 }

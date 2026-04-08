@@ -61,6 +61,9 @@ public class ActionCellView extends ListCell<Actionable> {
     if (item instanceof EndRepeat) {
       gap--;
     }
+    if (gap < 0){
+        gap = 0;
+    }
 
     double leftPadding = 5 + (gap * 20);
     setPadding(new Insets(3, 5, 3, leftPadding));

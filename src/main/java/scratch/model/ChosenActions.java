@@ -15,12 +15,18 @@ public class ChosenActions {
 
     private ObservableList<Actionable> chosenActions = FXCollections.observableArrayList(
             action -> {
-                if(action != null && action.getProperty() != null) {
-                    return new Observable[]{
-                            action.getProperty()
-                    };
+                if (action == null)
+                    return new Observable[0];
+                if (action instanceof AssignVariable av) {
+                    return new Observable[]{av.getProperty(), av.getParamProperty()}; // si assign, on observe les 2 propriétés
                 }
-                return new Observable[0];
+                else if (action instanceof Increment inc){
+                    return new Observable[]{inc.getProperty(), inc.getIncrementProperty()}; // si increm, on observe les 2 propriétés
+                }
+                else if (action.getProperty() != null){
+                    return new Observable[]{action.getProperty()}; // sinon on observe juste la propriété principale si action avec une seule propriété
+                }
+                return new Observable[0]; // si pas de propriété, on observe rien
             }
     );
 
