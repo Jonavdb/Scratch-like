@@ -16,12 +16,16 @@ import javafx.util.Callback;
 import scratch.model.*;
 import scratch.viewmodel.MainViewModel;
 import javafx.scene.control.Slider;
+import scratch.viewmodel.TrackerViewModel;
+
 import java.io.File;
+import java.util.List;
 
 public class MainView extends VBox {
   private final MainViewModel vm;
   private IntegerProperty currentBoundProperty = null;
   private PlayerView playerView;
+  private TrackerView trackerView;
   private Pane spritePane = new Pane();
 
   // Conteneur Principal
@@ -131,7 +135,9 @@ public class MainView extends VBox {
     stepExecute.setToggleGroup(groupOfExecute);
     HBox btnExecuteContainerScene = new HBox(10, automaticExecute, stepExecute);
     btnExecuteContainerScene.setAlignment(Pos.CENTER);
-    sceneBox.getChildren().addAll(new Text("Scene"), board, btnExecuteContainerScene, btnContainerScene, slider);
+
+    trackerView = new TrackerView(vm.getTrackerViewModel());
+    sceneBox.getChildren().addAll(new Text("Scene"), board, trackerView, btnExecuteContainerScene, btnContainerScene, slider);
   }
 
   private void configureLayoutGlobal() {

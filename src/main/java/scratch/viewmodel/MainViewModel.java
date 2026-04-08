@@ -10,8 +10,10 @@ import javafx.animation.Timeline;
 import javafx.util.Duration;
 import scratch.model.*;
 
+
 import java.io.*;
 import java.util.ArrayList;
+import java.util.Scanner;
 
 public class MainViewModel {
     private ChosenActions chosenActions;
@@ -28,6 +30,7 @@ public class MainViewModel {
     // debug
     private IntegerProperty currActionIndex = new SimpleIntegerProperty(0);
     private PlayerViewModel playerVm;
+    private TrackerViewModel trackerVm;
     private ProgramState state = new ProgramState(new Player(), new VariableMap());
 
     public MainViewModel(ChosenActions chosenActions) {
@@ -38,6 +41,7 @@ public class MainViewModel {
             isLoad.set(false);
         });
         playerVm = new PlayerViewModel(state.getPlayer());
+        trackerVm = new TrackerViewModel(state.getVariableMap(), state.getPlayer());
     }
 
     public StringProperty getErrorRuntimeMessageProperty() {
@@ -219,6 +223,7 @@ public class MainViewModel {
         return currActionIndex;
     }
 
+
     public void setIdChosenAction(int idChosenAction) {
         errorRuntimeMessage.set("");    // on efface les erreurs des actions précédentes
         this.idChosenAction.set(idChosenAction);
@@ -239,10 +244,11 @@ public class MainViewModel {
     public PlayerViewModel getPlayerViewModel() {
         return playerVm;
     }
+    public TrackerViewModel getTrackerViewModel() {return trackerVm;}
 
-    public void resetPlayerViewModel() {
-        state = new ProgramState(new Player(), new VariableMap());
-        playerVm = new PlayerViewModel(state.getPlayer());
+    public void resetProgramState() {
+        state.reset(); // reset the models data
+        trackerVm.getEntries().clear(); // clear map display
     }
 
     public StringBinding getLoadTextButton() {
@@ -253,8 +259,8 @@ public class MainViewModel {
         return Bindings.when(currActionIndex.greaterThan(0)).then("Suivant").otherwise("Executer");
     }
 
-    public void resetCommands() {
-        resetPlayerViewModel();
+    public void resetCommands(){
+        resetProgramState();
         executor.init(chosenActions.getChosenActions(), state.getVariableMap());
         currActionIndex.set(0);
         isLoad.set(true);
