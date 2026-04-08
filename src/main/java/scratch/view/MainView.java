@@ -1,22 +1,15 @@
 package scratch.view;
 
 import javafx.beans.binding.Bindings;
-import javafx.beans.property.IntegerProperty;
-import javafx.beans.property.StringProperty;
 import javafx.geometry.Insets;
-import javafx.geometry.Pos;
-import javafx.scene.Group;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
-import javafx.scene.text.Text;
 import javafx.scene.control.*;
 import javafx.stage.FileChooser;
 import javafx.util.Callback;
 import scratch.model.*;
-import scratch.view.components.DoubleParamView;
-import scratch.view.components.NoParamView;
-import scratch.view.components.SingleParamView;
+import scratch.view.components.DetailViewFactory;
 import scratch.viewmodel.MainViewModel;
 import java.io.File;
 
@@ -70,38 +63,11 @@ public class MainView extends VBox {
   }
 
   private void updateDetailContainer(Actionable chosenAction) {
+    // nettoyage
     programView.getDetailContentContainer().getChildren().clear();
-
-    if(chosenAction == null) {
-      programView.getDetailContentContainer().getChildren().add(new Label("(aucune action sélectionnée)"));
-      return;
-    }
-
-    Label errorLabel = new Label("Erreur valeur");
-    errorLabel.setTextFill(Color.RED);
-
-    javafx.scene.Node viewToAdd = switch(chosenAction) {
-      // Actions à 1 paramètre
-      case DeclareVariable dv -> new SingleParamView("Déclaration de la variable ", dv, dv.getProperty(), errorLabel);
-      case Move move -> new SingleParamView("Avancer de ", move, move.getProperty(), errorLabel);
-      case TurnLeft tl -> new SingleParamView("Tourner à gauche de ", tl, tl.getProperty(), errorLabel);
-      case TurnRight tr -> new SingleParamView("Tourner à droite de ", tr, tr.getProperty(), errorLabel);
-      case Repeat r -> new SingleParamView("Répéter ", r, r.getProperty(), errorLabel);
-
-      // Actions à 2 paramètres
-      case AssignVariable av ->
-              new DoubleParamView("Assignation de la variable ", " valeur : ", av, av.getProperty(), av.getParamProperty(), errorLabel);
-      case Increment inc ->
-              new DoubleParamView("Incrémentation de la variable ", " de ", inc, inc.getProperty(), inc.getIncrementProperty(), errorLabel);
-
-      // Actions sans paramètre
-      case Up up -> new NoParamView("Lever stylo");
-      case Down down -> new NoParamView("Abaisser stylo");
-      case EndRepeat endRe -> new NoParamView("Arreter répétition");
-
-      default -> new Label("Détail de : " + chosenAction.getProperty());
-    };
-
+    // la factory crée la vue dynamiquement
+    javafx.scene.Node viewToAdd = DetailViewFactory.createDetailView(chosenAction);
+    // ajoute la vue à l'écran
     programView.getDetailContentContainer().getChildren().add(viewToAdd);
   }
 
@@ -131,7 +97,6 @@ public class MainView extends VBox {
       }
     };
   }
-
 
   // =========================================================================
   // BINDINGS (MVVM) && UTILS
@@ -246,28 +211,6 @@ public class MainView extends VBox {
   private void bindMenuActions() {
     saveItem.setOnAction(event -> handleSaveFile());
     loadItem.setOnAction(event -> handleLoadFile());
-  }
-
-  // Algo qui gère la zone de déclarations de variables au début du programme //
-  /*
-   * Le principe de "la porte fermée" : on lit les actions de haut en bas
-   * tant qu'on lit des "DeclareVariable", c'est ok
-   * dès qu'on lit une Action qui n'est pas "DeclareVariable", on ferme la porte
-   * ça permet d'avoir que des déclarations en haut du programme.
-   */
-  private boolean isDeclarationZoneValid() {
-    boolean isDoorClosed = false;
-
-    for(Actionable action : programView.getChosenActions().getItems()) {
-      if(action instanceof DeclareVariable) {
-        if(isDoorClosed) {
-          return false; // si c'est une déclaration mais que la porte est fermée : erreur
-        }
-      } else {
-        isDoorClosed = true;  // ce n'est pas une déclaration du coup on ferme définitivement la porte
-      }
-    }
-    return true;
   }
 
   // =========================================================================

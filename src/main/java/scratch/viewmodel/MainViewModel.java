@@ -411,4 +411,26 @@ public class MainViewModel {
         timeline.setRate(1.0 / speed.get());
         timeline.play();
     }
+
+    // Algo qui gère la zone de déclarations de variables au début du programme //
+    /*
+     * Le principe de "la porte fermée" : on lit les actions de haut en bas
+     * tant qu'on lit des "DeclareVariable", c'est ok
+     * dès qu'on lit une Action qui n'est pas "DeclareVariable", on ferme la porte
+     * ça permet d'avoir que des déclarations en haut du programme.
+     */
+    private boolean isDeclarationZoneValid() {
+        boolean isDoorClosed = false;
+
+        for(Actionable action : chosenActions.getChosenActions()) {
+            if(action instanceof DeclareVariable) {
+                if(isDoorClosed) {
+                    return false; // si c'est une déclaration mais que la porte est fermée : erreur
+                }
+            } else {
+                isDoorClosed = true;  // ce n'est pas une déclaration du coup on ferme définitivement la porte
+            }
+        }
+        return true;
+    }
 }
