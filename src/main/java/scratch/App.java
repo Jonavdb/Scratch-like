@@ -11,7 +11,6 @@ public class App extends Application {
     public void start(Stage stage) {
         Scene scene = new Scene(new MainView(new MainViewModel(new ChosenActions())));
         stage.setScene(scene);
-        stage.setFullScreen(true);
         stage.show();
     }
 

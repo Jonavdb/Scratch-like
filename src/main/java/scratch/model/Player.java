@@ -60,6 +60,7 @@ public class Player {
 
     public void resetVariables() {
         position.set(new CustomPoint2D(250, 250)); // on reinitialise la position du joueur au milieu de la grille
+        penDown.set(true);
         angle.set(0); // on réinitialise l'angle du joueur (pointe vers le haut = 90°)
     }
 }
