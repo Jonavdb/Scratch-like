@@ -9,20 +9,20 @@ import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.util.Duration;
 import scratch.model.*;
-
-
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Scanner;
 
 public class MainViewModel {
     private ChosenActions chosenActions;
+    private String regexValidation = "^[a-zA-Z_][a-zA-Z0-9_]*$"; // Valide noms variables (lettre/_ + lettres/chiffres/_*) : variable1, _var OK | 1var, ma-var KO
     private ObjectProperty<Actionable> selectedAction = new SimpleObjectProperty<>();
     private IntegerProperty idChosenAction = new SimpleIntegerProperty(-1); // -1 pour quand il y ait premier el, il soit à 0
     private BooleanProperty isLoad = new SimpleBooleanProperty(false);
     private BooleanProperty isPlaying = new SimpleBooleanProperty(false);
     private StringProperty errorRuntimeMessage = new SimpleStringProperty();
     private IntegerProperty errorActionIndex = new SimpleIntegerProperty(-1);
+    private final BooleanProperty errorProperty = new SimpleBooleanProperty(false);
     private final BooleanProperty isStop = new SimpleBooleanProperty(false);
     private final DoubleProperty speed = new SimpleDoubleProperty(1.0);
     private Timeline timeline;
@@ -39,6 +39,10 @@ public class MainViewModel {
             this.setIsPlaying(false);
             currActionIndex.set(0);
             isLoad.set(false);
+
+            // nettoie les erreurs à chaque nouveau départ
+            this.setErrorActionIndex(-1);
+            this.setErrorRuntimeMessage("");
         });
         playerVm = new PlayerViewModel(state.getPlayer());
         trackerVm = new TrackerViewModel(state.getVariableMap(), state.getPlayer());
@@ -190,7 +194,6 @@ public class MainViewModel {
         }, chosenActions.getChosenActions(), isPlaying);
     }
 
-
     public BooleanBinding canRemoveAll() {
         return Bindings.isNotEmpty(chosenActions.getChosenActions());
     }
@@ -201,14 +204,26 @@ public class MainViewModel {
         }, isPlaying);
     }
 
+    public boolean getIsStop() {
+        return isStop.get();
+    }
+
     public void stopAutoExecute() {
         setIsStop(true);
         setIsStop(false);
         if(timeline != null) timeline.stop();
     }
 
+    public double getSpeed() {
+        return speed.get();
+    }
+
     public DoubleProperty speedProperty() {
         return speed;
+    }
+
+    public Actionable getSelectedAction() {
+        return selectedAction.get();
     }
 
     public ObjectProperty<Actionable> selectedActionProperty() {
@@ -219,18 +234,29 @@ public class MainViewModel {
         return idChosenAction.get();
     }
 
+    public IntegerProperty idChosenActionProperty() {
+        return idChosenAction;
+    }
+
     public IntegerProperty currActionIndexProperty() {
         return currActionIndex;
     }
-
 
     public void setIdChosenAction(int idChosenAction) {
         errorRuntimeMessage.set("");    // on efface les erreurs des actions précédentes
         this.idChosenAction.set(idChosenAction);
     }
 
+    public int getCurrentActionIndex() {
+        return currActionIndex.get();
+    }
+
     public void setCurrentActionIndex(int idx) {
         currActionIndex.set(idx);
+    }
+
+    public boolean getIsPlaying() {
+        return isPlaying.get();
     }
 
     public void setIsPlaying(boolean value) {
