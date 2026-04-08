@@ -12,9 +12,11 @@ import java.util.ArrayList;
 import java.util.Scanner;
 
 public class ChosenActions {
+    private final String regexValidation = "^[a-zA-Z_][a-zA-Z0-9_]*$";
+
     private ObservableList<Actionable> chosenActions = FXCollections.observableArrayList(
             action -> {
-                if (action != null && action.getProperty() != null) {
+                if(action != null && action.getProperty() != null) {
                     return new Observable[]{
                             action.getProperty()
                     };
@@ -22,7 +24,7 @@ public class ChosenActions {
                 return new Observable[0];
             }
     );
-    //
+
     // trouvez un moyen pour que ça ne pointe pas sur ma liste mais sur mes actions en elles-mêmes et ensuite passer à l'action suivante.
     // stack d'index donc quand on arrive à un bloc repeat, push pour rentrer dedans, pop pour sortir.
     // état d'éxécution qui retient des trucs.
@@ -42,32 +44,32 @@ public class ChosenActions {
         chosenActions.add(item, action);
     }
 
-    public Actionable remove(int idx){
-        if (idx >= 0 && idx < chosenActions.size()){
+    public Actionable remove(int idx) {
+        if(idx >= 0 && idx < chosenActions.size()) {
             return chosenActions.remove(idx);
         }
         return null;
     }
 
-    public void removeAll(){
+    public void removeAll() {
         chosenActions.clear();
     }
 
     public void up(int idx) {
-        if (idx > 0 && idx < chosenActions.size()){
+        if(idx > 0 && idx < chosenActions.size()) {
             Actionable action = chosenActions.set(idx - 1, chosenActions.get(idx));
             chosenActions.set(idx, action);
         }
     }
 
-    public void down (int idx) {
-        if (idx >= 0 && idx < chosenActions.size() - 1) {
+    public void down(int idx) {
+        if(idx >= 0 && idx < chosenActions.size() - 1) {
             Actionable action = chosenActions.set(idx + 1, chosenActions.get(idx));
             chosenActions.set(idx, action);
         }
     }
 
-    public int nbChosenAction(){
+    public int nbChosenAction() {
         return chosenActions.size();
     }
 
@@ -117,7 +119,7 @@ public class ChosenActions {
 
     private static Actionable getActionable(String[] parts, String action, String textValueOrName) {
         String valueVariable = (parts.length > 2) ? parts[2] : "";
-        return switch (action) {
+        return switch(action) {
             case "MOVE_FORWARD" -> new Move("Avancer de", textValueOrName);
             case "PEN_UP" -> new Up("Lever stylo");
             case "PEN_DOWN" -> new Down("Abaisser stylo");
@@ -133,71 +135,96 @@ public class ChosenActions {
     }
 
     public boolean validateForLoad() {
-        boolean isPenDown = true;
-        int numberRepeat = 0;
-        String regexValidation = "^[a-zA-Z_][a-zA-Z0-9_]*$"; // Valide noms variables (lettre/_ + lettres/chiffres/_*) : variable1, _var OK | 1var, ma-var KO
-        boolean hasSeenNonDeclaration = false;  // un mouvement, un stylo, une assignation
-        ArrayList<String> variables = new ArrayList<>();
+        // validation des règles métier (si une seule est fausse, on retourne false)
+        return isDeclarationZoneValid()
+                && isRepeatBalanced()
+                && isPenStateValid()
+                && areVariablesValid();
+    }
 
+    /* Le principe de "la porte fermée" : on lit les actions de haut en bas, tant qu'on lit des "DeclareVariable", c'est ok
+     * dès qu'on lit une Action qui n'est pas "DeclareVariable", on ferme la porte.
+     * Ca permet de n'avoir que des déclarations en haut du programme.
+     */
+    private boolean isDeclarationZoneValid() {
+        boolean isDoorClosed = false;
         for (Actionable action : chosenActions) {
             if (action instanceof DeclareVariable) {
-                if (action.getProperty() != null) {
-                    if (action.getProperty().get().matches(regexValidation)) {
-                        variables.add(action.getProperty().get());  // on ajoute la variable créée dans un array
-                    } else {
-                        return false;
-                    }
-                }
-
-                if (hasSeenNonDeclaration) {
-                    return false;   // déclaration après une action non-déclaration -> interdit
-                }
+                if (isDoorClosed) return false;
             } else {
-                hasSeenNonDeclaration = true;   // on est sur une non-déclaration -> on ferme la porte
-
-                // Vérification de la PREMIÈRE propriété (valable pour toutes les actions)
-                if (action.getProperty() != null && action.getProperty().get() != null) {
-                    String param1 = action.getProperty().get();
-
-                    // est-ce que le paramètre est un nom de variable (ex: "nb") et qu'elle n'existe dans pas notre tableau
-                    if (param1.matches(regexValidation) && !variables.contains(param1)) {
-                        return false;
-                    }
-                }
-
-                // Vérification de la DEUXIÈME propriété (spécifique à Assign et Increment)
-                if (action instanceof AssignVariable || action instanceof Increment) {
-                    if (action.getProperty().get().isEmpty() || action.getProperty() == null) {
-                        return false;
-                    }
-                    String param2 = action instanceof AssignVariable ? ((AssignVariable) action).getParamProperty().get() : ((Increment) action).getIncrementParam();
-
-                    if (param2 != null && param2.matches(regexValidation) && !variables.contains(param2)) {
-                        return false; // erreur : la variable 2 n'existe pas
-                    }
-                }
-                if (action instanceof Down) {
-                    if (isPenDown) {
-                        return false;
-                    }
-                    isPenDown = true;
-                } else if (action instanceof Up) {
-                    if (!isPenDown) {
-                        return false;
-                    }
-                    isPenDown = false;
-                }
-                if (action instanceof Repeat) {
-                    numberRepeat++;
-                }
-                if (action instanceof EndRepeat) {
-                    numberRepeat--;
-                }
-
+                isDoorClosed = true;
             }
         }
-        if (numberRepeat != 0) {
-            return false;
+        return true;
+    }
+
+    // boucles
+    private boolean isRepeatBalanced() {
+        int numberRepeat = 0;
+
+        for(Actionable action : chosenActions) {
+            if(action instanceof Repeat) numberRepeat++;
+            if(action instanceof EndRepeat) numberRepeat--;
+
+            if(numberRepeat < 0) return false; // un EndRepeat avant un Repeat
+        }
+        return numberRepeat == 0;
+    }
+
+    // cohérence du stylo
+    private boolean isPenStateValid() {
+        boolean isPenDown = true;
+
+        for(Actionable action : chosenActions) {
+            if(action instanceof Down) {
+                if(isPenDown) return false; // Déjà baissé
+                isPenDown = true;
+            } else if(action instanceof Up) {
+                if(!isPenDown) return false; // Déjà levé
+                isPenDown = false;
+            }
+        }
+        return true;
+    }
+
+    // gestion des variables (création et utilisation)
+    private boolean areVariablesValid() {
+        ArrayList<String> variables = new ArrayList<>();
+
+        for(Actionable action : chosenActions) {
+            // on enregistre les variables créées
+            if(action instanceof DeclareVariable) {
+                if(action.getProperty() == null) return false;
+
+                String varName = action.getProperty().get();
+                if(varName == null || !varName.matches(regexValidation)) return false;
+
+                variables.add(varName);
+            }
+            // on vérifie l'utilisation dans les autres actions
+            else {
+                // Vérification Paramètre 1
+                if(action.getProperty() != null && action.getProperty().get() != null) {
+                    String param1 = action.getProperty().get();
+                    if(param1.matches(regexValidation) && !variables.contains(param1)) {
+                        return false; // Utilise une variable non déclarée
+                    }
+                }
+
+                // Vérification Paramètre 2 (Spécifique Assign et Increment)
+                if(action instanceof AssignVariable || action instanceof Increment) {
+                    if(action.getProperty() == null || action.getProperty().get().isEmpty()) {
+                        return false;
+                    }
+                    String param2 = action instanceof AssignVariable
+                            ? ((AssignVariable) action).getParamProperty().get()
+                            : ((Increment) action).getIncrementParam();
+
+                    if(param2 != null && param2.matches(regexValidation) && !variables.contains(param2)) {
+                        return false; // Utilise une variable non déclarée en paramètre 2
+                    }
+                }
+            }
         }
         return true;
     }
