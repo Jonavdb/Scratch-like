@@ -30,6 +30,7 @@ public class MainViewModel {
     // debug
     private IntegerProperty currActionIndex = new SimpleIntegerProperty(0);
     private PlayerViewModel playerVm;
+    private TrackerViewModel trackerVm;
     private ProgramState state = new ProgramState(new Player(), new VariableMap());
 
     public MainViewModel(ChosenActions chosenActions) {
@@ -38,8 +39,13 @@ public class MainViewModel {
             this.setIsPlaying(false);
             currActionIndex.set(0);
             isLoad.set(false);
+
+            // nettoie les erreurs à chaque nouveau départ
+            this.setErrorActionIndex(-1);
+            this.setErrorRuntimeMessage("");
         });
         playerVm = new PlayerViewModel(state.getPlayer());
+        trackerVm = new TrackerViewModel(state.getVariableMap(), state.getPlayer());
     }
 
     public StringProperty getErrorRuntimeMessageProperty() {
@@ -182,18 +188,9 @@ public class MainViewModel {
 
     public BooleanBinding canLoadProgram() {
         return Bindings.createBooleanBinding(() -> {
-            ObservableList<Actionable> list = chosenActions.getChosenActions();
-
-            if(list.isEmpty() || isPlaying.get()) {
-                return false;
-            }
-
-            // validation des règles métier (si une seule est fausse, on retourne false)
-            return isDeclarationZoneValid(list)
-                    && isRepeatBalanced(list)
-                    && isPenStateValid(list)
-                    && areVariablesValid(list);
-
+            return !chosenActions.getChosenActions().isEmpty()
+                    && !isPlaying.get()
+                    && chosenActions.validateForLoad();
         }, chosenActions.getChosenActions(), isPlaying);
     }
 
@@ -273,11 +270,11 @@ public class MainViewModel {
     public PlayerViewModel getPlayerViewModel() {
         return playerVm;
     }
+    public TrackerViewModel getTrackerViewModel() {return trackerVm;}
 
-    public PlayerViewModel resetPlayerViewModel() {
-        state = new ProgramState(new Player(), new VariableMap());
-        playerVm = new PlayerViewModel(state.getPlayer());
-        return playerVm;
+    public void resetProgramState() {
+        state.reset(); // reset the models data
+        trackerVm.getEntries().clear(); // clear map display
     }
 
     public StringBinding getLoadTextButton() {
@@ -288,8 +285,8 @@ public class MainViewModel {
         return Bindings.when(currActionIndex.greaterThan(0)).then("Suivant").otherwise("Executer");
     }
 
-    public void resetCommands() {
-        resetPlayerViewModel();
+    public void resetCommands(){
+        resetProgramState();
         executor.init(chosenActions.getChosenActions(), state.getVariableMap());
         currActionIndex.set(0);
         isLoad.set(true);
@@ -346,97 +343,5 @@ public class MainViewModel {
         });
         timeline.setRate(1.0 / speed.get());
         timeline.play();
-    }
-
-
-    // =========================================================================
-    // METHODES POUR CAN LOAD
-    // =========================================================================
-    /* Le principe de "la porte fermée" : on lit les actions de haut en bas, tant qu'on lit des "DeclareVariable", c'est ok
-     * dès qu'on lit une Action qui n'est pas "DeclareVariable", on ferme la porte.
-     * Ca permet de n'avoir que des déclarations en haut du programme.
-     */
-    private boolean isDeclarationZoneValid(ObservableList<Actionable> list) {
-        boolean isDoorClosed = false;
-
-        for(Actionable action : list) {
-            if(action instanceof DeclareVariable) {
-                if(isDoorClosed) return false;
-            } else {
-                isDoorClosed = true;
-            }
-        }
-        return true;
-    }
-
-    // boucles
-    private boolean isRepeatBalanced(ObservableList<Actionable> list) {
-        int numberRepeat = 0;
-
-        for(Actionable action : list) {
-            if(action instanceof Repeat) numberRepeat++;
-            if(action instanceof EndRepeat) numberRepeat--;
-
-            if(numberRepeat < 0) return false; // un EndRepeat avant un Repeat
-        }
-        return numberRepeat == 0;
-    }
-
-    // cohérence du stylo
-    private boolean isPenStateValid(ObservableList<Actionable> list) {
-        boolean isPenDown = true;
-
-        for(Actionable action : list) {
-            if(action instanceof Down) {
-                if(isPenDown) return false; // Déjà baissé
-                isPenDown = true;
-            } else if(action instanceof Up) {
-                if(!isPenDown) return false; // Déjà levé
-                isPenDown = false;
-            }
-        }
-        return true;
-    }
-
-    // gestion des variables (création et utilisation)
-    private boolean areVariablesValid(ObservableList<Actionable> list) {
-        ArrayList<String> variables = new ArrayList<>();
-
-        for(Actionable action : list) {
-            // on enregistre les variables créées
-            if(action instanceof DeclareVariable) {
-                if(action.getProperty() == null) return false;
-
-                String varName = action.getProperty().get();
-                if(varName == null || !varName.matches(regexValidation)) return false;
-
-                variables.add(varName);
-            }
-            // on vérifie l'utilisation dans les autres actions
-            else {
-                // Vérification Paramètre 1
-                if(action.getProperty() != null && action.getProperty().get() != null) {
-                    String param1 = action.getProperty().get();
-                    if(param1.matches(regexValidation) && !variables.contains(param1)) {
-                        return false; // Utilise une variable non déclarée
-                    }
-                }
-
-                // Vérification Paramètre 2 (Spécifique Assign et Increment)
-                if(action instanceof AssignVariable || action instanceof Increment) {
-                    if(action.getProperty() == null || action.getProperty().get().isEmpty()) {
-                        return false;
-                    }
-                    String param2 = action instanceof AssignVariable
-                            ? ((AssignVariable) action).getParamProperty().get()
-                            : ((Increment) action).getIncrementParam();
-
-                    if(param2 != null && param2.matches(regexValidation) && !variables.contains(param2)) {
-                        return false; // Utilise une variable non déclarée en paramètre 2
-                    }
-                }
-            }
-        }
-        return true;
     }
 }

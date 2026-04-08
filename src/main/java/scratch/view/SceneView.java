@@ -9,6 +9,7 @@ import javafx.scene.text.Text;
 public class SceneView extends VBox {
   private Pane spritePane = new Pane();
   private SliderView sliderView = new SliderView();
+  private VBox trackerContainer = new VBox();
 
   public SceneView() {
     this.setSpacing(10);
@@ -19,7 +20,7 @@ public class SceneView extends VBox {
     spritePane.setMinSize(500, 500);
     Group board = new Group(gridPane, spritePane);
 
-    this.getChildren().addAll(new Text("Scene"), board, sliderView);
+    this.getChildren().addAll(new Text("Scene"), board, trackerContainer, sliderView);
   }
 
 
@@ -45,4 +46,5 @@ public class SceneView extends VBox {
   // Getters
   public Pane getSpritePane() { return spritePane; }
   public SliderView getSliderView() { return sliderView; }
+  public VBox getTrackerContainer() { return trackerContainer; }
 }

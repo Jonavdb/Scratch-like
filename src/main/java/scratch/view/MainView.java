@@ -1,21 +1,26 @@
 package scratch.view;
 
 import javafx.beans.binding.Bindings;
+import javafx.beans.property.IntegerProperty;
 import javafx.geometry.Insets;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.control.*;
 import javafx.stage.FileChooser;
-import javafx.util.Callback;
 import scratch.model.*;
 import scratch.view.components.DetailViewFactory;
 import scratch.viewmodel.MainViewModel;
+import javafx.util.Callback;
 import java.io.File;
+import scratch.viewmodel.TrackerViewModel;
+import java.util.List;
 
 public class MainView extends VBox {
   private final MainViewModel vm;
   private PlayerView playerView;
+  private TrackerView trackerView;
+  private Pane spritePane = new Pane();
 
   // Conteneur Principal
   private final HBox appContainer = new HBox();
@@ -42,6 +47,14 @@ public class MainView extends VBox {
     configureMenu();
     configureLayoutGlobal();
     this.getChildren().addAll(menuBar, appContainer);
+
+    // Le Joueur
+    this.playerView = new PlayerView(vm.getPlayerViewModel());
+    sceneView.getSpritePane().getChildren().add(playerView);
+
+    // Le Tracker
+    this.trackerView = new TrackerView(vm.getTrackerViewModel());
+    sceneView.getTrackerContainer().getChildren().add(trackerView);
 
     // Branchement de la logique
     setupBindings();

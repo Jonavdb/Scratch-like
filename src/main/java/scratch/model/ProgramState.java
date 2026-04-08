@@ -16,4 +16,9 @@ public class ProgramState {
     public VariableMap getVariableMap() {
         return map;
     }
+
+    public void reset() {
+        player.resetVariables();
+        map.reset();
+    }
 }

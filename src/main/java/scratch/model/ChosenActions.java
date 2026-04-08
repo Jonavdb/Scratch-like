@@ -1,11 +1,14 @@
 package scratch.model;
+import javafx.beans.InvalidationListener;
 import javafx.beans.Observable;
 import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.Scanner;
 
 public class ChosenActions {
@@ -99,41 +102,8 @@ public class ChosenActions {
 
                 // On récupère la valeur en TEXTE (s'il y en a une)
                 String textValueOrName = (parts.length > 1) ? parts[1] : "";
-                String valueVariable = (parts.length > 2) ? parts[2] : "";
-                Actionable newAction = null;
+                Actionable newAction = getActionable(parts, action, textValueOrName);
 
-                switch(action) {
-                    case "MOVE_FORWARD":
-                        newAction = new Move("Avancer de", textValueOrName);
-                        break;
-                    case "PEN_UP":
-                        newAction = new Up("Lever stylo");
-                        break;
-                    case "PEN_DOWN":
-                        newAction = new Down("Abaisser stylo");
-                        break;
-                    case "TURN_RIGHT":
-                        newAction = new TurnRight("Tourner à droite de", textValueOrName);
-                        break;
-                    case "TURN_LEFT":
-                        newAction = new TurnLeft("Tourner à gauche de", textValueOrName);
-                        break;
-                    case "VAR_DECLARATION":
-                        newAction = new DeclareVariable("Déclaration variable", textValueOrName);
-                        break;
-                    case "VAR_ASSIGNMENT":
-                        newAction = new AssignVariable("Assignation", textValueOrName, valueVariable);
-                        break;
-                    case "INCREMENT_VARIABLE":
-                        newAction = new Increment("Inc/Dec variable", textValueOrName, valueVariable);
-                        break;
-                    case "REPEAT":
-                        newAction = new Repeat("Répeter", textValueOrName);
-                        break;
-                    case "END_REPEAT":
-                        newAction = new EndRepeat("Arrêter la répétition");
-                        break;
-                }
                 if(newAction != null) {
                     chosenActions.add(newAction);
                 }
@@ -145,4 +115,90 @@ public class ChosenActions {
         }
     }
 
+    private static Actionable getActionable(String[] parts, String action, String textValueOrName) {
+        String valueVariable = (parts.length > 2) ? parts[2] : "";
+        return switch (action) {
+            case "MOVE_FORWARD" -> new Move("Avancer de", textValueOrName);
+            case "PEN_UP" -> new Up("Lever stylo");
+            case "PEN_DOWN" -> new Down("Abaisser stylo");
+            case "TURN_RIGHT" -> new TurnRight("Tourner à droite de", textValueOrName);
+            case "TURN_LEFT" -> new TurnLeft("Tourner à gauche de", textValueOrName);
+            case "VAR_DECLARATION" -> new DeclareVariable("Déclaration variable", textValueOrName);
+            case "VAR_ASSIGNMENT" -> new AssignVariable("Assignation", textValueOrName, valueVariable);
+            case "INCREMENT_VARIABLE" -> new Increment("Inc/Dec variable", textValueOrName, valueVariable);
+            case "REPEAT" -> new Repeat("Répeter", textValueOrName);
+            case "END_REPEAT" -> new EndRepeat("Arrêter la répétition");
+            default -> null;
+        };
+    }
+
+    public boolean validateForLoad() {
+        boolean isPenDown = true;
+        int numberRepeat = 0;
+        String regexValidation = "^[a-zA-Z_][a-zA-Z0-9_]*$"; // Valide noms variables (lettre/_ + lettres/chiffres/_*) : variable1, _var OK | 1var, ma-var KO
+        boolean hasSeenNonDeclaration = false;  // un mouvement, un stylo, une assignation
+        ArrayList<String> variables = new ArrayList<>();
+
+        for (Actionable action : chosenActions) {
+            if (action instanceof DeclareVariable) {
+                if (action.getProperty() != null) {
+                    if (action.getProperty().get().matches(regexValidation)) {
+                        variables.add(action.getProperty().get());  // on ajoute la variable créée dans un array
+                    } else {
+                        return false;
+                    }
+                }
+
+                if (hasSeenNonDeclaration) {
+                    return false;   // déclaration après une action non-déclaration -> interdit
+                }
+            } else {
+                hasSeenNonDeclaration = true;   // on est sur une non-déclaration -> on ferme la porte
+
+                // Vérification de la PREMIÈRE propriété (valable pour toutes les actions)
+                if (action.getProperty() != null && action.getProperty().get() != null) {
+                    String param1 = action.getProperty().get();
+
+                    // est-ce que le paramètre est un nom de variable (ex: "nb") et qu'elle n'existe dans pas notre tableau
+                    if (param1.matches(regexValidation) && !variables.contains(param1)) {
+                        return false;
+                    }
+                }
+
+                // Vérification de la DEUXIÈME propriété (spécifique à Assign et Increment)
+                if (action instanceof AssignVariable || action instanceof Increment) {
+                    if (action.getProperty().get().isEmpty() || action.getProperty() == null) {
+                        return false;
+                    }
+                    String param2 = action instanceof AssignVariable ? ((AssignVariable) action).getParamProperty().get() : ((Increment) action).getIncrementParam();
+
+                    if (param2 != null && param2.matches(regexValidation) && !variables.contains(param2)) {
+                        return false; // erreur : la variable 2 n'existe pas
+                    }
+                }
+                if (action instanceof Down) {
+                    if (isPenDown) {
+                        return false;
+                    }
+                    isPenDown = true;
+                } else if (action instanceof Up) {
+                    if (!isPenDown) {
+                        return false;
+                    }
+                    isPenDown = false;
+                }
+                if (action instanceof Repeat) {
+                    numberRepeat++;
+                }
+                if (action instanceof EndRepeat) {
+                    numberRepeat--;
+                }
+
+            }
+        }
+        if (numberRepeat != 0) {
+            return false;
+        }
+        return true;
+    }
 }
