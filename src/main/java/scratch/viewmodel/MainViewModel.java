@@ -210,7 +210,7 @@ public class MainViewModel {
 
     public void stopAutoExecute() {
         setIsStop(true);
-        setIsStop(false);
+        setIsPlaying(false);
         if(timeline != null) timeline.stop();
     }
 

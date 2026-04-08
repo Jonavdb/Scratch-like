@@ -1,8 +1,6 @@
 package scratch.model;
-import javafx.beans.InvalidationListener;
 import javafx.beans.Observable;
 import javafx.collections.FXCollections;
-import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 
 import java.io.File;
@@ -10,18 +8,25 @@ import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Scanner;
+import java.util.Stack;
 
 public class ChosenActions {
     private final String regexValidation = "^[a-zA-Z_][a-zA-Z0-9_]*$";
 
     private ObservableList<Actionable> chosenActions = FXCollections.observableArrayList(
             action -> {
-                if(action != null && action.getProperty() != null) {
-                    return new Observable[]{
-                            action.getProperty()
-                    };
+                if (action == null)
+                    return new Observable[0];
+                if (action instanceof AssignVariable av) {
+                    return new Observable[]{av.getProperty(), av.getParamProperty()}; // si assign, on observe les 2 propriétés
                 }
-                return new Observable[0];
+                else if (action instanceof Increment inc){
+                    return new Observable[]{inc.getProperty(), inc.getIncrementProperty()}; // si increm, on observe les 2 propriétés
+                }
+                else if (action.getProperty() != null){
+                    return new Observable[]{action.getProperty()}; // sinon on observe juste la propriété principale si action avec une seule propriété
+                }
+                return new Observable[0]; // si pas de propriété, on observe rien
             }
     );
 
@@ -139,7 +144,8 @@ public class ChosenActions {
         return isDeclarationZoneValid()
                 && isRepeatBalanced()
                 && isPenStateValid()
-                && areVariablesValid();
+                && areVariablesValid()
+                && isRepeatVariableProtected();
     }
 
     /* Le principe de "la porte fermée" : on lit les actions de haut en bas, tant qu'on lit des "DeclareVariable", c'est ok
@@ -223,6 +229,31 @@ public class ChosenActions {
                     if(param2 != null && param2.matches(regexValidation) && !variables.contains(param2)) {
                         return false; // Utilise une variable non déclarée en paramètre 2
                     }
+                }
+            }
+        }
+        return true;
+    }
+
+    private boolean isRepeatVariableProtected() {
+        Stack<String> protectedVariables = new Stack<>(); // on déclare un stack de nom de variable
+
+        for (Actionable action : chosenActions){
+            if (action instanceof Repeat){
+                String repeatVar = action.getProperty().get();
+                if (repeatVar != null && repeatVar.matches(regexValidation)){
+                    protectedVariables.push(repeatVar); // on ajoute le nom de la variable assignée à Repeat à la stack de String
+                } else {
+                    protectedVariables.push(""); // on ajoute un nom vide pour quand même former la pile correcte car la valeur du Tick d'un repeat peut être un nombre et non une variable
+                }
+            } else if (action instanceof EndRepeat) {
+                if (!protectedVariables.isEmpty()){
+                    protectedVariables.pop(); // si on rencontre un EndRepeat, on enlève le dernier étage de la pile (soit le nom de la dernière variable assignée au dernier repeat rencontré)
+                }
+            } else if (action instanceof Increment || action instanceof AssignVariable){
+                String Var = action.getProperty().get();
+                if (Var != null && protectedVariables.contains(Var)){
+                    return false; // Si le nom de la variable qu'on veut modifier est le même que celui d'un repeat encore en cours, on retourne faux
                 }
             }
         }
