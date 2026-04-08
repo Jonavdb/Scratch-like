@@ -188,76 +188,12 @@ public class MainViewModel {
                 return false;
             }
 
-            boolean isPenDown = true;
-            boolean hasSeenNonDeclaration = false;  // un mouvement, un stylo, une assignation
-            int numberRepeat = 0;
-            ArrayList<String> variables = new ArrayList<>();
+            // validation des règles métier (si une seule est fausse, on retourne false)
+            return isDeclarationZoneValid(list)
+                    && isRepeatBalanced(list)
+                    && isPenStateValid(list)
+                    && areVariablesValid(list);
 
-            for(Actionable action : list) {
-                /* --- Zone de déclaration de variables --- */
-                if(action instanceof DeclareVariable) {
-                    if(action.getProperty() != null) {
-                        if(action.getProperty().get().matches(regexValidation)) {
-                            variables.add(action.getProperty().get());  // on ajoute la variable créée dans un array
-                        } else {
-                            return false;
-                        }
-                    }
-
-                    if(hasSeenNonDeclaration) {
-                        return false;   // déclaration après une action non-déclaration -> interdit
-                    }
-                } else {
-                    hasSeenNonDeclaration = true;   // on est sur une non-déclaration -> on ferme la porte
-
-                    // Vérification de la PREMIÈRE propriété (valable pour toutes les actions)
-                    if(action.getProperty() != null && action.getProperty().get() != null) {
-                        String param1 = action.getProperty().get();
-
-                        // est-ce que le paramètre est un nom de variable (ex: "nb") et qu'elle n'existe dans pas notre tableau
-                        if(param1.matches(regexValidation) && !variables.contains(param1)) {
-                            return false;
-                        }
-                    }
-
-                    // Vérification de la DEUXIÈME propriété (spécifique à Assign et Increment)
-                    if(action instanceof AssignVariable|| action instanceof Increment) {
-                        if (action.getProperty().get().isEmpty() || action.getProperty() == null){
-                            return false;
-                        }
-                        String param2 = action instanceof AssignVariable ? ((AssignVariable) action).getParamProperty().get() : ((Increment) action).getIncrementParam();
-
-                        if(param2 != null && param2.matches(regexValidation) && !variables.contains(param2)) {
-                            return false; // erreur : la variable 2 n'existe pas
-                        }
-                    }
-                }
-
-                /* --- Vérification du stylo --- */
-                if(action instanceof Down) {
-                    if(isPenDown) {
-                        return false;
-                    }
-                    isPenDown = true;
-                } else if(action instanceof Up) {
-                    if(!isPenDown) {
-                        return false;
-                    }
-                    isPenDown = false;
-                }
-
-                if(action instanceof Repeat) {
-                    numberRepeat++;
-                }
-                if(action instanceof EndRepeat) {
-                    numberRepeat--;
-                }
-
-            }
-            if(numberRepeat != 0) {
-                return false;
-            }
-            return true;
         }, chosenActions.getChosenActions(), isPlaying);
     }
 
@@ -412,23 +348,93 @@ public class MainViewModel {
         timeline.play();
     }
 
-    // Algo qui gère la zone de déclarations de variables au début du programme //
-    /*
-     * Le principe de "la porte fermée" : on lit les actions de haut en bas
-     * tant qu'on lit des "DeclareVariable", c'est ok
-     * dès qu'on lit une Action qui n'est pas "DeclareVariable", on ferme la porte
-     * ça permet d'avoir que des déclarations en haut du programme.
+
+    // =========================================================================
+    // METHODES POUR CAN LOAD
+    // =========================================================================
+    /* Le principe de "la porte fermée" : on lit les actions de haut en bas, tant qu'on lit des "DeclareVariable", c'est ok
+     * dès qu'on lit une Action qui n'est pas "DeclareVariable", on ferme la porte.
+     * Ca permet de n'avoir que des déclarations en haut du programme.
      */
-    private boolean isDeclarationZoneValid() {
+    private boolean isDeclarationZoneValid(ObservableList<Actionable> list) {
         boolean isDoorClosed = false;
 
-        for(Actionable action : chosenActions.getChosenActions()) {
+        for(Actionable action : list) {
             if(action instanceof DeclareVariable) {
-                if(isDoorClosed) {
-                    return false; // si c'est une déclaration mais que la porte est fermée : erreur
-                }
+                if(isDoorClosed) return false;
             } else {
-                isDoorClosed = true;  // ce n'est pas une déclaration du coup on ferme définitivement la porte
+                isDoorClosed = true;
+            }
+        }
+        return true;
+    }
+
+    // boucles
+    private boolean isRepeatBalanced(ObservableList<Actionable> list) {
+        int numberRepeat = 0;
+
+        for(Actionable action : list) {
+            if(action instanceof Repeat) numberRepeat++;
+            if(action instanceof EndRepeat) numberRepeat--;
+
+            if(numberRepeat < 0) return false; // un EndRepeat avant un Repeat
+        }
+        return numberRepeat == 0;
+    }
+
+    // cohérence du stylo
+    private boolean isPenStateValid(ObservableList<Actionable> list) {
+        boolean isPenDown = true;
+
+        for(Actionable action : list) {
+            if(action instanceof Down) {
+                if(isPenDown) return false; // Déjà baissé
+                isPenDown = true;
+            } else if(action instanceof Up) {
+                if(!isPenDown) return false; // Déjà levé
+                isPenDown = false;
+            }
+        }
+        return true;
+    }
+
+    // gestion des variables (création et utilisation)
+    private boolean areVariablesValid(ObservableList<Actionable> list) {
+        ArrayList<String> variables = new ArrayList<>();
+
+        for(Actionable action : list) {
+            // on enregistre les variables créées
+            if(action instanceof DeclareVariable) {
+                if(action.getProperty() == null) return false;
+
+                String varName = action.getProperty().get();
+                if(varName == null || !varName.matches(regexValidation)) return false;
+
+                variables.add(varName);
+            }
+            // on vérifie l'utilisation dans les autres actions
+            else {
+                // Vérification Paramètre 1
+                if(action.getProperty() != null && action.getProperty().get() != null) {
+                    String param1 = action.getProperty().get();
+                    if(param1.matches(regexValidation) && !variables.contains(param1)) {
+                        return false; // Utilise une variable non déclarée
+                    }
+                }
+
+                // Vérification Paramètre 2 (Spécifique Assign et Increment)
+                if(action instanceof AssignVariable || action instanceof Increment) {
+                    if(action.getProperty() == null || action.getProperty().get().isEmpty()) {
+                        return false;
+                    }
+                    String param2 = action instanceof AssignVariable
+                            ? ((AssignVariable) action).getParamProperty().get()
+                            : ((Increment) action).getIncrementParam();
+
+                    if(param2 != null && param2.matches(regexValidation) && !variables.contains(param2)) {
+                        return false; // Utilise une variable non déclarée en paramètre 2
+                    }
+                }
             }
         }
         return true;
