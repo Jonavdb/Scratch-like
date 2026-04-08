@@ -115,7 +115,7 @@ public class ActionCellView extends ListCell<Actionable> {
               () -> tr.toString() + " " + tr.getProperty().get(), tr.getProperty()));
 
       case Repeat r -> textProperty().bind(Bindings.createStringBinding(
-              () -> r.toString() + " " + r.getProperty().get(), r.getProperty()));
+              () -> r.toString() + " " + r.getProperty().get() + " fois ", r.getProperty()));
 
       case EndRepeat endRe -> setText(endRe.toString());
       case Up up -> setText(up.toString());

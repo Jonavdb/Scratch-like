@@ -31,7 +31,7 @@ public class EndRepeat implements Actionable {
 
     @Override
     public String toString() {
-        return "Arreter la répétition";
+        return "Fin répéter";
     }
 
     @Override

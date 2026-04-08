@@ -19,15 +19,15 @@ public class DetailViewFactory {
 
     return switch (chosenAction) {
       // Actions à 1 paramètre
-      case DeclareVariable dv -> new SingleParamView("Déclaration de la variable ", dv, dv.getProperty(), errorLabel);
-      case Move move -> new SingleParamView("Avancer de ", move, move.getProperty(), errorLabel);
-      case TurnLeft tl -> new SingleParamView("Tourner à gauche de ", tl, tl.getProperty(), errorLabel);
-      case TurnRight tr -> new SingleParamView("Tourner à droite de ", tr, tr.getProperty(), errorLabel);
-      case Repeat r -> new SingleParamView("Répéter ", r, r.getProperty(), errorLabel);
+      case DeclareVariable dv -> new SingleParamView("Déclaration de la variable", dv, dv.getProperty(), errorLabel, "");
+      case Move move -> new SingleParamView("Avancer de", move, move.getProperty(), errorLabel, "pixels");
+      case TurnLeft tl -> new SingleParamView("Tourner à gauche de", tl, tl.getProperty(), errorLabel, "degrés");
+      case TurnRight tr -> new SingleParamView("Tourner à droite de", tr, tr.getProperty(), errorLabel, "degrés");
+      case Repeat r -> new SingleParamView("Répéter", r, r.getProperty(), errorLabel, "fois");
 
       // Actions à 2 paramètres
-      case AssignVariable av -> new DoubleParamView("Assignation de la variable ", " valeur : ", av, av.getProperty(), av.getParamProperty(), errorLabel);
-      case Increment inc -> new DoubleParamView("Incrémentation de la variable ", " de ", inc, inc.getProperty(), inc.getIncrementProperty(), errorLabel);
+      case AssignVariable av -> new DoubleParamView("Assignation de la variable", " valeur :", av, av.getProperty(), av.getParamProperty(), errorLabel);
+      case Increment inc -> new DoubleParamView("Incrémentation de la variable", " de", inc, inc.getProperty(), inc.getIncrementProperty(), errorLabel);
 
       // Actions sans paramètre
       case Up up -> new NoParamView("Lever stylo");
