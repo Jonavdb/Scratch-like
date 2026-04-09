@@ -251,8 +251,8 @@ public class ChosenActions {
                     protectedVariables.pop(); // si on rencontre un EndRepeat, on enlève le dernier étage de la pile (soit le nom de la dernière variable assignée au dernier repeat rencontré)
                 }
             } else if (action instanceof Increment || action instanceof AssignVariable){
-                String Var = action.getProperty().get();
-                if (Var != null && protectedVariables.contains(Var)){
+                String variableToCheck = action.getProperty().get();
+                if (variableToCheck != null && protectedVariables.contains(variableToCheck)){
                     return false; // Si le nom de la variable qu'on veut modifier est le même que celui d'un repeat encore en cours, on retourne faux
                 }
             }
