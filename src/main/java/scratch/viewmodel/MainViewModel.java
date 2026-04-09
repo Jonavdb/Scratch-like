@@ -11,6 +11,7 @@ import javafx.util.Duration;
 import scratch.model.*;
 import java.io.*;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
 
 public class MainViewModel {
@@ -342,5 +343,26 @@ public class MainViewModel {
         });
         timeline.setRate(1.0 / speed.get());
         timeline.play();
+    }
+
+    public int getIndentationLevel(int index){
+        int gap = 0;
+        List<Actionable> actions = chosenActions.getChosenActions();
+        for (int i = 0; i < index; i++) {
+            Actionable pastItem = actions.get(i);
+            if (pastItem instanceof Repeat) {
+                gap++;
+            } else if (pastItem instanceof EndRepeat) {
+                gap--;
+            }
+        }
+        Actionable currentItem = chosenActions.get(index);
+        if (currentItem instanceof EndRepeat){
+            gap--;
+        }
+        if (gap < 0){
+            gap = 0;
+        }
+        return gap;
     }
 }

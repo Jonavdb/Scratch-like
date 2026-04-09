@@ -43,29 +43,8 @@ public class ActionCellView extends ListCell<Actionable> {
 
   // Indentation pour les boucles Repeat
   private void applyIndentation(Actionable item) {
-    int gap = 0;
-    int currentIndex = getIndex();
-
-    if (currentIndex >= 0 && getListView() != null) {
-      var allItems = getListView().getItems();
-      for (int i = 0; i < currentIndex; i++) {
-        Actionable pastItem = allItems.get(i);
-        if (pastItem instanceof Repeat) {
-          gap++;
-        } else if (pastItem instanceof EndRepeat) {
-          gap--;
-        }
-      }
-    }
-
-    if (item instanceof EndRepeat) {
-      gap--;
-    }
-    if (gap < 0){
-        gap = 0;
-    }
-
-    double leftPadding = 5 + (gap * 20);
+    int indentation = vm.getIndentationLevel(getIndex());
+    double leftPadding = 5 + (indentation * 20);
     setPadding(new Insets(3, 5, 3, leftPadding));
   }
 
