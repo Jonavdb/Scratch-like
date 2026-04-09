@@ -36,13 +36,13 @@ public class TrackerViewModel implements VariableMapListener<String, Integer> {
 
     public TrackerViewModel(VariableMap map, Player player) {
         map.addListener(this);
+
         playerDataBinding = Bindings.createStringBinding(() -> {
             // valeurs
             var pos = player.positionProperty().get();
             double rawAngle = player.angleProperty().get();
             double angle = (rawAngle % 360 + 360) % 360;
 
-            // on met des valeurs par defaut si pos est null
             double x = pos.getX() - 250;
             double y = 250 - pos.getY();
 
@@ -70,15 +70,13 @@ public class TrackerViewModel implements VariableMapListener<String, Integer> {
         if(actionType == MapActionType.DECLARE) {
             // creation d'une nouvelle ligne
             row = new VariableRow(rowVariable, "0");
-            System.out.println("on update: " + rows.hashCode());
             rows.add(row);
         } else {
-
             // ici, mise à jour d'une ligne existante
             // on récupère l'entrée dont le nom de la valeur correspond aux datas de modificitation (MapChangeObject)
             row = rows.stream()
                     .filter(v -> v.getNameVariable().equals(rowVariable))
-                    .findFirst()
+                    .findFirst()    // récupère le nom de la variable dans le tableau si elle existe (y avait pas de "find")
                     .orElse(null); // Retourne null si la variable n'est pas trouvée
 
             // si aucun résulat, rien n'est fait

@@ -1,5 +1,8 @@
 package scratch.model;
 
+/*
+    Cette classe contient les nouvelles données liées à l'assignation
+*/
 public class MapChangeObject {
     String variable;
     Integer value;

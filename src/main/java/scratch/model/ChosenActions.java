@@ -15,25 +15,18 @@ public class ChosenActions {
 
     private ObservableList<Actionable> chosenActions = FXCollections.observableArrayList(
             action -> {
-                if (action == null)
+                if(action == null)
                     return new Observable[0];
-                if (action instanceof AssignVariable av) {
+                if(action instanceof AssignVariable av) {
                     return new Observable[]{av.getProperty(), av.getParamProperty()}; // si assign, on observe les 2 propriétés
-                }
-                else if (action instanceof Increment inc){
+                } else if(action instanceof Increment inc) {
                     return new Observable[]{inc.getProperty(), inc.getIncrementProperty()}; // si increm, on observe les 2 propriétés
-                }
-                else if (action.getProperty() != null){
+                } else if(action.getProperty() != null) {
                     return new Observable[]{action.getProperty()}; // sinon on observe juste la propriété principale si action avec une seule propriété
                 }
                 return new Observable[0]; // si pas de propriété, on observe rien
             }
     );
-
-    // trouvez un moyen pour que ça ne pointe pas sur ma liste mais sur mes actions en elles-mêmes et ensuite passer à l'action suivante.
-    // stack d'index donc quand on arrive à un bloc repeat, push pour rentrer dedans, pop pour sortir.
-    // état d'éxécution qui retient des trucs.
-    // multi index et multi list Quand j'arrive à un bloc repeat, je stack la liste et son index et je repars sur la liste du bloc repeat et je set son index personnel à 0.
 
     private final ObservableList<Actionable> unmodifiableChosenActions = FXCollections.unmodifiableObservableList(chosenActions);
 
@@ -154,9 +147,9 @@ public class ChosenActions {
      */
     private boolean isDeclarationZoneValid() {
         boolean isDoorClosed = false;
-        for (Actionable action : chosenActions) {
-            if (action instanceof DeclareVariable) {
-                if (isDoorClosed) return false;
+        for(Actionable action : chosenActions) {
+            if(action instanceof DeclareVariable) {
+                if(isDoorClosed) return false;
             } else {
                 isDoorClosed = true;
             }
@@ -238,21 +231,21 @@ public class ChosenActions {
     private boolean isRepeatVariableProtected() {
         Stack<String> protectedVariables = new Stack<>(); // on déclare un stack de nom de variable
 
-        for (Actionable action : chosenActions){
-            if (action instanceof Repeat){
+        for(Actionable action : chosenActions) {
+            if(action instanceof Repeat) {
                 String repeatVar = action.getProperty().get();
-                if (repeatVar != null && repeatVar.matches(regexValidation)){
+                if(repeatVar != null && repeatVar.matches(regexValidation)) {
                     protectedVariables.push(repeatVar); // on ajoute le nom de la variable assignée à Repeat à la stack de String
                 } else {
                     protectedVariables.push(""); // on ajoute un nom vide pour quand même former la pile correcte car la valeur du Tick d'un repeat peut être un nombre et non une variable
                 }
-            } else if (action instanceof EndRepeat) {
-                if (!protectedVariables.isEmpty()){
+            } else if(action instanceof EndRepeat) {
+                if(!protectedVariables.isEmpty()) {
                     protectedVariables.pop(); // si on rencontre un EndRepeat, on enlève le dernier étage de la pile (soit le nom de la dernière variable assignée au dernier repeat rencontré)
                 }
-            } else if (action instanceof Increment || action instanceof AssignVariable){
-                String Var = action.getProperty().get();
-                if (Var != null && protectedVariables.contains(Var)){
+            } else if(action instanceof Increment || action instanceof AssignVariable) {
+                String variableToCheck = action.getProperty().get();
+                if(variableToCheck != null && protectedVariables.contains(variableToCheck)) {
                     return false; // Si le nom de la variable qu'on veut modifier est le même que celui d'un repeat encore en cours, on retourne faux
                 }
             }

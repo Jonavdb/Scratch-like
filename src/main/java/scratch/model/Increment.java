@@ -18,9 +18,9 @@ public class Increment implements Actionable{
     @Override
     public void execute(ProgramState state) {
         VariableMap map = state.getVariableMap();
-        String identifier = getVariableName();
-        String value = getIncrementParam();
-        boolean isDeclaredSuccessfully = map.increment(identifier, value);
+        String variableText = getVariableName();
+        String variableValue = getIncrementParam();
+        boolean isDeclaredSuccessfully = map.increment(variableText, variableValue);
     }
 
     public String getVariableName() {return variableName.get();}

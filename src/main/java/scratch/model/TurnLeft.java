@@ -11,7 +11,7 @@ public class TurnLeft extends Turn {
 
         var player = state.getPlayer();
         var map = state.getVariableMap();
-        boolean isLiteral = map.tryGetLiteral(angleText).isPresent();
+        boolean isLiteral = map.getParamValue(angleText).isPresent();
 
         turnValue = isLiteral ? Integer.parseInt(angleText) : map.getValue(angleText);
 

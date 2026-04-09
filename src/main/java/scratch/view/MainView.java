@@ -1,7 +1,6 @@
 package scratch.view;
 
 import javafx.beans.binding.Bindings;
-import javafx.beans.property.IntegerProperty;
 import javafx.geometry.Insets;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
@@ -13,8 +12,6 @@ import scratch.view.components.DetailViewFactory;
 import scratch.viewmodel.MainViewModel;
 import javafx.util.Callback;
 import java.io.File;
-import scratch.viewmodel.TrackerViewModel;
-import java.util.List;
 
 public class MainView extends VBox {
   private final MainViewModel vm;
@@ -79,7 +76,7 @@ public class MainView extends VBox {
     // nettoyage
     programView.getDetailContentContainer().getChildren().clear();
     // la factory crée la vue dynamiquement
-    javafx.scene.Node viewToAdd = DetailViewFactory.createDetailView(chosenAction);
+    var viewToAdd = DetailViewFactory.createDetailView(chosenAction);
     // ajoute la vue à l'écran
     programView.getDetailContentContainer().getChildren().add(viewToAdd);
   }
@@ -165,7 +162,7 @@ public class MainView extends VBox {
 
   private void bindButtons() {
     // On passe par sceneView pour récupérer le SliderView affiché à l'écran
-    SliderView controls = sceneView.getSliderView();
+    SliderView sliderView = sceneView.getSliderView();
 
     actionPalette.getBtnAdd().disableProperty().bind(vm.canAdd().not());
     actionPalette.getBtnAdd().setOnAction(event -> vm.addAction());
@@ -191,34 +188,38 @@ public class MainView extends VBox {
     programView.getBtnDuplicate().setOnAction(event -> vm.copyAction());
     programView.getBtnDuplicate().disableProperty().bind(vm.canDuplicate().not());
 
-    controls.getBtnLoad().setOnAction(event -> {
+    sliderView.getBtnLoad().setOnAction(event -> {
       vm.resetCommands();
-      sceneView.getSpritePane().getChildren().clear();
+      sceneView.getSpritePane().getChildren().clear();  // ca efface tout le contenu de la grille
+
       playerView = new PlayerView(vm.getPlayerViewModel());
       sceneView.getSpritePane().getChildren().add(playerView);
+
       programView.getChosenActions().getSelectionModel().select(0);
     });
-    controls.getBtnLoad().textProperty().bind(vm.getLoadTextButton());
-    controls.getBtnLoad().disableProperty().bind(vm.canLoadProgram().not());
 
-    controls.getBtnExecute().setOnAction(event -> {
-      if(controls.getGroupOfExecute().getSelectedToggle() == controls.getStepExecute()) {
+    sliderView.getBtnLoad().textProperty().bind(vm.getLoadTextButton());
+    sliderView.getBtnLoad().disableProperty().bind(vm.canLoadProgram().not());
+
+    sliderView.getBtnExecute().setOnAction(event -> {
+      if(sliderView.getGroupOfExecute().getSelectedToggle() == sliderView.getManualExecute()) {
         vm.executeAction();
-      } else if(controls.getGroupOfExecute().getSelectedToggle() == controls.getAutomaticExecute()) {
+      } else if(sliderView.getGroupOfExecute().getSelectedToggle() == sliderView.getAutomaticExecute()) {
         vm.startAutoExecute();
       }
     });
-    controls.getBtnExecute().disableProperty().bind(vm.canExecuteProgram().not().or(vm.errorActionIndexProperty().isNotEqualTo(-1)));
-    controls.getBtnExecute().textProperty().bind(vm.getExecuteTextButton());
 
-    controls.getBtnStop().setOnAction(event -> vm.stopAutoExecute());
-    controls.getBtnStop().disableProperty().bind(vm.canStop().not());
-    controls.getBtnStop().visibleProperty().bind(controls.getGroupOfExecute().selectedToggleProperty().isEqualTo(controls.getAutomaticExecute()));
-    controls.getBtnStop().managedProperty().bind(controls.getBtnStop().visibleProperty());
+    sliderView.getBtnExecute().disableProperty().bind(vm.canExecuteProgram().not().or(vm.errorActionIndexProperty().isNotEqualTo(-1)));
+    sliderView.getBtnExecute().textProperty().bind(vm.getExecuteTextButton());
 
-    controls.getSlider().valueProperty().bindBidirectional(vm.speedProperty());
-    controls.getSlider().visibleProperty().bind(controls.getBtnStop().visibleProperty());
-    controls.getSlider().managedProperty().bind(controls.getBtnStop().visibleProperty());
+    sliderView.getBtnStop().setOnAction(event -> vm.stopAutoExecute());
+    sliderView.getBtnStop().disableProperty().bind(vm.canStop().not());
+    sliderView.getBtnStop().visibleProperty().bind(sliderView.getGroupOfExecute().selectedToggleProperty().isEqualTo(sliderView.getAutomaticExecute()));
+    sliderView.getBtnStop().managedProperty().bind(sliderView.getBtnStop().visibleProperty());
+
+    sliderView.getSlider().valueProperty().bindBidirectional(vm.speedProperty());
+    sliderView.getSlider().visibleProperty().bind(sliderView.getBtnStop().visibleProperty());
+    sliderView.getSlider().managedProperty().bind(sliderView.getBtnStop().visibleProperty());
   }
 
   private void bindMenuActions() {
