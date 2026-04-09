@@ -18,9 +18,9 @@ public class AssignVariable implements Actionable{
     @Override
     public void execute(ProgramState state) {
         VariableMap map = state.getVariableMap();
-        String identifier = getVariableName();
-        String value = getAssignedParam();
-        boolean isDeclaredSuccessfully = map.assign(identifier, value);
+        String variableText = getVariableName();
+        String variableValue = getAssignedParam();
+        boolean isDeclaredSuccessfully = map.assign(variableText, variableValue);
     }
 
     public String getVariableName() {return variableName.get();}

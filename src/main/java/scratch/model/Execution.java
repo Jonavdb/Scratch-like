@@ -7,10 +7,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
 
-// Explication globale : Cette classe va nous permettre de parcourir les différentes parties de notre arbre d'actions. Une fois qu'on a rencontré un repeat, on descend d'un niveau et chaque niveau est composé
-// d'un index, d'une liste d'actions et du nombre de répétitions de ce niveau (initialisé à 1 pour le niveau principal). Le stack est donc une composition de plusieurs niveaux contenent des sous-niveaux à chaque
-// repeat rencontrés. Une fois un sous-niveau fini, on le "supprime" des niveaux et on reprend au niveau "précédent" en avançant l'index de 1.
+/*
+    Explication globale : Cette classe va nous permettre de parcourir les différentes parties de notre arbre d'actions.
+    Une fois qu'on a rencontré un repeat, on descend d'un niveau et chaque niveau est composé d'un index,
+    d'une liste d'actions et du nombre de répétitions de ce niveau (initialisé à 1 pour le niveau principal).
 
+    Le stack est donc une composition de plusieurs niveaux contenent des sous-niveaux à chaque repeat rencontrés.
+    Une fois un sous-niveau fini, on le "supprime" des niveaux et on reprend au niveau "précédent" en avançant l'index de 1.
+*/
 
 public class Execution {
     private static class Level {
@@ -72,7 +76,7 @@ public class Execution {
                 String tickText = repeat.getTick();
                 int n = 0;
                 if (memory != null) {
-                    boolean isLiteral = memory.tryGetLiteral(tickText).isPresent();
+                    boolean isLiteral = memory.getParamValue(tickText).isPresent();
                     try {
                         n = isLiteral ? Integer.parseInt(tickText) : memory.getValue(tickText);
                     } catch (Exception e) {

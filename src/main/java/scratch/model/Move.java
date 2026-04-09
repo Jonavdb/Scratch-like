@@ -19,7 +19,7 @@ public class Move implements Actionable{
         int dist = 0;
         var player = state.getPlayer();
         var map = state.getVariableMap();
-        boolean isLiteralValue = map.tryGetLiteral(distanceText).isPresent();
+        boolean isLiteralValue = map.getParamValue(distanceText).isPresent();
 
         dist = isLiteralValue ? Integer.parseInt(distanceText) : map.getValue(distanceText);
 

@@ -27,7 +27,6 @@ public class MainViewModel {
     private final DoubleProperty speed = new SimpleDoubleProperty(1.0);
     private Timeline timeline;
     private Execution executor = new Execution();
-    // debug
     private IntegerProperty currActionIndex = new SimpleIntegerProperty(0);
     private PlayerViewModel playerVm;
     private TrackerViewModel trackerVm;

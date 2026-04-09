@@ -8,7 +8,6 @@ import javafx.scene.control.Slider;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
-import javafx.scene.control.Slider;
 
 public class SliderView extends VBox {
   private final Slider slider = new Slider(0.01, 5, 0.01);
@@ -17,7 +16,7 @@ public class SliderView extends VBox {
   private final Button btnStop = new Button("Arreter");
   private final ToggleGroup groupOfExecute = new ToggleGroup();
   private final RadioButton automaticExecute = new RadioButton("Exécution automatique");
-  private final RadioButton stepExecute = new RadioButton("Exécution manuelle");
+  private final RadioButton manualExecute = new RadioButton("Exécution manuelle");
 
   public SliderView() {
     this.setSpacing(10);
@@ -35,11 +34,12 @@ public class SliderView extends VBox {
 
     automaticExecute.setToggleGroup(groupOfExecute);
     automaticExecute.setSelected(true);
-    stepExecute.setToggleGroup(groupOfExecute);
-    HBox btnExecuteContainerScene = new HBox(10, automaticExecute, stepExecute);
-    btnExecuteContainerScene.setAlignment(Pos.CENTER);
+    manualExecute.setToggleGroup(groupOfExecute);
 
-    this.getChildren().addAll(btnExecuteContainerScene, btnContainerScene, slider);
+    HBox btnsExecuteContainer = new HBox(10, automaticExecute, manualExecute);
+    btnsExecuteContainer.setAlignment(Pos.CENTER);
+
+    this.getChildren().addAll(btnsExecuteContainer, btnContainerScene, slider);
   }
 
   // Getters
@@ -49,5 +49,5 @@ public class SliderView extends VBox {
   public Slider getSlider() { return slider; }
   public ToggleGroup getGroupOfExecute() { return groupOfExecute; }
   public RadioButton getAutomaticExecute() { return automaticExecute; }
-  public RadioButton getStepExecute() { return stepExecute; }
+  public RadioButton getManualExecute() { return manualExecute; }
 }

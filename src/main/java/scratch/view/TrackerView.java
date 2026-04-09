@@ -1,6 +1,7 @@
 package scratch.view;
 
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
@@ -33,8 +34,12 @@ public class TrackerView extends VBox {
         nameColumn.setCellValueFactory(cellData ->
                 cellData.getValue().getNameProperty());
 
-        // on crée la colonne "Nom"
+        // on crée la colonne "Valeur"
         TableColumn<TrackerViewModel.VariableRow, String> valueColumn = new TableColumn<>("Valeur");
+
+        // on met nos cellules au milieu
+        nameColumn.setStyle("-fx-alignment: CENTER;");
+        valueColumn.setStyle("-fx-alignment: CENTER;");
 
         // la valeur dans la cellule est la valeur de valueProperty de la classe VariableRow du trackerViewModel
         valueColumn.setCellValueFactory(cellData ->
@@ -49,32 +54,18 @@ public class TrackerView extends VBox {
         // on remplit les valeurs des cellules avec la liste observable du viewModel
         tableView.setItems(vm.getEntries());
 
-        // debug (pas important)
-        System.out.println("in view : " + vm.getEntries().hashCode());
-
         // création du tableau
-        TitledPane pane = new TitledPane("Variables", tableView);
+        String tableTitle = new Label("Variables").getText();
+        var tableContent = tableView;
+        TitledPane table = new TitledPane(tableTitle, tableContent);
 
-
-        // on empêche de remonter
-        pane.setCollapsible(false);
-
-        // taille max
-        this.setMaxHeight(200);
-
-        // on centre le titre "Variables"
-        pane.setStyle("-fx-alignment: CENTER;");
-
-        // ajout bords gris + un peu de padding aerer autour des éléments du container
+        table.setCollapsible(false); // on empêche de remonter
+        this.setMaxHeight(200);  // taille max
+        table.setStyle("-fx-alignment: CENTER;"); // on centre le titre "Variables"
         this.setStyle("-fx-border-color: lightgray; -fx-border-width: 1; -fx-padding: 10;");
-
-        // ajout espace entre les données du joueur et le tableau de vriables
         this.setSpacing(5);
 
         // ajoute les éléments au conteneur de la classe courante "MapView"
-        this.getChildren().addAll(textPlayerData,pane);
-
-
+        this.getChildren().addAll(textPlayerData, table);
     }
-
 }

@@ -55,10 +55,6 @@ public class PlayerViewModel {
     public ReadOnlyDoubleProperty headXProperty() {return headX;}
     public ReadOnlyDoubleProperty headYProperty() {return headY;}
 
-    /*public void processAction(Actionable action) {
-        action.execute(player);
-    }*/
-
     public ReadOnlyObjectProperty<CustomPoint2D> positionProperty() {return player.positionProperty();}
     public ReadOnlyBooleanProperty penDowProperty() { return player.penDownProperty();}
 }
