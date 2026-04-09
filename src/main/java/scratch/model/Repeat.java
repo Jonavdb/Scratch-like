@@ -17,10 +17,14 @@ public class Repeat implements Actionable {
     }
     @Override
     public void execute(ProgramState state) {
-//        int n = Integer.parseInt(tick.get());
-//        for (int i = 0; i < n; ++i){
-//            actions.execute(player);
-//        }
+        String numberOfRepeatText = this.getProperty().get();
+        int numberOfRepeat = 0;
+        var map = state.getVariableMap();
+        boolean isLiteralValue = map.getParamValue(numberOfRepeatText).isPresent();
+        numberOfRepeat = isLiteralValue ? Integer.parseInt(numberOfRepeatText) : map.getValue(getTick());
+        if(numberOfRepeat <= 0) {
+            throw new RuntimeException("Erreur : Impossible de répéter " + numberOfRepeat + " fois (minimum 1 fois).");
+        }
     }
 
     @Override
