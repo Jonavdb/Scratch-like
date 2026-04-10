@@ -17,20 +17,12 @@ public class Repeat implements Actionable {
         this.name = name;
         this.tick = new SimpleStringProperty(tick);
     }
+
     @Override
     public void execute(ProgramState state) {
         String numberOfRepeatText = this.getProperty().get();
-        int numberOfRepeat = 0;
-
         VariableMap map = state.getVariableMap();
-        var literal = map.getParamValue(numberOfRepeatText);
-
-        if (literal.isPresent()) {
-            numberOfRepeat = literal.get();
-        } else {
-            Integer varValue = map.getValue(numberOfRepeatText);
-            numberOfRepeat = varValue;
-        }
+        int numberOfRepeat = map.getParamValue(numberOfRepeatText).orElseGet(() -> map.getValue(numberOfRepeatText));
 
         if (numberOfRepeat <= 0) {
             throw new RuntimeException("Erreur : Impossible de répéter " + numberOfRepeat + " fois (minimum 1 fois).");
