@@ -37,6 +37,12 @@ public class Down implements Actionable {
     }
 
     @Override
+    public boolean isValid(String... params) {
+        // action sans paramètre donc pas de validation métier
+        return true;
+    }
+
+    @Override
     public String toString() {
         return name;
     }

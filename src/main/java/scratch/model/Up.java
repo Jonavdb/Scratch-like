@@ -37,8 +37,13 @@ public class Up implements Actionable{
         return Color.GREEN;
     }
 
+    @Override
+    public boolean isValid(String... params) {
+        // action sans paramètre donc pas de validation métier
+        return true;
+    }
+
     public String toString() {
         return name;
     }
-
 }

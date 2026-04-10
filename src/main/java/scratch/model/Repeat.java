@@ -7,6 +7,8 @@ import javafx.scene.paint.Color;
 import java.util.List;
 
 public class Repeat implements Actionable {
+    private String regexValidation = "^[a-zA-Z_][a-zA-Z0-9_]*$";
+
     private final String name;
     private final ActionBlock actions = new ActionBlock("repeat");
     private final StringProperty tick;
@@ -19,10 +21,18 @@ public class Repeat implements Actionable {
     public void execute(ProgramState state) {
         String numberOfRepeatText = this.getProperty().get();
         int numberOfRepeat = 0;
-        var map = state.getVariableMap();
-        boolean isLiteralValue = map.getParamValue(numberOfRepeatText).isPresent();
-        numberOfRepeat = isLiteralValue ? Integer.parseInt(numberOfRepeatText) : map.getValue(getTick());
-        if(numberOfRepeat <= 0) {
+
+        VariableMap map = state.getVariableMap();
+        var literal = map.getParamValue(numberOfRepeatText);
+
+        if (literal.isPresent()) {
+            numberOfRepeat = literal.get();
+        } else {
+            Integer varValue = map.getValue(numberOfRepeatText);
+            numberOfRepeat = varValue;
+        }
+
+        if (numberOfRepeat <= 0) {
             throw new RuntimeException("Erreur : Impossible de répéter " + numberOfRepeat + " fois (minimum 1 fois).");
         }
     }
@@ -64,7 +74,22 @@ public class Repeat implements Actionable {
         return tick.get();
     }
 
-    /*public StringProperty tickProperty() {
-        return tick;
-    }*/
+    public boolean isValid(String... params) {
+        String tickText = params.length > 0 ? params[0] : getTick();
+
+        if (tickText == null || tickText.isEmpty()) {
+            return false;
+        }
+
+        try {
+            int n = Integer.parseInt(tickText);
+            return n >= 1;
+        } catch (NumberFormatException e) {
+            return isValidVariableName(tickText);
+        }
+    }
+
+    private boolean isValidVariableName(String name) {
+        return name != null && name.matches(regexValidation);
+    }
 }

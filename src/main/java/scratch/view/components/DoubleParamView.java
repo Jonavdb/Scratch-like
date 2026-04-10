@@ -49,45 +49,52 @@ public class DoubleParamView extends VBox {
     this.getChildren().addAll(hbox, errorLabel);
   }
 
-  private void setupDoubleValidationUI(TextField nameField, TextField valueField, Actionable action, Label errorLabel) {
+  private void setupDoubleValidationUI(TextField firstField, TextField secondField, Actionable action, Label errorLabel) {
     javafx.beans.value.ChangeListener<String> validationListener = (obs, oldVal, newVal) -> {
-      boolean isNameValid = nameField.getText() != null && nameField.getText().matches("^[a-zA-Z_][a-zA-Z0-9_]*$");
-      boolean isValueValid = Actions.isValueValid(action, valueField.getText());
-      boolean hasError = !isNameValid || !isValueValid;
+      String firstFieldText = firstField.getText();
+      String secondFieldText = secondField.getText();
 
-      errorLabel.setVisible(hasError);
-      errorLabel.setManaged(hasError);
+      boolean isValid = action.isValid(firstFieldText, secondFieldText);
+
+      errorLabel.setVisible(!isValid);
+      errorLabel.setManaged(!isValid);
     };
 
-    nameField.textProperty().addListener(validationListener);
-    valueField.textProperty().addListener(validationListener);
+    firstField.textProperty().addListener(validationListener);
+    secondField.textProperty().addListener(validationListener);
+
     validationListener.changed(null, null, null);
   }
 
   private void configureIncrementButtons(Actionable action, StringProperty propValue, Button btnIncrement, Button btnDecrement) {
-      BooleanBinding isNumber = Bindings.createBooleanBinding(() ->
-              propValue.get().matches("^[a-zA-Z_][a-zA-Z0-9_]*$"), propValue
-      );
-      btnIncrement.setOnAction(e -> {
+    BooleanBinding isNumber = Bindings.createBooleanBinding(() ->
+            propValue.get().matches("^[a-zA-Z_][a-zA-Z0-9_]*$"), propValue
+    );
+
+    // Btn increment
+    btnIncrement.setOnAction(e -> {
       try {
         int val = Integer.parseInt(propValue.get());
         propValue.set(String.valueOf(val + 1));
-      } catch (NumberFormatException ex) {
+      } catch(NumberFormatException ex) {
         propValue.set("1");
       }
-      });
-      btnIncrement.visibleProperty().bind(isNumber.not());
-      btnIncrement.managedProperty().bind(isNumber.not());
+    });
 
-      btnDecrement.setOnAction(e -> {
-        try {
-          int val = Integer.parseInt(propValue.get());
-          propValue.set(String.valueOf(val - 1));
-        } catch (NumberFormatException ex) {
-          propValue.set("0");
-        }
-      });
-      btnDecrement.visibleProperty().bind(isNumber.not());
-      btnIncrement.managedProperty().bind(isNumber.not());
-    }
+    btnIncrement.visibleProperty().bind(isNumber.not());
+    btnIncrement.managedProperty().bind(isNumber.not());
+
+    // Btn decrement
+    btnDecrement.setOnAction(e -> {
+      try {
+        int val = Integer.parseInt(propValue.get());
+        propValue.set(String.valueOf(val - 1));
+      } catch(NumberFormatException ex) {
+        propValue.set("0");
+      }
+    });
+
+    btnDecrement.visibleProperty().bind(isNumber.not());
+    btnIncrement.managedProperty().bind(isNumber.not());
+  }
 }
