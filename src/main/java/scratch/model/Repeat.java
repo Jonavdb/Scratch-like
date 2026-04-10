@@ -22,7 +22,7 @@ public class Repeat implements Actionable {
     public void execute(ProgramState state) {
         String numberOfRepeatText = this.getProperty().get();
         VariableMap map = state.getVariableMap();
-        int numberOfRepeat = map.getParamValue(numberOfRepeatText).orElseGet(() -> map.getValue(numberOfRepeatText));
+        int numberOfRepeat = map.getParamValue(numberOfRepeatText).orElseGet(() -> map.getValue(getTick()));
 
         if (numberOfRepeat <= 0) {
             throw new RuntimeException("Erreur : Impossible de répéter " + numberOfRepeat + " fois (minimum 1 fois).");
@@ -33,10 +33,6 @@ public class Repeat implements Actionable {
     public Actionable copy() {
         return new Repeat(this.name, this.getProperty().get());
     }
-
-    /*public void addChild(Actionable action){
-        actions.addAction(action);
-    }*/
 
     @Override
     public String toSave() {
@@ -68,10 +64,7 @@ public class Repeat implements Actionable {
 
     public boolean isValid(String... params) {
         String tickText = params.length > 0 ? params[0] : getTick();
-
-        if (tickText == null || tickText.isEmpty()) {
-            return false;
-        }
+        if (tickText == null || tickText.isEmpty()) return false;
 
         try {
             int n = Integer.parseInt(tickText);
