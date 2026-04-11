@@ -168,7 +168,14 @@ public class MainView extends VBox {
     actionPalette.getBtnAdd().setOnAction(event -> vm.addAction());
 
     programView.getBtnDelete().disableProperty().bind(vm.canRemove().not());
-    programView.getBtnDelete().setOnAction(event -> vm.removeAction());
+    programView.getBtnDelete().setOnAction(event -> {
+        int indexToDelete = programView.getChosenActions().getSelectionModel().getSelectedIndex();
+        int listSize = programView.getChosenActions().getItems().size();
+        vm.removeAction();
+        if (indexToDelete >= 0 && indexToDelete < listSize - 1) {
+            programView.getChosenActions().getSelectionModel().select(indexToDelete);
+        }
+    });
 
     programView.getBtnDown().disableProperty().bind(vm.canDown().not());
     programView.getBtnDown().setOnAction(event -> {
