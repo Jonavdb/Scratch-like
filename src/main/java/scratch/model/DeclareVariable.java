@@ -49,6 +49,11 @@ public class DeclareVariable implements Actionable {
     }
 
     @Override
+    public ActionType getType() {
+        return ActionType.DECLARE;
+    }
+
+    @Override
     public String toString() {
         return actionName;
     }

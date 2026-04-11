@@ -32,4 +32,9 @@ public class TurnLeft extends Turn {
     public String toSave() {
         return "TURN_LEFT;" + getAngle();
     }
+
+    @Override
+    public ActionType getType() {
+        return ActionType.TURN_LEFT;
+    }
 }

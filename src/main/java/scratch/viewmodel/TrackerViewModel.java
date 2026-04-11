@@ -67,7 +67,7 @@ public class TrackerViewModel implements VariableMapListener<String, Integer> {
         // on récupère sa valeur (qui va être affichée à droite)
         String rowStrValue;
 
-        if(actionType == MapActionType.DECLARE) {
+        if(actionType == ActionType.DECLARE) {
             // creation d'une nouvelle ligne
             row = new VariableRow(rowVariable, "0");
             rows.add(row);
