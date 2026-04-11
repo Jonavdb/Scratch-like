@@ -125,6 +125,9 @@ public class VariableMap {
     }
 
     public Integer getValue(String param) {
+        if (!map.containsKey(param)) {
+            throw new RuntimeException("Erreur : La variable '" + param + "' n'existe pas dans la map.");
+        }
         return map.get(param);
     }
 

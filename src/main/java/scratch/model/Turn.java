@@ -5,6 +5,8 @@ import javafx.beans.property.StringProperty;
 import javafx.scene.paint.Color;
 
 public abstract class Turn implements Actionable {
+  private String regexValidation = "^[a-zA-Z_][a-zA-Z0-9_]*$";
+
   private final String name;
   private final StringProperty angle;
 
@@ -36,4 +38,7 @@ public abstract class Turn implements Actionable {
     return Color.RED;
   }
 
+  public boolean isValidVariableName(String name) {
+    return name != null && name.matches(regexValidation);
+  }
 }

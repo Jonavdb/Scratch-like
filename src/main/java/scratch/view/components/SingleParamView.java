@@ -22,82 +22,86 @@ public class SingleParamView extends VBox {
     textField.setAlignment(Pos.BASELINE_CENTER);
     textField.setText(property.get());
 
-
     setupValidationUI(textField, action, errorLabel, property);
 
     HBox hbox = new HBox(10, label, textField);
     hbox.setAlignment(Pos.CENTER_LEFT);
 
     if(!(action instanceof DeclareVariable)) {
-        Button btnIncrement = new Button("+");
-        Button btnDecrement = new Button("-");
+      Button btnIncrement = new Button("+");
+      Button btnDecrement = new Button("-");
 
-        configureIncrementButtons(action, property, btnIncrement, btnDecrement);
-        hbox.getChildren().addAll(btnIncrement, btnDecrement);
+      configureIncrementButtons(action, property, btnIncrement, btnDecrement);
+      hbox.getChildren().addAll(btnIncrement, btnDecrement);
     }
 
-    if (suffix != null && !suffix.isEmpty()){
-        hbox.getChildren().add(suffixLabel);
+    if(suffix != null && !suffix.isEmpty()) {
+      hbox.getChildren().add(suffixLabel);
     }
 
     this.getChildren().addAll(hbox, errorLabel);
   }
 
   private void setupValidationUI(TextField textField, Actionable action, Label errorLabel, StringProperty property) {
-    boolean isInitialValid = Actions.isValueValid(action, textField.getText());
-
+    boolean isInitialValid = action.isValid(textField.getText());
     errorLabel.setVisible(!isInitialValid);
     errorLabel.setManaged(!isInitialValid);
 
+    // Écoute sur le champ texte
     textField.textProperty().addListener((obs, oldVal, newVal) -> {
-      boolean isValid = Actions.isValueValid(action, newVal);
+      boolean isValid = action.isValid(newVal);
       errorLabel.setVisible(!isValid);
       errorLabel.setManaged(!isValid);
-      if (isValid){
-          property.set(newVal);
+
+      if(isValid) {
+        property.set(newVal);
       }
     });
-      property.addListener((obs, oldVal, newVal) -> {
-          if (newVal != null && !newVal.equals(textField.getText())) {
-              textField.setText(newVal);
-          }
-      });
+
+    // Synchronisation propriété / texte (éviter conflit visuel)
+    property.addListener((obs, oldVal, newVal) -> {
+      if(newVal != null && !newVal.equals(textField.getText())) {
+        textField.setText(newVal);
+      }
+    });
   }
 
-    private void configureIncrementButtons(Actionable action, StringProperty propValue, Button btnIncrement, Button btnDecrement) {
-
-        BooleanBinding isNumber = Bindings.createBooleanBinding(() ->
+  private void configureIncrementButtons(Actionable action, StringProperty propValue, Button btnIncrement, Button btnDecrement) {
+    BooleanBinding isNumber = Bindings.createBooleanBinding(() ->
             propValue.get().matches("^[a-zA-Z_][a-zA-Z0-9_]*$"), propValue
-        );
+    );
 
-        btnIncrement.setOnAction(e -> {
-            try {
-                int val = Integer.parseInt(propValue.get());
-                propValue.set(String.valueOf(val + 1));
-            } catch (NumberFormatException ex) {
-                propValue.set("1");
-            }
-        });
-        btnIncrement.visibleProperty().bind(isNumber.not());
-        btnIncrement.managedProperty().bind(isNumber.not());
-        btnDecrement.disableProperty().bind(Bindings.createBooleanBinding(() -> {
-            try {
-                int val = Integer.parseInt(propValue.get());
-                return val <= 1;
-            } catch (NumberFormatException e) {
-                return true;
-            }
-        }, propValue));
+    // Btn +
+    btnIncrement.setOnAction(e -> {
+      try {
+        int val = Integer.parseInt(propValue.get());
+        propValue.set(String.valueOf(val + 1));
+      } catch(NumberFormatException ex) {
+        propValue.set("1");
+      }
+    });
+    btnIncrement.visibleProperty().bind(isNumber.not());
+    btnIncrement.managedProperty().bind(isNumber.not());
 
-        btnDecrement.setOnAction(e -> {
-            try {
-                int val = Integer.parseInt(propValue.get());
-                propValue.set(String.valueOf(val - 1));
-            } catch (NumberFormatException ex) {
-                propValue.set("0");
-            }
-        });
-        btnDecrement.managedProperty().bind(isNumber.not());
-        btnDecrement.visibleProperty().bind(isNumber.not());
-    }
+    // Btn -
+    btnDecrement.disableProperty().bind(Bindings.createBooleanBinding(() -> {
+      try {
+        int val = Integer.parseInt(propValue.get());
+        return val <= 1;
+      } catch(NumberFormatException e) {
+        return true;
+      }
+    }, propValue));
+
+    btnDecrement.setOnAction(e -> {
+      try {
+        int val = Integer.parseInt(propValue.get());
+        propValue.set(String.valueOf(val - 1));
+      } catch(NumberFormatException ex) {
+        propValue.set("0");
+      }
+    });
+    btnDecrement.managedProperty().bind(isNumber.not());
+    btnDecrement.visibleProperty().bind(isNumber.not());
+  }
 }

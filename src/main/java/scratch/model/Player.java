@@ -60,4 +60,19 @@ public class Player {
         penDown.set(true);
         angle.set(0); // on réinitialise l'angle du joueur (pointe vers le haut = 90°)
     }
+
+    public void moveForward(int distance) {
+        double radians = Math.toRadians(this.getAngle()) + Math.PI / 2;
+        double diffX = distance * Math.cos(radians);
+        double diffY = distance * Math.sin(radians);
+        this.setPosition(new CustomPoint2D(this.getX() + diffX, this.getY() - diffY));
+    }
+
+    public void turnLeft(int angle) {
+        this.setAngle(this.getAngle() + angle);
+    }
+
+    public void turnRight(int angle) {
+        this.setAngle(this.getAngle() - angle);
+    }
 }

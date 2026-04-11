@@ -5,6 +5,8 @@ import javafx.beans.property.StringProperty;
 import javafx.scene.paint.Color;
 
 public class DeclareVariable implements Actionable {
+    private String regexValidation = "^[a-zA-Z_][a-zA-Z0-9_]*$";
+
     private final String actionName;
     private final StringProperty variableName;
 
@@ -51,6 +53,17 @@ public class DeclareVariable implements Actionable {
     @Override
     public ActionType getType() {
         return ActionType.DECLARE;
+    }
+
+    @Override
+    public boolean isValid(String... params) {
+        String variableName = params.length > 0 ? params[0] : getVariableName();
+
+        if(variableName == null || variableName.isEmpty()) {
+            return false;
+        }
+
+        return variableName.matches(regexValidation);
     }
 
     @Override

@@ -1,5 +1,6 @@
 package scratch.model;
 
+import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.scene.paint.Color;
 
@@ -7,11 +8,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ActionBlock implements Actionable {
-  private final String name;
+  private final StringProperty blockName; // "REPEAT", "IF", "WHILE", etc.
   private final List<Actionable> childrenActions;
 
   public ActionBlock(String name) {
-    this.name = name;
+    this.blockName = new SimpleStringProperty(name);
     this.childrenActions = new ArrayList<>();
   }
 
@@ -39,7 +40,7 @@ public class ActionBlock implements Actionable {
   @Override
   public Actionable copy() {
     // copie du block + de chaque enfant à l'intérieur
-    ActionBlock copyBlock = new ActionBlock(this.name);
+    ActionBlock copyBlock = new ActionBlock(getBlockName());
     for(Actionable action : childrenActions) {
       copyBlock.addAction(action.copy());
     }
@@ -53,7 +54,7 @@ public class ActionBlock implements Actionable {
 
   @Override
   public String toString() {
-    return name;
+    return getBlockName();
   }
 
   @Override
@@ -61,21 +62,68 @@ public class ActionBlock implements Actionable {
     return Color.TURQUOISE;
   }
 
-    @Override
-    public ActionType getType() {
-        return ActionType.BLOCK;
-    }
-
-    @Override
+  @Override
+  // toSave() modulable au cas où d'autres ActionBlocs arriveraient plus tard
   public String toSave() {
     StringBuilder sb = new StringBuilder();
-    sb.append("REPEAT;").append(this.getProperty().get()).append("\n"); // ex: REPEAT;4
 
-    for (Actionable action : this.getChildren()) {
+    sb.append(blockName.get()).append(";");
+    if(getProperty() != null && !getProperty().get().isEmpty()) {
+      sb.append(getProperty().get());
+    }
+    sb.append("\n");
+
+    for(Actionable action : childrenActions) {
       sb.append(action.toSave()).append("\n");
     }
 
-    sb.append("END_REPEAT;");
+    // à voir, peut-être à changer avec le format demandé
+    sb.append("END_").append(blockName.get()).append(";");
     return sb.toString();
+  }
+
+  @Override
+  public boolean isValid(String... params) {
+    // params peuvent servir plus tard pour REPEAT, IF, etc.
+    // Exemples possibles :
+    // - REPEAT : params[0] = "10"
+    // - IF : params[0] = condition, etc.
+
+    // Pour un bloc générique : il doit au minimum avoir des enfants valides
+    if(childrenActions == null) {
+      return false;
+    }
+
+    for(Actionable action : childrenActions) {
+      if(action == null) return false;
+      if(!action.isValid()) return false;
+
+      // TODO: un bloc vide est valide ou pas?
+      /*
+        if (childrenActions.isEmpty()) {
+            return false;
+        }
+        */
+
+    }
+    return true;
+  }
+
+  // Getters et setters
+  public String getBlockName() {
+    return blockName.get();
+  }
+
+  @Override
+  public ActionType getType() {
+    return ActionType.BLOCK;
+  }
+
+  public StringProperty blockNameProperty() {
+    return blockName;
+  }
+
+  public void setBlockName(String name) {
+    blockName.set(name);
   }
 }

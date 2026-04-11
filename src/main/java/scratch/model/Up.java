@@ -38,6 +38,12 @@ public class Up implements Actionable{
     }
 
     @Override
+    public boolean isValid(String... params) {
+        // action sans paramètre donc pas de validation métier
+        return true;
+    }
+
+    @Override
     public ActionType getType() {
         return ActionType.UP;
     }
@@ -45,5 +51,4 @@ public class Up implements Actionable{
     public String toString() {
         return name;
     }
-
 }
