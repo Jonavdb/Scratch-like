@@ -192,7 +192,7 @@ public class ChosenActions {
 
         for(Actionable action : chosenActions) {
             // on enregistre les variables créées
-            if(action instanceof DeclareVariable) {
+            if(action.getType() == ActionType.DECLARE) {
                 if(action.getProperty() == null) return false;
 
                 String varName = action.getProperty().get();
@@ -211,11 +211,11 @@ public class ChosenActions {
                 }
 
                 // Vérification Paramètre 2 (Spécifique Assign et Increment)
-                if(action instanceof AssignVariable || action instanceof Increment) {
+                if(action.getType() == ActionType.ASSIGN || action.getType() == ActionType.INCREMENT) {
                     if(action.getProperty() == null || action.getProperty().get().isEmpty()) {
                         return false;
                     }
-                    String param2 = action instanceof AssignVariable
+                    String param2 = action.getType() == ActionType.ASSIGN
                             ? ((AssignVariable) action).getParamProperty().get()
                             : ((Increment) action).getIncrementParam();
 
@@ -232,18 +232,18 @@ public class ChosenActions {
         Stack<String> protectedVariables = new Stack<>(); // on déclare un stack de nom de variable
 
         for(Actionable action : chosenActions) {
-            if(action instanceof Repeat) {
+            if(action.getType() == ActionType.REPEAT) {
                 String repeatVar = action.getProperty().get();
                 if(repeatVar != null && repeatVar.matches(regexValidation)) {
                     protectedVariables.push(repeatVar); // on ajoute le nom de la variable assignée à Repeat à la stack de String
                 } else {
                     protectedVariables.push(""); // on ajoute un nom vide pour quand même former la pile correcte car la valeur du Tick d'un repeat peut être un nombre et non une variable
                 }
-            } else if(action instanceof EndRepeat) {
+            } else if(action.getType() == ActionType.END_REPEAT) {
                 if(!protectedVariables.isEmpty()) {
                     protectedVariables.pop(); // si on rencontre un EndRepeat, on enlève le dernier étage de la pile (soit le nom de la dernière variable assignée au dernier repeat rencontré)
                 }
-            } else if(action instanceof Increment || action instanceof AssignVariable) {
+            } else if(action.getType() == ActionType.INCREMENT || action.getType() == ActionType.ASSIGN) {
                 String variableToCheck = action.getProperty().get();
                 if(variableToCheck != null && protectedVariables.contains(variableToCheck)) {
                     return false; // Si le nom de la variable qu'on veut modifier est le même que celui d'un repeat encore en cours, on retourne faux

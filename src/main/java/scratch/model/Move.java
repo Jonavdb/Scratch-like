@@ -63,6 +63,11 @@ public class Move implements Actionable{
         return Color.BLUE;
     }
 
+    @Override
+    public ActionType getType() {
+        return ActionType.MOVE;
+    }
+
     public String toString() {
         return name;
     }

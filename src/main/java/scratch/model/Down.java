@@ -37,6 +37,11 @@ public class Down implements Actionable {
     }
 
     @Override
+    public ActionType getType() {
+        return ActionType.DOWN;
+    }
+
+    @Override
     public String toString() {
         return name;
     }

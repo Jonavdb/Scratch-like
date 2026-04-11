@@ -38,4 +38,9 @@ public class EndRepeat implements Actionable {
     public Color getColor() {
         return Color.AQUA.darker();
     }
+
+    @Override
+    public ActionType getType() {
+        return ActionType.END_REPEAT;
+    }
 }

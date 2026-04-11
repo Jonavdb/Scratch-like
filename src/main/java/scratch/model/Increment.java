@@ -51,5 +51,10 @@ public class Increment implements Actionable{
     public Color getColor() {return Color.AQUA.darker();}
 
     @Override
+    public ActionType getType() {
+        return ActionType.INCREMENT;
+    }
+
+    @Override
     public String toString() {return actionName;}
 }

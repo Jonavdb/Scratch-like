@@ -61,7 +61,12 @@ public class ActionBlock implements Actionable {
     return Color.TURQUOISE;
   }
 
-  @Override
+    @Override
+    public ActionType getType() {
+        return ActionType.BLOCK;
+    }
+
+    @Override
   public String toSave() {
     StringBuilder sb = new StringBuilder();
     sb.append("REPEAT;").append(this.getProperty().get()).append("\n"); // ex: REPEAT;4
