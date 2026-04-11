@@ -28,7 +28,7 @@ public class VariableMap {
         // on notifie chaque listener
         for (var listener : listeners) {
             // on crée l'objet qui contient les infos de la déclaration de variable
-            MapChangeObject change = new MapChangeObject(variable, 0, MapActionType.DECLARE);
+            MapChangeObject change = new MapChangeObject(variable, 0, ActionType.DECLARE);
 
             // on déclenche la réponse du listener au changement
             listener.onUpdate(change);
@@ -67,7 +67,7 @@ public class VariableMap {
         // on notifie chaque listener
         for (var listener : listeners) {
             // on crée l'objet qui contient les infos de la déclaration de variable
-            MapChangeObject change = new MapChangeObject(variable, parsedParameter, MapActionType.ASSIGN);
+            MapChangeObject change = new MapChangeObject(variable, parsedParameter, ActionType.ASSIGN);
 
             // on déclenche la réponse du listener au changement
             listener.onUpdate(change);
@@ -108,7 +108,7 @@ public class VariableMap {
         // on notifie chaque listener
         for (var listener : listeners) {
             // on crée l'objet qui contient les infos de la déclaration de variable
-            MapChangeObject change = new MapChangeObject(variable, currValue, MapActionType.INCREMENT);
+            MapChangeObject change = new MapChangeObject(variable, currValue, ActionType.INCREMENT);
 
             // on déclenche la réponse du listener au changement
             listener.onUpdate(change);

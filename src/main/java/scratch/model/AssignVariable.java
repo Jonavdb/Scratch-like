@@ -66,6 +66,11 @@ public class AssignVariable implements Actionable {
     }
 
     @Override
+    public ActionType getType() {
+        return ActionType.ASSIGN;
+    }
+
+    @Override
     public boolean isValid(String... params) {
         // pour le moment on suppose qu'on aura toujours que 2 paramètres
         if(params.length != 2) return false;
@@ -92,4 +97,5 @@ public class AssignVariable implements Actionable {
     public String toString() {
         return actionName;
     }
+
 }

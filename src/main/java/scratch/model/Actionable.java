@@ -11,4 +11,5 @@ public interface Actionable {
     String toString();
     Color getColor();
     boolean isValid(String... params);
+    ActionType getType();
 }

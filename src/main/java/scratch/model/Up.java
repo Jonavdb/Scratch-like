@@ -43,6 +43,11 @@ public class Up implements Actionable{
         return true;
     }
 
+    @Override
+    public ActionType getType() {
+        return ActionType.UP;
+    }
+
     public String toString() {
         return name;
     }

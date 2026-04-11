@@ -66,6 +66,11 @@ public class Increment implements Actionable {
     }
 
     @Override
+    public ActionType getType() {
+        return ActionType.INCREMENT;
+    }
+
+    @Override
     public boolean isValid(String... params) {
         // pour le moment on suppose qu'on aura toujours que 2 paramètres
         if(params.length != 2) return false;

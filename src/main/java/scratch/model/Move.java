@@ -56,6 +56,11 @@ public class Move implements Actionable {
     }
 
     @Override
+    public ActionType getType() {
+        return ActionType.MOVE;
+    }
+
+    @Override
     public boolean isValid(String... params) {
         String distText = params.length > 0 ? params[0] : getDistance();
 

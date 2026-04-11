@@ -41,4 +41,9 @@ public class TurnRight extends Turn {
             return isValidVariableName(angleText);
         }
     }
+
+    @Override
+    public ActionType getType() {
+        return ActionType.TURN_RIGHT;
+    }
 }

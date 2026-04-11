@@ -28,6 +28,11 @@ public class TurnLeft extends Turn {
     }
 
     @Override
+    public ActionType getType() {
+        return ActionType.TURN_LEFT;
+    }
+
+    @Override
     public boolean isValid(String... params) {
         String angleText = params.length > 0 ? params[0] : getAngle();
         if (angleText == null || angleText.isEmpty()) return false;

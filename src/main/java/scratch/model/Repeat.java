@@ -54,6 +54,11 @@ public class Repeat implements Actionable {
         return Color.AQUA.darker();
     }
 
+    @Override
+    public ActionType getType() {
+        return ActionType.REPEAT;
+    }
+
     public List<Actionable> getChildren(){
         return actions.getChildren();
     }

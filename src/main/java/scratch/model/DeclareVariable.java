@@ -51,6 +51,11 @@ public class DeclareVariable implements Actionable {
     }
 
     @Override
+    public ActionType getType() {
+        return ActionType.DECLARE;
+    }
+
+    @Override
     public boolean isValid(String... params) {
         String variableName = params.length > 0 ? params[0] : getVariableName();
 

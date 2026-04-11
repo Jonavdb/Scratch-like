@@ -49,7 +49,7 @@ public class ActionBlock implements Actionable {
 
   @Override
   public StringProperty getProperty() {
-    return null; // les blocs ne sont pas liés à un seul champ texte
+    return null;
   }
 
   @Override
@@ -112,6 +112,11 @@ public class ActionBlock implements Actionable {
   // Getters et setters
   public String getBlockName() {
     return blockName.get();
+  }
+
+  @Override
+  public ActionType getType() {
+    return ActionType.BLOCK;
   }
 
   public StringProperty blockNameProperty() {

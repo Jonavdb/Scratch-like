@@ -38,6 +38,11 @@ public class EndRepeat implements Actionable {
     }
 
     @Override
+    public ActionType getType() {
+        return ActionType.END_REPEAT;
+    }
+
+    @Override
     public boolean isValid(String... params) {
         // action sans paramètre donc pas de validation métier
         return true;
