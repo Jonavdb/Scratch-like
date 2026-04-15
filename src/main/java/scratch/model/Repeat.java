@@ -6,15 +6,12 @@ import javafx.scene.paint.Color;
 
 import java.util.List;
 
-public class Repeat implements Actionable {
+public class Repeat extends ActionBlock implements Actionable {
     private String regexValidation = "^[a-zA-Z_][a-zA-Z0-9_]*$";
-
-    private final String name;
-    private final ActionBlock actions = new ActionBlock("repeat");
     private final StringProperty tick;
 
     public Repeat(String name, String tick) {
-        this.name = name;
+        super(name);
         this.tick = new SimpleStringProperty(tick);
     }
 
@@ -24,14 +21,14 @@ public class Repeat implements Actionable {
         VariableMap map = state.getVariableMap();
         int numberOfRepeat = map.getParamValue(numberOfRepeatText).orElseGet(() -> map.getValue(getTick()));
 
-        if (numberOfRepeat <= 0) {
+        if(numberOfRepeat <= 0) {
             throw new RuntimeException("Erreur : Impossible de répéter " + numberOfRepeat + " fois (minimum 1 fois).");
         }
     }
 
     @Override
-    public Actionable copy() {
-        return new Repeat(this.name, this.getProperty().get());
+    protected ActionBlock createEmptyCopy() {
+        return new Repeat(this.getBlockName(), this.getTick());
     }
 
     @Override
@@ -46,7 +43,7 @@ public class Repeat implements Actionable {
 
     @Override
     public String toString() {
-        return "Répeter" + tick.getName() ;
+        return "Répeter" + tick.getName();
     }
 
     @Override
@@ -59,24 +56,24 @@ public class Repeat implements Actionable {
         return ActionType.REPEAT;
     }
 
-    public List<Actionable> getChildren(){
-        return actions.getChildren();
-    }
-
     public String getTick() {
         return tick.get();
     }
 
     public boolean isValid(String... params) {
         String tickText = params.length > 0 ? params[0] : getTick();
-        if (tickText == null || tickText.isEmpty()) return false;
+        boolean isTickValid = false;
 
-        try {
-            int n = Integer.parseInt(tickText);
-            return n >= 1;
-        } catch (NumberFormatException e) {
-            return isValidVariableName(tickText);
+        if(tickText != null && !tickText.isEmpty()) {
+            try {
+                int n = Integer.parseInt(tickText);
+                isTickValid = (n >= 1);
+            } catch(NumberFormatException e) {
+                isTickValid = isValidVariableName(tickText);
+            }
         }
+
+        return isTickValid && super.isValid(params); // super.isValid va vérifier chaque enfant du block repeat
     }
 
     private boolean isValidVariableName(String name) {
