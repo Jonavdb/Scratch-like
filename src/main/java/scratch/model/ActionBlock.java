@@ -7,7 +7,7 @@ import javafx.scene.paint.Color;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ActionBlock implements Actionable {
+public abstract class ActionBlock implements Actionable {
   private final StringProperty blockName; // "REPEAT", "IF", "WHILE", etc.
   private final List<Actionable> childrenActions;
 
@@ -37,13 +37,19 @@ public class ActionBlock implements Actionable {
     }
   }
 
+  // on oblige les enfants à savoir créer une version vide d'eux-mêmes
+  protected abstract ActionBlock createEmptyCopy();
+
+  // le parent s'occupe de faire la copie des enfants pour tout le monde
   @Override
   public Actionable copy() {
-    // copie du block + de chaque enfant à l'intérieur
-    ActionBlock copyBlock = new ActionBlock(getBlockName());
-    for(Actionable action : childrenActions) {
+    ActionBlock copyBlock = this.createEmptyCopy();  // demande à l'enfant (Repeat, If, etc.) de nous donner une coquille vide
+
+    // le parent fait le travail répétitif
+    for(Actionable action : this.childrenActions) {
       copyBlock.addAction(action.copy());
     }
+
     return copyBlock;
   }
 
@@ -66,11 +72,12 @@ public class ActionBlock implements Actionable {
   // toSave() modulable au cas où d'autres ActionBlocs arriveraient plus tard
   public String toSave() {
     StringBuilder sb = new StringBuilder();
-
     sb.append(blockName.get()).append(";");
+
     if(getProperty() != null && !getProperty().get().isEmpty()) {
       sb.append(getProperty().get());
     }
+
     sb.append("\n");
 
     for(Actionable action : childrenActions) {
