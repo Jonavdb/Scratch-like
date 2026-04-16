@@ -13,7 +13,11 @@ public class Down implements Actionable {
     @Override
     public void execute(ProgramState state) {
         var player = state.getPlayer();
-        player.setpenDown(true);
+        if (player.isPenDown()){
+            throw new RuntimeException("Le stylo est déjà baissé !");
+        }
+        player.setPenDown(true);
+
     }
 
     @Override

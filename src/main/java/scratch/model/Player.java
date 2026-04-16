@@ -1,9 +1,6 @@
 package scratch.model;
 import javafx.beans.property.*;
 
-import java.util.HashMap;
-import java.util.Map;
-
 
 public class Player {
     private final ObjectProperty<CustomPoint2D> position = new SimpleObjectProperty<>(new CustomPoint2D(250,250));
@@ -47,7 +44,7 @@ public class Player {
         return penDown.get();
     }
 
-    public void setpenDown(boolean value){
+    public void setPenDown(boolean value){
         penDown.set(value);
     }
 

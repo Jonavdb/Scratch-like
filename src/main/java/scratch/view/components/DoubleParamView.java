@@ -9,10 +9,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
-import scratch.model.Actionable;
-import scratch.model.Actions;
-import scratch.model.AssignVariable;
-import scratch.model.Increment;
+import scratch.model.*;
 
 public class DoubleParamView extends VBox {
   public DoubleParamView(String paramName, String paramValue, Actionable action,
@@ -38,7 +35,7 @@ public class DoubleParamView extends VBox {
     hbox.setAlignment(Pos.CENTER_LEFT);
 
     // affichage dynamique des boutons "+" et "-" uniquement si on est en Increment ou Assign
-    if(action instanceof Increment || action instanceof AssignVariable) {
+    if(action.getType() == ActionType.INCREMENT || action.getType() == ActionType.ASSIGN) {
       Button btnIncrement = new Button("+");
       Button btnDecrement = new Button("-");
 

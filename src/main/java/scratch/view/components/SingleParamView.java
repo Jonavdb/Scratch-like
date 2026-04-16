@@ -27,7 +27,7 @@ public class SingleParamView extends VBox {
     HBox hbox = new HBox(10, label, textField);
     hbox.setAlignment(Pos.CENTER_LEFT);
 
-    if(!(action instanceof DeclareVariable)) {
+    if(!(action.getType() == ActionType.DECLARE)) {
       Button btnIncrement = new Button("+");
       Button btnDecrement = new Button("-");
 

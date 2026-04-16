@@ -16,7 +16,6 @@ import java.util.Scanner;
 
 public class MainViewModel {
     private ChosenActions chosenActions;
-    private String regexValidation = "^[a-zA-Z_][a-zA-Z0-9_]*$"; // Valide noms variables (lettre/_ + lettres/chiffres/_*) : variable1, _var OK | 1var, ma-var KO
     private ObjectProperty<Actionable> selectedAction = new SimpleObjectProperty<>();
     private IntegerProperty idChosenAction = new SimpleIntegerProperty(-1); // -1 pour quand il y ait premier el, il soit à 0
     private BooleanProperty isLoad = new SimpleBooleanProperty(false);
@@ -350,14 +349,14 @@ public class MainViewModel {
         List<Actionable> actions = chosenActions.getChosenActions();
         for (int i = 0; i < index; i++) {
             Actionable pastItem = actions.get(i);
-            if (pastItem instanceof Repeat) {
+            if (pastItem.getType() == ActionType.REPEAT) {
                 gap++;
-            } else if (pastItem instanceof EndRepeat) {
+            } else if (pastItem.getType() == ActionType.END_REPEAT) {
                 gap--;
             }
         }
         Actionable currentItem = chosenActions.get(index);
-        if (currentItem instanceof EndRepeat){
+        if (currentItem.getType() == ActionType.END_REPEAT){
             gap--;
         }
         if (gap < 0){

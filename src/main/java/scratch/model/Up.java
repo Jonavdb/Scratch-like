@@ -13,7 +13,10 @@ public class Up implements Actionable{
     @Override
     public void execute(ProgramState state) {
         var player = state.getPlayer();
-        player.setpenDown(false);
+        if (!player.isPenDown()){
+            throw new RuntimeException("Le stylo est déjà levé !");
+        }
+        player.setPenDown(false);
     }
 
     @Override

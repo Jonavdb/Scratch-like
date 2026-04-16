@@ -17,9 +17,11 @@ public class ChosenActions {
             action -> {
                 if(action == null)
                     return new Observable[0];
-                if(action instanceof AssignVariable av) {
+                if(action.getType() == ActionType.ASSIGN) {
+                    AssignVariable av = (AssignVariable) action;
                     return new Observable[]{av.getProperty(), av.getParamProperty()}; // si assign, on observe les 2 propriétés
-                } else if(action instanceof Increment inc) {
+                } else if(action.getType() == ActionType.INCREMENT) {
+                    Increment inc = (Increment) action;
                     return new Observable[]{inc.getProperty(), inc.getIncrementProperty()}; // si increm, on observe les 2 propriétés
                 } else if(action.getProperty() != null) {
                     return new Observable[]{action.getProperty()}; // sinon on observe juste la propriété principale si action avec une seule propriété
@@ -148,7 +150,7 @@ public class ChosenActions {
     private boolean isDeclarationZoneValid() {
         boolean isDoorClosed = false;
         for(Actionable action : chosenActions) {
-            if(action instanceof DeclareVariable) {
+            if(action.getType() == ActionType.DECLARE) {
                 if(isDoorClosed) return false;
             } else {
                 isDoorClosed = true;
@@ -162,8 +164,8 @@ public class ChosenActions {
         int numberRepeat = 0;
 
         for(Actionable action : chosenActions) {
-            if(action instanceof Repeat) numberRepeat++;
-            if(action instanceof EndRepeat) numberRepeat--;
+            if(action.getType() == ActionType.REPEAT) numberRepeat++;
+            if(action.getType() == ActionType.END_REPEAT) numberRepeat--;
 
             if(numberRepeat < 0) return false; // un EndRepeat avant un Repeat
         }
@@ -175,10 +177,10 @@ public class ChosenActions {
         boolean isPenDown = true;
 
         for(Actionable action : chosenActions) {
-            if(action instanceof Down) {
+            if(action.getType() == ActionType.DOWN) {
                 if(isPenDown) return false; // Déjà baissé
                 isPenDown = true;
-            } else if(action instanceof Up) {
+            } else if(action.getType() == ActionType.UP) {
                 if(!isPenDown) return false; // Déjà levé
                 isPenDown = false;
             }

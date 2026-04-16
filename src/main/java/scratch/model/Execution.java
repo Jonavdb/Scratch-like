@@ -71,7 +71,7 @@ public class Execution {
 
             this.currentExecutingIndex = globalIndex; // uniquement UI : on capture l'index avant qu'il soit modifié
 
-            if (current instanceof Repeat) {
+            if (current.getType() == ActionType.REPEAT) {
                 Repeat repeat = (Repeat) current;
                 String tickText = repeat.getTick();
                 int n = 0;
@@ -112,11 +112,11 @@ public class Execution {
         Stack<List<Actionable>> stack = new Stack<>(); // on déclare un Stack qui sera un stack de List<Actionable>
         stack.push(tree); // on rentre dedans
         for(Actionable action : basicList) { // on itère sur tous les actionables de la liste
-            if (action instanceof Repeat){ //
+            if (action.getType() == ActionType.REPEAT){ //
                 Repeat repeat = (Repeat) action.copy();
                 stack.peek().add(repeat); // si on croise un repeat, on ajoute ce repeat
                 stack.push(repeat.getChildren()); // on rentre dedans
-            } else if (action instanceof EndRepeat) {
+            } else if (action.getType() == ActionType.END_REPEAT) {
                 if (stack.size() > 1){
                     stack.pop(); // Si on croise un end repeat, on pop l'étage actuel pour revenir à l'étage supérieur
                     stack.peek().add(action.copy());
