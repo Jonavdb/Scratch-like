@@ -23,7 +23,17 @@ Le rapport d'analyse UML se trouve dans le dossier resources.
 
 ## Notes de version itération 2
 
-...
+### Liste des bugs connus
+
+Nous n'avons pas relevé de bugs connus. Nous n'avons cependant pas implémenté les collisions car celles-ci n'ont pas été demandées par notre professeur.
+
+### Liste des fonctionnalités supplémentaires
+
+Aucune feature supplémentaire n'a été implémentée lors de cette itération afin de ne pas causer de conflits avec les features demandées. 
+
+### Divers
+
+Le diagramme de classe UML se trouve dans le dossier resources.
 
 ## Notes de version itération 3
 
