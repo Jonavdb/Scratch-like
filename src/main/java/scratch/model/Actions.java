@@ -3,11 +3,15 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
 public abstract class Actions {
-
     private static ObservableList<Actionable> actions = FXCollections.observableArrayList(
-            new Move("Avancer de", 30),
-            new TurnLeft("Tourner à gauche", 90),
-            new TurnRight("Tourner à droite", 90),
+            new DeclareVariable("Déclaration variable", ""),
+            new AssignVariable("Assignation", "", ""),
+            new Increment("Inc/Dec variable", "", ""),
+            new Move("Avancer de", "30"),
+            new TurnLeft("Tourner à gauche de", "90"),
+            new TurnRight("Tourner à droite de", "90"),
+            new Repeat("Répéter", "4"),
+            new EndRepeat("Arreter la répétition"),
             new Up("Lever stylo"),
             new Down("Abaisser stylo")
     );
@@ -18,17 +22,5 @@ public abstract class Actions {
 
     public static Actionable getAction(int idx) {
         return (idx >= 0 && idx < actions.size()) ? actions.get(idx) : null;
-    }
-
-    public static boolean isValueValid(Actionable action, int value) {
-        if (action == null) return false;
-
-        if (action instanceof Move) {
-            return value > 0 && value <= 100;
-        } else if (action instanceof TurnLeft || action instanceof TurnRight) {
-            return value >= 1 && value <= 180;
-        }
-
-        return true; // Lever ou Abaisser stylo
     }
 }

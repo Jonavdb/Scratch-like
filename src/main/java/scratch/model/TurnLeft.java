@@ -1,49 +1,25 @@
 package scratch.model;
 
-import javafx.beans.property.IntegerProperty;
-import javafx.beans.property.SimpleIntegerProperty;
-import javafx.scene.paint.Color;
-
-public class TurnLeft implements Actionable{
-    private final String name;
-    private IntegerProperty angle;
-
-    public TurnLeft(String name, int angle) {
-        this.name = name;
-        this.angle = new SimpleIntegerProperty(angle);
+public class TurnLeft extends Turn {
+    public TurnLeft(String name, String angle) {
+      super(name, angle);
     }
 
-    @Override
-    public void execute(Player player) {
-        int turnValue = this.getProperty().get();
-        player.setAngle(player.getAngle() + turnValue);
-    }
+    public void execute(ProgramState state) {
+        String angleText = this.getAngle();
+        VariableMap map = state.getVariableMap();
+        int turnValue = map.getParamValue(angleText).orElseGet(() -> map.getValue(angleText));
 
-    public int getAngle(){
-        return angle.get();
-    }
+        if(turnValue < 1 || turnValue > 180) {
+            throw new RuntimeException("Erreur : Impossible de tourner de " + turnValue + " (limite : 1 à 180).");
+        }
 
-    public void setAngle(int angle) {
-        this.angle.set(angle);
-    }
-
-    public IntegerProperty getProperty() {
-        return angle;
-    }
-
-    @Override
-    public String getPrefix() {
-        return "Tourner à gauche de ";
-    }
-
-    @Override
-    public String getSuffix() {
-        return " degrés";
+        state.getPlayer().turnLeft(turnValue);
     }
 
     @Override
     public Actionable copy() {
-        return new TurnLeft(this.name, this.getAngle());
+        return new TurnLeft(this.toString(), this.getProperty().get());
     }
 
     @Override
@@ -52,16 +28,22 @@ public class TurnLeft implements Actionable{
     }
 
     @Override
-    public Color getColor() {
-        return Color.RED;
-    }
-
-    public String toString() {
-        return name + " " + getAngle();
+    public ActionType getType() {
+        return ActionType.TURN_LEFT;
     }
 
     @Override
-    public String getName() {
-        return name;
+    public boolean isValid(String... params) {
+        String angleText = params.length > 0 ? params[0] : getAngle();
+        if (angleText == null || angleText.isEmpty()) return false;
+
+        // Essayer de parser comme entier
+        try {
+            int angle = Integer.parseInt(angleText);
+            return angle >= 1 && angle <= 180;
+        } catch (NumberFormatException e) {
+            // Sinon, on suppose que c’est une variable, donc on vérifie seulement la syntaxe
+            return isValidVariableName(angleText);
+        }
     }
 }

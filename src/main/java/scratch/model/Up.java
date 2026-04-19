@@ -1,6 +1,6 @@
 package scratch.model;
 
-import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.StringProperty;
 import javafx.scene.paint.Color;
 
 public class Up implements Actionable{
@@ -11,8 +11,12 @@ public class Up implements Actionable{
     }
 
     @Override
-    public void execute(Player player) {
-        player.setpenDown(false);
+    public void execute(ProgramState state) {
+        var player = state.getPlayer();
+        if (!player.isPenDown()){
+            throw new RuntimeException("Le stylo est déjà levé !");
+        }
+        player.setPenDown(false);
     }
 
     @Override
@@ -26,31 +30,28 @@ public class Up implements Actionable{
     }
 
     @Override
-    public IntegerProperty getProperty() {
+    public StringProperty getProperty() {
         return null;
     }
 
-    @Override
-    public String getPrefix() {
-        return "Lever le stylo";
-    }
-
-    @Override
-    public String getSuffix() {
-        return "";
-    }
 
     @Override
     public Color getColor() {
         return Color.GREEN;
     }
 
-    public String toString() {
-        return name;
+    @Override
+    public boolean isValid(String... params) {
+        // action sans paramètre donc pas de validation métier
+        return true;
     }
 
     @Override
-    public String getName() {
+    public ActionType getType() {
+        return ActionType.UP;
+    }
+
+    public String toString() {
         return name;
     }
 }

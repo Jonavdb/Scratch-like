@@ -8,9 +8,8 @@ public class Player {
     private final DoubleProperty size = new SimpleDoubleProperty(15);
     private final BooleanProperty penDown = new SimpleBooleanProperty(true);
 
-
     public void setPosition(CustomPoint2D value){
-        position.setValue(value);
+        position.set(value);
     }
 
     public ObjectProperty<CustomPoint2D> positionProperty(){
@@ -24,7 +23,6 @@ public class Player {
     public double getY() {
         return position.get().getY();
     }
-
 
     public double getAngle() {
         return angle.get();
@@ -46,11 +44,32 @@ public class Player {
         return penDown.get();
     }
 
-    public void setpenDown(boolean value){
+    public void setPenDown(boolean value){
         penDown.set(value);
     }
 
     public BooleanProperty penDownProperty() {
         return penDown;
+    }
+
+    public void resetVariables() {
+        position.set(new CustomPoint2D(250, 250)); // on reinitialise la position du joueur au milieu de la grille
+        penDown.set(true);
+        angle.set(0); // on réinitialise l'angle du joueur (pointe vers le haut = 90°)
+    }
+
+    public void moveForward(int distance) {
+        double radians = Math.toRadians(this.getAngle()) + Math.PI / 2;
+        double diffX = distance * Math.cos(radians);
+        double diffY = distance * Math.sin(radians);
+        this.setPosition(new CustomPoint2D(this.getX() + diffX, this.getY() - diffY));
+    }
+
+    public void turnLeft(int angle) {
+        this.setAngle(this.getAngle() + angle);
+    }
+
+    public void turnRight(int angle) {
+        this.setAngle(this.getAngle() - angle);
     }
 }

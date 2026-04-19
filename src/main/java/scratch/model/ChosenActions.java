@@ -3,16 +3,31 @@ import javafx.beans.Observable;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Scanner;
+import java.util.Stack;
+
 public class ChosenActions {
+    private final String regexValidation = "^[a-zA-Z_][a-zA-Z0-9_]*$";
 
     private ObservableList<Actionable> chosenActions = FXCollections.observableArrayList(
             action -> {
-                if (action != null && action.getProperty() != null) {
-                    return new Observable[]{
-                            action.getProperty()
-                    };
+                if(action == null)
+                    return new Observable[0];
+                if(action.getType() == ActionType.ASSIGN) {
+                    AssignVariable av = (AssignVariable) action;
+                    return new Observable[]{av.getProperty(), av.getParamProperty()}; // si assign, on observe les 2 propriétés
+                } else if(action.getType() == ActionType.INCREMENT) {
+                    Increment inc = (Increment) action;
+                    return new Observable[]{inc.getProperty(), inc.getIncrementProperty()}; // si increm, on observe les 2 propriétés
+                } else if(action.getProperty() != null) {
+                    return new Observable[]{action.getProperty()}; // sinon on observe juste la propriété principale si action avec une seule propriété
                 }
-                return new Observable[0];
+                return new Observable[0]; // si pas de propriété, on observe rien
             }
     );
 
@@ -26,36 +41,221 @@ public class ChosenActions {
         chosenActions.add(action);
     }
 
-    public Actionable remove(int idx){
-        if (idx >= 0 && idx < chosenActions.size()){
+    public void addAtPosition(int item, Actionable action) {
+        chosenActions.add(item, action);
+    }
+
+    public Actionable remove(int idx) {
+        if(idx >= 0 && idx < chosenActions.size()) {
             return chosenActions.remove(idx);
         }
         return null;
     }
 
-    public void removeAll(){
+    public void removeAll() {
         chosenActions.clear();
     }
 
     public void up(int idx) {
-        if (idx > 0 && idx < chosenActions.size()){
+        if(idx > 0 && idx < chosenActions.size()) {
             Actionable action = chosenActions.set(idx - 1, chosenActions.get(idx));
             chosenActions.set(idx, action);
         }
     }
 
-    public void down (int idx) {
-        if (idx >= 0 && idx < chosenActions.size() - 1) {
+    public void down(int idx) {
+        if(idx >= 0 && idx < chosenActions.size() - 1) {
             Actionable action = chosenActions.set(idx + 1, chosenActions.get(idx));
             chosenActions.set(idx, action);
         }
     }
 
-    public int nbChosenAction(){
+    public int nbChosenAction() {
         return chosenActions.size();
     }
 
     public Actionable get(int index) {
         return chosenActions.get(index);
+    }
+
+    public void saveInFile(File file) {
+        if(file == null)
+            return;
+        try(PrintWriter writer = new PrintWriter(file)) {
+            for(Actionable action : unmodifiableChosenActions) {
+                writer.println(action.toSave());
+            }
+
+            System.out.println("Sauvegarde réussie !");
+        } catch(FileNotFoundException e) {
+            System.err.println("Erreur lors de la sauvegarde" + e.getMessage());
+        }
+    }
+
+    public void loadFile(File file) {
+        if(file == null) return;
+
+        try(Scanner scan = new Scanner(file)) {
+            while(scan.hasNextLine()) {
+                String line = scan.nextLine();
+                if(line.trim().isEmpty()) return;
+
+                String[] parts = line.split(";");
+                String action = parts[0];
+
+                // On récupère la valeur en TEXTE (s'il y en a une)
+                String textValueOrName = (parts.length > 1) ? parts[1] : "";
+                Actionable newAction = getActionable(parts, action, textValueOrName);
+
+                if(newAction != null) {
+                    chosenActions.add(newAction);
+                }
+            }
+            System.out.println("Chargement réussi !");
+
+        } catch(FileNotFoundException e) {
+            System.err.println("Fichier introuvable : " + e.getMessage());
+        }
+    }
+
+    private static Actionable getActionable(String[] parts, String action, String textValueOrName) {
+        String valueVariable = (parts.length > 2) ? parts[2] : "";
+        return switch(action) {
+            case "MOVE_FORWARD" -> new Move("Avancer de", textValueOrName);
+            case "PEN_UP" -> new Up("Lever stylo");
+            case "PEN_DOWN" -> new Down("Abaisser stylo");
+            case "TURN_RIGHT" -> new TurnRight("Tourner à droite de", textValueOrName);
+            case "TURN_LEFT" -> new TurnLeft("Tourner à gauche de", textValueOrName);
+            case "VAR_DECLARATION" -> new DeclareVariable("Déclaration variable", textValueOrName);
+            case "VAR_ASSIGNMENT" -> new AssignVariable("Assignation", textValueOrName, valueVariable);
+            case "INCREMENT_VARIABLE" -> new Increment("Inc/Dec variable", textValueOrName, valueVariable);
+            case "REPEAT" -> new Repeat("Répeter", textValueOrName);
+            case "END_REPEAT" -> new EndRepeat("Arrêter la répétition");
+            default -> null;
+        };
+    }
+
+    public boolean validateForLoad() {
+        // validation des règles métier (si une seule est fausse, on retourne false)
+        return isDeclarationZoneValid()
+                && isRepeatBalanced()
+                && isPenStateValid()
+                && areVariablesValid()
+                && isRepeatVariableProtected();
+    }
+
+    /* Le principe de "la porte fermée" : on lit les actions de haut en bas, tant qu'on lit des "DeclareVariable", c'est ok
+     * dès qu'on lit une Action qui n'est pas "DeclareVariable", on ferme la porte.
+     * Ca permet de n'avoir que des déclarations en haut du programme.
+     */
+    private boolean isDeclarationZoneValid() {
+        boolean isDoorClosed = false;
+        for(Actionable action : chosenActions) {
+            if(action.getType() == ActionType.DECLARE) {
+                if(isDoorClosed) return false;
+            } else {
+                isDoorClosed = true;
+            }
+        }
+        return true;
+    }
+
+    // boucles
+    private boolean isRepeatBalanced() {
+        int numberRepeat = 0;
+
+        for(Actionable action : chosenActions) {
+            if(action.getType() == ActionType.REPEAT) numberRepeat++;
+            if(action.getType() == ActionType.END_REPEAT) numberRepeat--;
+
+            if(numberRepeat < 0) return false; // un EndRepeat avant un Repeat
+        }
+        return numberRepeat == 0;
+    }
+
+    // cohérence du stylo
+    private boolean isPenStateValid() {
+        boolean isPenDown = true;
+
+        for(Actionable action : chosenActions) {
+            if(action.getType() == ActionType.DOWN) {
+                if(isPenDown) return false; // Déjà baissé
+                isPenDown = true;
+            } else if(action.getType() == ActionType.UP) {
+                if(!isPenDown) return false; // Déjà levé
+                isPenDown = false;
+            }
+        }
+        return true;
+    }
+
+    // gestion des variables (création et utilisation)
+    private boolean areVariablesValid() {
+        ArrayList<String> variables = new ArrayList<>();
+
+        for(Actionable action : chosenActions) {
+            // on enregistre les variables créées
+            if(action.getType() == ActionType.DECLARE) {
+                if(action.getProperty() == null) return false;
+
+                String varName = action.getProperty().get();
+                if(varName == null || !varName.matches(regexValidation)) return false;
+
+                variables.add(varName);
+            }
+            // on vérifie l'utilisation dans les autres actions
+            else {
+                // Vérification Paramètre 1
+                if(action.getProperty() != null && action.getProperty().get() != null) {
+                    String param1 = action.getProperty().get();
+                    if(param1.matches(regexValidation) && !variables.contains(param1)) {
+                        return false; // Utilise une variable non déclarée
+                    }
+                }
+
+                // Vérification Paramètre 2 (Spécifique Assign et Increment)
+                if(action.getType() == ActionType.ASSIGN || action.getType() == ActionType.INCREMENT) {
+                    if(action.getProperty() == null || action.getProperty().get().isEmpty() || !action.getProperty().get().matches(regexValidation)) {
+                        return false;
+                    }
+                    String param2 = action.getType() == ActionType.ASSIGN
+                            ? ((AssignVariable) action).getParamProperty().get()
+                            : ((Increment) action).getIncrementParam();
+                    try {
+                        Integer.parseInt(param2);
+                    } catch (NumberFormatException e){
+                        if(param2 != null && !variables.contains(param2)) {
+                            return false; // Utilise une variable non déclarée en paramètre 2
+                        }
+                    }
+                }
+            }
+        }
+        return true;
+    }
+
+    private boolean isRepeatVariableProtected() {
+        Stack<String> protectedVariables = new Stack<>(); // on déclare un stack de nom de variable
+
+        for(Actionable action : chosenActions) {
+            if(action.getType() == ActionType.REPEAT) {
+                String repeatVar = action.getProperty().get();
+                if(repeatVar != null && repeatVar.matches(regexValidation)) {
+                    protectedVariables.push(repeatVar); // on ajoute le nom de la variable assignée à Repeat à la stack de String
+                } else {
+                    protectedVariables.push(""); // on ajoute un nom vide pour quand même former la pile correcte car la valeur du Tick d'un repeat peut être un nombre et non une variable
+                }
+            } else if(action.getType() == ActionType.END_REPEAT) {
+                if(!protectedVariables.isEmpty()) {
+                    protectedVariables.pop(); // si on rencontre un EndRepeat, on enlève le dernier étage de la pile (soit le nom de la dernière variable assignée au dernier repeat rencontré)
+                }
+            } else if(action.getType() == ActionType.INCREMENT || action.getType() == ActionType.ASSIGN) {
+                String variableToCheck = action.getProperty().get();
+                if(variableToCheck != null && protectedVariables.contains(variableToCheck)) {
+                    return false; // Si le nom de la variable qu'on veut modifier est le même que celui d'un repeat encore en cours, on retourne faux
+                }
+            }
+        }
+        return true;
     }
 }
