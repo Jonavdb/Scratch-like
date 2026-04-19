@@ -36,8 +36,11 @@ public class MainViewModel {
         this.chosenActions = chosenActions;
         this.chosenActions.getChosenActions().addListener((ListChangeListener<Actionable>) change -> {
             this.setIsPlaying(false);
+            if (timeline != null)
+                timeline.stop();
             currActionIndex.set(0);
             isLoad.set(false);
+            idChosenAction.set(-1);
 
             // nettoie les erreurs à chaque nouveau départ
             this.setErrorActionIndex(-1);
@@ -194,7 +197,9 @@ public class MainViewModel {
     }
 
     public BooleanBinding canRemoveAll() {
-        return Bindings.isNotEmpty(chosenActions.getChosenActions());
+        return Bindings.createBooleanBinding(() ->
+                !chosenActions.getChosenActions().isEmpty(), chosenActions.getChosenActions()
+        );
     }
 
     public BooleanBinding canStop() {
@@ -298,6 +303,12 @@ public class MainViewModel {
         return Bindings.createBooleanBinding(() ->
                         executor != null && !chosenActions.getChosenActions().isEmpty() && !executor.isDoneProperty().get() && isLoad.get() && !isPlaying.get(),
                 chosenActions.getChosenActions(), currActionIndex, isLoad, isPlaying, executor.isDoneProperty()
+        );
+    }
+
+    public BooleanBinding canDeleteAll(){
+        return Bindings.createBooleanBinding(() ->
+            !isPlaying.get(), isPlaying
         );
     }
 

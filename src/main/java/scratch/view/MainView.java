@@ -117,7 +117,10 @@ public class MainView extends VBox {
     bindMenuActions();
 
     vm.currActionIndexProperty().addListener((obs, oldVal, newVal) -> {
-      programView.getChosenActions().getSelectionModel().select(newVal.intValue());
+        int idx = newVal.intValue();
+        if (idx >= 0 && idx < programView.getChosenActions().getItems().size()) {
+            programView.getChosenActions().getSelectionModel().select(idx);
+        }
     });
 
     programView.getRuntimeErrorLabel().textProperty().bind(vm.getErrorRuntimeMessageProperty());
