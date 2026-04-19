@@ -6,6 +6,7 @@ import javafx.collections.ObservableList;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Scanner;
 import java.util.Stack;
@@ -214,15 +215,18 @@ public class ChosenActions {
 
                 // Vérification Paramètre 2 (Spécifique Assign et Increment)
                 if(action.getType() == ActionType.ASSIGN || action.getType() == ActionType.INCREMENT) {
-                    if(action.getProperty() == null || action.getProperty().get().isEmpty()) {
+                    if(action.getProperty() == null || action.getProperty().get().isEmpty() || !action.getProperty().get().matches(regexValidation)) {
                         return false;
                     }
                     String param2 = action.getType() == ActionType.ASSIGN
                             ? ((AssignVariable) action).getParamProperty().get()
                             : ((Increment) action).getIncrementParam();
-
-                    if(param2 != null && param2.matches(regexValidation) && !variables.contains(param2)) {
-                        return false; // Utilise une variable non déclarée en paramètre 2
+                    try {
+                        Integer.parseInt(param2);
+                    } catch (NumberFormatException e){
+                        if(param2 != null && !variables.contains(param2)) {
+                            return false; // Utilise une variable non déclarée en paramètre 2
+                        }
                     }
                 }
             }

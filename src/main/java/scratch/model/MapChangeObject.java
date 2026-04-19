@@ -4,9 +4,9 @@ package scratch.model;
     Cette classe contient les nouvelles données liées à l'assignation
 */
 public class MapChangeObject {
-    String variable;
-    Integer value;
-    ActionType type;
+    private String variable;
+    private Integer value;
+    private ActionType type;
 
     public MapChangeObject(String variable, Integer value, ActionType type) {
         this.variable = variable;

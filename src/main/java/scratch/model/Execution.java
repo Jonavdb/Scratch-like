@@ -18,10 +18,10 @@ import java.util.Stack;
 
 public class Execution {
     private static class Level {
-        List<Actionable> list;
-        int index;
-        int remainingRepeats;
-        int globalIndex;
+        private List<Actionable> list;
+        private int index;
+        private int remainingRepeats;
+        private int globalIndex;
 
         Level(List<Actionable> list, int index, int remainingRepeats, int globalIndex){
             this.index = index; // où on se trouve dans la liste de l'étage actuel
