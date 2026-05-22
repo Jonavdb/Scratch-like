@@ -4,97 +4,169 @@ import javafx.beans.binding.Bindings;
 import javafx.beans.binding.BooleanBinding;
 import javafx.beans.property.StringProperty;
 import javafx.geometry.Pos;
+import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
-import scratch.model.Actionable;
-import scratch.model.Actions;
-import scratch.model.AssignVariable;
-import scratch.model.Increment;
+import javafx.scene.paint.Color;
+import scratch.model.*;
 
 public class DoubleParamView extends VBox {
-  public DoubleParamView(String paramName, String paramValue, Actionable action,
-                         StringProperty propName, StringProperty propValue,
-                         Label errorLabel) {
-    super(5);
 
-    Label label = new Label(paramName);
-    Label labelValue = new Label(paramValue);
-    TextField textField = new TextField();
-    TextField textValue = new TextField();
-    textField.setPrefWidth(40);
-    textValue.setPrefWidth(40);
-    textField.setAlignment(Pos.BASELINE_CENTER);
-    textValue.setAlignment(Pos.BASELINE_CENTER);
+    private final Actionable action;
+    private final Label firstErrorLabel;
+    private final Label secondErrorLabel;
 
-    textField.textProperty().bindBidirectional(propName);
-    textValue.textProperty().bindBidirectional(propValue);
+    /**
+     * Constructeur
+     *
+     * @param action              L'action
+     * @param firstParamProperty  Propriété du 1er paramètre de l'action
+     * @param secondParamProperty Propriété du 2eme paramètre de l'action
+     * @param prefix1             Texte à afficher avant le premier paramètre
+     * @param prefix2             Texte à afficher avant le deuxième paramètre
+     * @param enableFirstButtons  True/False: affiche/cache les boutons inc/Dec après le premier paramètre
+     * @param enableSecondButtons True/False: affiche/cache les boutons inc/Dec après le deuxième paramètre
+     */
+    public DoubleParamView(Actionable action,
+                           StringProperty firstParamProperty,
+                           StringProperty secondParamProperty,
+                           String prefix1,
+                           String prefix2,
+                           boolean enableFirstButtons,
+                           boolean enableSecondButtons) {
+        super(5);
+        this.action = action;
 
-    setupDoubleValidationUI(textField, textValue, action, errorLabel);
+        // on initialise les textes d'erreurs associés aux deux paramètres
+        this.firstErrorLabel = createErrorLabel();
+        this.secondErrorLabel = createErrorLabel();
 
-    HBox hbox = new HBox(10, label, textField, labelValue, textValue);
-    hbox.setAlignment(Pos.CENTER_LEFT);
+        // on initialise les champs de textes associés aux deux paramètres
+        TextField firstTextField = new TextField();
+        TextField secondTextField = new TextField();
 
-    // affichage dynamique des boutons "+" et "-" uniquement si on est en Increment ou Assign
-    if(action instanceof Increment || action instanceof AssignVariable) {
-      Button btnIncrement = new Button("+");
-      Button btnDecrement = new Button("-");
+        // on construit le bloc de configuration de chaque paramètre
+        Node firstParamBlock = buildParameterBlock(prefix1, firstTextField, firstParamProperty, firstErrorLabel, enableFirstButtons);
+        Node secondParamBlock = buildParameterBlock(prefix2, secondTextField, secondParamProperty, secondErrorLabel, enableSecondButtons);
 
-      configureIncrementButtons(action, propValue, btnIncrement, btnDecrement);
-      hbox.getChildren().addAll(btnIncrement, btnDecrement);
+        // on assemble les deux blocs
+        HBox mainHBox = new HBox(10);
+        mainHBox.setAlignment(Pos.CENTER_LEFT);
+        mainHBox.getChildren().addAll(firstParamBlock, secondParamBlock);
+
+        // check validation des paramètres
+        setupValidationUI(firstTextField, secondTextField);
+
+        // on met tout dans une Vbox
+        this.getChildren().add(mainHBox);
     }
 
-    this.getChildren().addAll(hbox, errorLabel);
-  }
+    /*
+         Construction layout d'un bloc de paramètres
+         [prefix]     [(textField, errorLabel)]    [optionel: boutons +/-)
+     */
+    private Node buildParameterBlock(String prefixText,
+                                     TextField textField,
+                                     StringProperty boundProperty,
+                                     Label errorLabel,
+                                     boolean enableButtons) {
+        HBox blockBox = new HBox(5);
+        blockBox.setAlignment(Pos.CENTER_LEFT);
 
-  private void setupDoubleValidationUI(TextField firstField, TextField secondField, Actionable action, Label errorLabel) {
-    javafx.beans.value.ChangeListener<String> validationListener = (obs, oldVal, newVal) -> {
-      String firstFieldText = firstField.getText();
-      String secondFieldText = secondField.getText();
+        // texte affiché avant le champ de config
+        Label prefixLabel = new Label(prefixText);
 
-      boolean isValid = action.isValid(firstFieldText, secondFieldText);
+        // assemblage du textfield du paramètre et de son message d'erreur associé dans une vbox
+        textField.setPrefWidth(40);
+        textField.setAlignment(Pos.BASELINE_CENTER);
+        textField.textProperty().bindBidirectional(boundProperty); // on bind le UI au model
+        VBox fieldAndErrorBox = new VBox(textField, errorLabel);
+        fieldAndErrorBox.setAlignment(Pos.BOTTOM_CENTER);
 
-      errorLabel.setVisible(!isValid);
-      errorLabel.setManaged(!isValid);
-    };
+        // assemblage du bloc de config (prefix + textfield)
+        blockBox.getChildren().addAll(prefixLabel, fieldAndErrorBox);
 
-    firstField.textProperty().addListener(validationListener);
-    secondField.textProperty().addListener(validationListener);
+        // on ajoute +/- boutons si activé
+        if (enableButtons) {
+            Button btnIncrement = new Button("+");
+            Button btnDecrement = new Button("-");
 
-    validationListener.changed(null, null, null);
-  }
+            configureIncrementButtons(boundProperty, btnIncrement, btnDecrement);
+            blockBox.getChildren().addAll(btnIncrement, btnDecrement);
+        }
 
-  private void configureIncrementButtons(Actionable action, StringProperty propValue, Button btnIncrement, Button btnDecrement) {
-    BooleanBinding isNumber = Bindings.createBooleanBinding(() ->
-            propValue.get().matches("^[a-zA-Z_][a-zA-Z0-9_]*$"), propValue
-    );
+        return blockBox;
+    }
 
-    // Btn increment
-    btnIncrement.setOnAction(e -> {
-      try {
-        int val = Integer.parseInt(propValue.get());
-        propValue.set(String.valueOf(val + 1));
-      } catch(NumberFormatException ex) {
-        propValue.set("1");
-      }
-    });
 
-    btnIncrement.visibleProperty().bind(isNumber.not());
-    btnIncrement.managedProperty().bind(isNumber.not());
+    private Label createErrorLabel() {
+        Label errorLabel = new Label("Erreur valeur");
+        errorLabel.setTextFill(Color.RED);
+        errorLabel.setVisible(false);
+        errorLabel.setManaged(false); // pour que quand c'est invisible l'espace se libère
+        return errorLabel;
+    }
 
-    // Btn decrement
-    btnDecrement.setOnAction(e -> {
-      try {
-        int val = Integer.parseInt(propValue.get());
-        propValue.set(String.valueOf(val - 1));
-      } catch(NumberFormatException ex) {
-        propValue.set("0");
-      }
-    });
+    private void setupValidationUI(TextField firstField, TextField secondField) {
+        javafx.beans.value.ChangeListener<String> validationListener = (obs, oldVal, newVal) -> {
+            String firstVal = firstField.getText();
+            String secondVal = secondField.getText();
 
-    btnDecrement.visibleProperty().bind(isNumber.not());
-    btnIncrement.managedProperty().bind(isNumber.not());
-  }
+
+            toggleError(firstErrorLabel, !action.isFirstValid(firstVal));
+            toggleError(secondErrorLabel, !action.isSecondValid(secondVal));
+        };
+
+        // on attache le listener aux deux champs de texte
+        firstField.textProperty().addListener(validationListener);
+        secondField.textProperty().addListener(validationListener);
+
+        // on active le listener
+        validationListener.changed(null, null, null);
+    }
+
+    private void toggleError(Label errorLabel, boolean isError) {
+        errorLabel.setVisible(isError);
+        errorLabel.setManaged(isError);
+    }
+
+    /**
+     * Configures la logique d'increment/decrement pour un paramètre et cache automatiquement les boutons si variable non litterale
+     */
+    private void configureIncrementButtons(StringProperty property, Button btnIncrement, Button btnDecrement) {
+        // check format texte propriété valide
+        BooleanBinding isVariableName = Bindings.createBooleanBinding(() -> {
+            String val = property.get();
+            return val != null && val.matches("^[a-zA-Z_][a-zA-Z0-9_]*$");
+        }, property);
+
+        // on bind la visibilité au résultat précédent
+        btnIncrement.visibleProperty().bind(isVariableName.not());
+        btnIncrement.managedProperty().bind(isVariableName.not());
+
+        btnDecrement.visibleProperty().bind(isVariableName.not());
+        btnDecrement.managedProperty().bind(isVariableName.not());
+
+        // Setup button actions with try-catch fallbacks
+        btnIncrement.setOnAction(e -> {
+            try {
+                int val = Integer.parseInt(property.get());
+                property.set(String.valueOf(val + 1));
+            } catch (NumberFormatException ex) {
+                property.set("1");
+            }
+        });
+
+        btnDecrement.setOnAction(e -> {
+            try {
+                int val = Integer.parseInt(property.get());
+                property.set(String.valueOf(val - 1));
+            } catch (NumberFormatException ex) {
+                property.set("0");
+            }
+        });
+    }
 }

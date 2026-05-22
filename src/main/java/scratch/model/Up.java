@@ -43,6 +43,18 @@ public class Up implements Actionable{
         return true;
     }
 
+    // inutile ici
+    @Override
+    public boolean isFirstValid(String text) {
+        return false;
+    }
+
+    // inutile ici
+    @Override
+    public boolean isSecondValid(String text) {
+        return false;
+    }
+
     @Override
     public ActionType getType() {
         return ActionType.UP;

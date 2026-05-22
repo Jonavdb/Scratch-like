@@ -27,6 +27,8 @@ public class MainView extends VBox {
   private final Menu fileMenu = new Menu("File");
   private final MenuItem saveItem = new MenuItem("Save");
   private final MenuItem loadItem = new MenuItem("Load");
+  private final MenuItem modeItem = new MenuItem("Advanced Mode");
+
 
   // Palette d'actions (gauche)
   private final ActionPaletteView actionPalette = new ActionPaletteView();
@@ -61,7 +63,7 @@ public class MainView extends VBox {
   // LAYOUTS
   // =========================================================================
   private void configureMenu() {
-    fileMenu.getItems().addAll(saveItem, loadItem);
+    fileMenu.getItems().addAll(saveItem, loadItem, modeItem);
     menuBar.getMenus().add(fileMenu);
   }
 
@@ -232,6 +234,7 @@ public class MainView extends VBox {
   private void bindMenuActions() {
     saveItem.setOnAction(event -> handleSaveFile());
     loadItem.setOnAction(event -> handleLoadFile());
+    modeItem.setOnAction(event -> handleMode());
   }
 
   // =========================================================================
@@ -253,5 +256,13 @@ public class MainView extends VBox {
     if(file != null) {
       vm.loadFile(file);
     }
+  }
+
+  private void handleMode() {
+      String text = modeItem.getText().equals("Basic Mode") ? "Advanced Mode" : "Basic Mode";
+      modeItem.textProperty().set(text);
+      vm.enableDrawPolygon(text.equals("Basic Mode"));
+      actionPalette.getAvailableActions().setItems(vm.getAllAction());
+
   }
 }

@@ -26,6 +26,7 @@ public class MainViewModel {
     private final BooleanProperty errorProperty = new SimpleBooleanProperty(false);
     private final BooleanProperty isStop = new SimpleBooleanProperty(false);
     private final DoubleProperty speed = new SimpleDoubleProperty(1.0);
+    private boolean isDrawEnabled = false;
     private Timeline timeline;
     private Execution executor = new Execution();
     private IntegerProperty currActionIndex = new SimpleIntegerProperty(0);
@@ -46,6 +47,7 @@ public class MainViewModel {
         });
         playerVm = new PlayerViewModel(state.getPlayer());
         trackerVm = new TrackerViewModel(state.getVariableMap(), state.getPlayer());
+        resetCommands();
     }
 
     public StringProperty getErrorRuntimeMessageProperty() {
@@ -69,7 +71,16 @@ public class MainViewModel {
     }
 
     public ObservableList<Actionable> getAllAction() {
-        return Actions.getActions();
+        if(isDrawEnabled) {
+            return Actions.getAdvancedActions();
+        }
+        else {
+            return Actions.getBasicActions();
+        }
+    }
+
+    public void enableDrawPolygon(boolean bool) {
+        isDrawEnabled = bool;
     }
 
     public ObservableList<Actionable> getChosenAction() {

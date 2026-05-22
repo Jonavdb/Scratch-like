@@ -26,8 +26,9 @@ public class DetailViewFactory {
       case Repeat r -> new SingleParamView("Répéter", r, r.getProperty(), errorLabel, "fois");
 
       // Actions à 2 paramètres
-      case AssignVariable av -> new DoubleParamView("Assignation de la variable", " valeur :", av, av.getProperty(), av.getParamProperty(), errorLabel);
-      case Increment inc -> new DoubleParamView("Incrémentation de la variable", " de", inc, inc.getProperty(), inc.getIncrementProperty(), errorLabel);
+      case AssignVariable av -> new DoubleParamView(av, av.getProperty(), av.getParamProperty(),"Assignation de la variable", "valeur",false, true);
+      case Increment inc -> new DoubleParamView(inc, inc.getProperty(), inc.getIncrementProperty(), "Incrémentation de la variable", "de", false, true);
+      case Polygon polygon -> new DoubleParamView(polygon, polygon.getProperty(), polygon.getSecondParamProperty(), "Affiche un polygone de côté", "nombre de côté", true, true);
 
       // Actions sans paramètre
       case Up up -> new NoParamView("Lever stylo");

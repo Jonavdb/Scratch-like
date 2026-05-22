@@ -6,7 +6,11 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Line;
 import javafx.scene.shape.Polygon;
+import scratch.model.CustomPoint2D;
 import scratch.viewmodel.PlayerViewModel;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /* Représente le personnage sur le plateau.
  * Hérite de Group pour pouvoir combiner le corps (triangle) et le nez (cercle).
@@ -21,13 +25,20 @@ public class PlayerView extends Group {
         head.translateYProperty().bind(vm.headYProperty());
 
         vm.positionProperty().addListener((obs, oldPos, newPos) -> {
-            if (vm.penDowProperty().get()) {
-                var line = new Line(oldPos.getX(), oldPos.getY(), newPos.getX(), newPos.getY());
-                line.setStroke(Color.FORESTGREEN);
-                this.getChildren().add(line);
-            }
-        });
+            if (vm.penDowProperty().get()) {    drawPlayerTrail(oldPos, newPos);    }
 
+            // dessine le polygone quand le joueur se déplace et que l'action de dessin a été initialisée
+            if(vm.drawEnabledProperty().get())  {   drawPolygon(vm, oldPos);    }
+        });
+        drawPlayer();
+    }
+
+    private void drawPlayerTrail(CustomPoint2D oldPos, CustomPoint2D newPos) {
+        var line = new Line(oldPos.getX(), oldPos.getY(), newPos.getX(), newPos.getY());
+        line.setStroke(Color.FORESTGREEN);
+        this.getChildren().add(line);
+    }
+    private void drawPlayer() {
         // =========================================================================
         // CRÉATION DE LA FORME
         // =========================================================================
@@ -38,5 +49,27 @@ public class PlayerView extends Group {
         // CRÉATION DU NEZ (Repère visuel)
         // =========================================================================
         this.getChildren().addAll(body, head);  // Ajout du nez dans la liste des objets dessinés
+    }
+    private void drawPolygon(PlayerViewModel vm, CustomPoint2D oldPos) {
+        Line newLine = null;
+
+        double currentAngle = Math.toRadians(vm.angleProperty().get());
+        double stepAngle = 2 * Math.PI / vm.polygonProperty().get().getNbSides();
+
+        double currentX = oldPos.getX();
+        double currentY = oldPos.getY();
+
+        for (int i = 0; i < vm.polygonProperty().get().getNbSides(); i++) {
+            double nextX = currentX + vm.polygonProperty().get().getLenghSides() * Math.cos(currentAngle);
+            double nextY = currentY + vm.polygonProperty().get().getLenghSides() * Math.sin(currentAngle);
+
+            newLine = new Line(currentX, currentY, nextX, nextY);
+            this.getChildren().add(newLine);
+
+            currentX = nextX;
+            currentY = nextY;
+
+            currentAngle += stepAngle;
+        }
     }
 }
