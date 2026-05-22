@@ -70,29 +70,41 @@ public class Increment implements Actionable {
         return ActionType.INCREMENT;
     }
 
-    @Override
-    public boolean isValid(String... params) {
-        // pour le moment on suppose qu'on aura toujours que 2 paramètres
-        if(params.length != 2) return false;
-
-        String variableName = params[0];
-        String incrementationValue = params[1];
-
-        if(variableName == null || variableName.isEmpty()) {
+    public boolean isFirstValid(String text) {
+        if (text == null || text.isEmpty()) {
             return false;
         }
 
-        if(!variableName.matches(regexValidation)) {
-            return false;
-        }
-
-        if(incrementationValue == null) {
+        if (!text.matches(regexValidation)) {
             return false;
         }
 
         return true;
     }
 
+
+    public boolean isSecondValid(String text) {
+        if (text == null || text.isEmpty()) {
+            return false;
+        }
+
+        return true;
+    }
+
+    @Override
+    public boolean isValid(String... params) {
+        // We expect exactly 2 parameters (variableName and incrementationValue)
+        if (params.length != 2) {
+            return false;
+        }
+
+        // Delegate validation to the dedicated methods
+        boolean firstValid = isFirstValid(params[0]);
+        boolean secondValid = isSecondValid(params[1]);
+
+        // Both parameters must pass validation for the whole action to be valid
+        return firstValid && secondValid;
+    }
     @Override
     public String toString() {
         return actionName;

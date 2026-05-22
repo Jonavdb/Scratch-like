@@ -66,6 +66,18 @@ public class DeclareVariable implements Actionable {
         return variableName.matches(regexValidation);
     }
 
+    // inutile ici
+    @Override
+    public boolean isFirstValid(String text) {
+        return false;
+    }
+
+    // inutile ici
+    @Override
+    public boolean isSecondValid(String text) {
+        return false;
+    }
+
     @Override
     public String toString() {
         return actionName;

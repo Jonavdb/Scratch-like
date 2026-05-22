@@ -6,11 +6,16 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import scratch.model.Player;
 import scratch.model.CustomPoint2D;
+import scratch.model.PolygonData2D;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class PlayerViewModel {
     private final Player player;
 
     private final ObservableList<Double> bodyPoints = FXCollections.observableArrayList();
+
     private final DoubleProperty headX = new SimpleDoubleProperty(0);
     private final DoubleProperty headY = new SimpleDoubleProperty(0);
 
@@ -25,8 +30,6 @@ public class PlayerViewModel {
         InvalidationListener listener = (obs) ->  updatePoints();
         player.positionProperty().addListener(listener);
         player.angleProperty().addListener(listener);
-
-        updatePoints();
     }
 
     public void updatePoints() {
@@ -56,5 +59,11 @@ public class PlayerViewModel {
     public ReadOnlyDoubleProperty headYProperty() {return headY;}
 
     public ReadOnlyObjectProperty<CustomPoint2D> positionProperty() {return player.positionProperty();}
+    public ReadOnlyObjectProperty<PolygonData2D> polygonProperty() { return player.polygonProperty();}
+    public ReadOnlyDoubleProperty angleProperty() {return player.angleProperty();}
     public ReadOnlyBooleanProperty penDowProperty() { return player.penDownProperty();}
+    public ReadOnlyBooleanProperty drawEnabledProperty() { return player.drawEnabledProperty();}
+
+
+
 }

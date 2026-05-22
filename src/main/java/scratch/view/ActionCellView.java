@@ -99,6 +99,10 @@ public class ActionCellView extends ListCell<Actionable> {
       case Repeat r -> textProperty().bind(Bindings.createStringBinding(
               () -> r.toString() + " " + r.getProperty().get() + " fois ", r.getProperty()));
 
+        case Polygon poly -> textProperty().bind(Bindings.createStringBinding(
+             () -> poly.toString() + " : " + poly.getProperty().get() + ", " + poly.getSecondParamProperty().get(),
+             poly.getProperty(), poly.getSecondParamProperty()));
+
       case EndRepeat endRe -> setText(endRe.toString());
       case Up up -> setText(up.toString());
       case Down down -> setText(down.toString());

@@ -76,6 +76,18 @@ public class Repeat extends ActionBlock implements Actionable {
         return isTickValid && super.isValid(params); // super.isValid va vérifier chaque enfant du block repeat
     }
 
+    // inutile ici
+    @Override
+    public boolean isFirstValid(String text) {
+        return false;
+    }
+
+    // inutile ici
+    @Override
+    public boolean isSecondValid(String text) {
+        return false;
+    }
+
     private boolean isValidVariableName(String name) {
         return name != null && name.matches(regexValidation);
     }

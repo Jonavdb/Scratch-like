@@ -70,27 +70,39 @@ public class AssignVariable implements Actionable {
         return ActionType.ASSIGN;
     }
 
-    @Override
-    public boolean isValid(String... params) {
-        // pour le moment on suppose qu'on aura toujours que 2 paramètres
-        if(params.length != 2) return false;
-
-        String variableName = params[0];
-        String variableValue = params[1];
-
-        if(variableName == null || variableName.isEmpty()) {
+    public boolean isFirstValid(String text) {
+        if (text == null || text.isEmpty()) {
             return false;
         }
 
-        if(!variableName.matches(regexValidation)) {
-            return false;
-        }
-
-        if(variableValue == null) {
+        if (!text.matches(regexValidation)) {
             return false;
         }
 
         return true;
+    }
+
+
+    public boolean isSecondValid(String text) {
+        if (text == null || text.isEmpty()) {
+            return false;
+        }
+
+        return true;
+    }
+
+    public boolean isValid(String... params) {
+        // Check if we have exactly 2 parameters as expected
+        if (params.length != 2) {
+            return false;
+        }
+
+        // Delegate the validation to the specific parameter methods
+        boolean firstValid = isFirstValid(params[0]);
+        boolean secondValid = isSecondValid(params[1]);
+
+        // Both must be valid for the entire action to be considered valid
+        return firstValid && secondValid;
     }
 
     @Override

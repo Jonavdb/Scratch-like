@@ -76,6 +76,18 @@ public class Move implements Actionable {
         }
     }
 
+    // inutile ici
+    @Override
+    public boolean isFirstValid(String text) {
+        return false;
+    }
+
+    // inutile ici
+    @Override
+    public boolean isSecondValid(String text) {
+        return false;
+    }
+
     private boolean isValidVariableName(String name) {
         return name != null && name.matches(regexValidation);
     }

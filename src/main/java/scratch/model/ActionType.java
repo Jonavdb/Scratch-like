@@ -11,5 +11,6 @@ public enum ActionType {
     DOWN,
     ASSIGN,
     DECLARE,
-    INCREMENT
+    INCREMENT,
+    DRAW_POLYGON
 }
