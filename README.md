@@ -20,6 +20,14 @@ The goal was to build a simplified programming environment where users can creat
 - Loading programs from files
 - Object-oriented design, with UML documentation included in the project
 
+## Screenshots
+
+### Main Interface
+![Main Interface](Screenshots/main-interface.png)
+
+### Program Example
+![Program Example](Screenshots/program-example.png)
+
 ## Installation
 
 To run the project locally:
