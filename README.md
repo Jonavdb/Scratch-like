@@ -1,40 +1,48 @@
-# Projet ANC4 2526 - Groupe f03 - Scratch
+# Scratch-like
 
-Membres du projet : 
+Scratch-like is a desktop application inspired by Scratch, developed in Java as part of a group project during my Bachelor's degree in Application Development at EPFC (Brussels).
 
-Haboula Ali
-Vanderbiest Jonathan
-Yangni-Angaté Emmanuel
+The goal was to build a simplified programming environment where users can create and execute sequences of instructions, including commands for drawing.
 
-## Notes de version itération 1
+## Technologies
 
-### Liste des bugs connus
+- **Language:** Java 21
+- **Interface:** JavaFX 21
+- **Build tool:** Maven
+- **Libraries:** ControlsFX
+- **Testing:** JUnit 5
 
-Nous n'avons pas relevé de bugs connus. Nous n'avons cependant pas implémenter les collisions car celles-ci n'ont pas été demandées par notre professeur.
+## Features
 
-### Liste des fonctionnalités supplémentaires
+- Creation and execution of simple programs
+- Drawing through programmed instructions
+- Execution of a complete program with an optional delay between instructions
+- Loading programs from files
+- Object-oriented design, with UML documentation included in the project
 
-Ajout d'une fonction afin de lire tout le programme avec un délai. Cette fonctionnalité a été ajoutée afin d'améliorer l'expérience de l'utilisateur si celui-ci voulait utiliser le programme pour dessiner.
-Pour tester cette fonctionnalité, vous pouvez utiliser le fichier test_execute_all se trouvant dans le dossier ressources en utilisant la fonction 'load' du programme.
+## Installation
 
-### Divers
+To run the project locally:
 
-Le rapport d'analyse UML se trouve dans le dossier resources.
+1. Clone the repository:
+   `git clone https://github.com/Jonavdb/Scratch-like.git`
+2. Open the project in a Java IDE that supports Maven and JavaFX.
+3. Make sure Java 21 is installed and configured.
+4. Let Maven download the required dependencies.
+5. Run the application's main class from your IDE.
 
-## Notes de version itération 2
+## Project Team
 
-### Liste des bugs connus
+This project was developed by three EPFC students:
 
-Nous n'avons pas relevé de bugs connus. Nous n'avons cependant pas implémenté les collisions car celles-ci n'ont pas été demandées par notre professeur.
+- Jonathan Vanderbiest
+- Ali Haboula
+- Emmanuel Yangni-Angaté
 
-### Liste des fonctionnalités supplémentaires
+## Author
 
-Aucune feature supplémentaire n'a été implémentée lors de cette itération afin de ne pas causer de conflits avec les features demandées. 
+**Jonathan Vanderbiest**
 
-### Divers
+Bachelor's student in Application Development at EPFC, Brussels.
 
-Le diagramme de classe UML se trouve dans le dossier resources.
-
-## Notes de version itération 3
-
-...
+Currently looking for a development internship starting in February 2027.
