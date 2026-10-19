@@ -6,7 +6,7 @@ The goal was to build a simplified programming environment where users can creat
 
 ## Technologies
 
-- **Language:** Java 24
+- **Language:** Java 21
 - **Interface:** JavaFX 21
 - **Build tool:** Maven
 - **Libraries:** ControlsFX
